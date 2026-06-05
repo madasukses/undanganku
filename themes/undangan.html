@@ -571,6 +571,22 @@ textarea.input-field { resize:none; min-height:90px; }
   font-weight: 600;
   letter-spacing: .5px;
 }
+
+/* ══ FADE IN STAGGERED ══ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeScale {
+  from { opacity:0; transform:scale(.94); }
+  to   { opacity:1; transform:scale(1); }
+}
+.anim, .anim-scale { opacity:0; animation:none; }
+.slide.in .anim       { animation:fadeUp   .7s cubic-bezier(.22,1,.36,1) forwards; }
+.slide.in .anim-scale { animation:fadeScale .7s cubic-bezier(.22,1,.36,1) forwards; }
+.d0{animation-delay:.0s}.d1{animation-delay:.1s}.d2{animation-delay:.2s}
+.d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.5s}
+.d6{animation-delay:.6s}.d7{animation-delay:.7s}.d8{animation-delay:.8s}
 </style>
 </head>
 <body>
@@ -633,25 +649,25 @@ textarea.input-field { resize:none; min-height:90px; }
             <circle cx="2" cy="2" r="2.5" fill="#b8935a" opacity=".6"/>
           </svg>
 
-          <div class="s1-top-label">The Wedding of</div>
-          <div class="s1-photo" id="coverPhoto">📸</div>
-          <div class="s1-names" id="coverNames">
+          <div class="s1-top-label anim d0">The Wedding of</div>
+          <div class="s1-photo anim-scale d1" id="coverPhoto">📸</div>
+          <div class="s1-names anim d2" id="coverNames">
             Reza <span class="s1-amp">&</span> Ninda
           </div>
-          <div class="s1-divider"></div>
-          <div class="s1-date" id="coverDate">Sabtu, 21 Juni 2025</div>
+          <div class="s1-divider anim d3"></div>
+          <div class="s1-date anim d4" id="coverDate">Sabtu, 21 Juni 2025</div>
         </div>
       </div>
 
       <!-- SLIDE 2: MEMPELAI -->
       <div class="slide">
         <div class="s2">
-          <div class="slide-head">
+          <div class="slide-head anim d0">
             <div class="slide-sup">Mempelai</div>
             <div class="slide-title">Dua Hati, Satu Janji</div>
           </div>
 
-          <div class="mempelai-card">
+          <div class="mempelai-card anim d1">
             <div class="mp-photo">🤵</div>
             <div class="mp-name" id="namaPria">Reza Firmansyah, S.T.</div>
             <div class="mp-bin">Putra Pertama</div>
@@ -664,9 +680,9 @@ textarea.input-field { resize:none; min-height:90px; }
             </div>
           </div>
 
-          <div class="mp-divider">♡</div>
+          <div class="mp-divider anim d2">♡</div>
 
-          <div class="mempelai-card">
+          <div class="mempelai-card anim d3">
             <div class="mp-photo">👰</div>
             <div class="mp-name" id="namaWanita">Ninda Aulia, S.Pd.</div>
             <div class="mp-bin">Putri Kedua</div>
@@ -684,20 +700,20 @@ textarea.input-field { resize:none; min-height:90px; }
       <!-- SLIDE 3: TANGGAL & COUNTDOWN -->
       <div class="slide">
         <div class="s3">
-          <div class="slide-head" style="text-align:center">
+          <div class="slide-head anim d0" style="text-align:center">
             <div class="slide-sup">Hari Bahagia</div>
             <div class="slide-title">Tanggal Pernikahan</div>
             <div class="hijri-date">24 Dzulhijjah 1446 H</div>
           </div>
 
-          <div class="date-big">
+          <div class="date-big anim d1">
             <div class="date-day">Sabtu</div>
             <div class="date-num">21</div>
             <div class="date-month">Juni</div>
             <div class="date-year">2025</div>
           </div>
 
-          <div class="countdown-wrap">
+          <div class="countdown-wrap anim d2">
             <div class="countdown-label">Hitung Mundur Menuju Hari H</div>
             <div class="countdown-boxes">
               <div class="cd-box"><div class="cd-num" id="cdD">--</div><div class="cd-unit">Hari</div></div>
@@ -712,13 +728,13 @@ textarea.input-field { resize:none; min-height:90px; }
       <!-- SLIDE 4: JADWAL -->
       <div class="slide">
         <div class="s4">
-          <div class="slide-head">
+          <div class="slide-head anim d0">
             <div class="slide-sup">Rangkaian Acara</div>
             <div class="slide-title">Jadwal Pernikahan</div>
           </div>
 
           <div style="margin-top:24px">
-            <div class="event-card">
+            <div class="event-card anim d1">
               <div class="event-type">Akad Nikah</div>
               <div class="event-name">Ijab Qabul</div>
               <div class="event-row"><span class="ei">📅</span><span>Sabtu, 21 Juni 2025</span></div>
@@ -727,7 +743,7 @@ textarea.input-field { resize:none; min-height:90px; }
               <a href="https://maps.google.com" class="maps-btn" target="_blank">🗺️ Buka Maps</a>
             </div>
 
-            <div class="event-card">
+            <div class="event-card anim d2">
               <div class="event-type">Resepsi</div>
               <div class="event-name">Walimatul 'Ursy</div>
               <div class="event-row"><span class="ei">📅</span><span>Sabtu, 21 Juni 2025</span></div>
@@ -742,12 +758,12 @@ textarea.input-field { resize:none; min-height:90px; }
       <!-- SLIDE 5: GALERI + RSVP -->
       <div class="slide">
         <div class="s5">
-          <div class="slide-head">
+          <div class="slide-head anim d0">
             <div class="slide-sup">Galeri</div>
             <div class="slide-title">Momen Bersama</div>
           </div>
 
-          <div class="gallery-grid">
+          <div class="gallery-grid anim d1">
             <div class="g-item">🌸</div>
             <div class="g-item">💐</div>
             <div class="g-item">🌿</div>
@@ -755,7 +771,7 @@ textarea.input-field { resize:none; min-height:90px; }
             <div class="g-item">🌺</div>
           </div>
 
-          <div class="rsvp-section">
+          <div class="rsvp-section anim d2">
             <div class="rsvp-title">RSVP &amp; Ucapan</div>
 
             <label class="input-label">Nama Anda</label>
@@ -911,6 +927,7 @@ document.title = `Undangan ${DATA.panggilanPria} & ${DATA.panggilanWanita}`;
 function openInvitation() {
   document.getElementById('gate').classList.add('gone');
   playMusic();
+  triggerFirstSlide();
 }
 
 // ══════════════════════════════
@@ -948,6 +965,17 @@ function goTo(n) {
   slider.style.transform = `translateX(-${n*100}%)`;
   nav.setAttribute('data-active', n);
   tabs.forEach((t, i) => t.classList.toggle('active', i === n));
+
+  // Trigger animasi slide aktif
+  const slides = document.querySelectorAll('.slide');
+  slides.forEach((s, i) => {
+    s.classList.remove('in');
+    if (i === n) setTimeout(() => s.classList.add('in'), 80);
+  });
+}
+
+function triggerFirstSlide() {
+  document.querySelectorAll('.slide')[0].classList.add('in');
 }
 
 // ══════════════════════════════
