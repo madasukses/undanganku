@@ -806,14 +806,24 @@ function cariLagu(q) {
 
 function togglePlay(id, url, nama, artist) {
   if (playingId === id) {
-    currentAudio?.pause();
+    // Pause yang sedang main
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
     playingId = null;
     renderLagu(LAGU_LIST);
     return;
   }
-  currentAudio?.pause();
+  // Stop yang lama
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio.src = '';
+  }
+  // Play baru
   currentAudio = new Audio(url);
-  currentAudio.play().catch(()=>{});
+  currentAudio.volume = 0.8;
+  const playPromise = currentAudio.play();
+  if (playPromise) playPromise.catch(()=>{});
   currentAudio.onended = () => { playingId = null; renderLagu(LAGU_LIST); };
   playingId = id;
   renderLagu(LAGU_LIST);

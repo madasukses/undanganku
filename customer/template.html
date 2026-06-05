@@ -52,16 +52,20 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 
 /* KATEGORI TABS */
 .cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
-.cat-tab{padding:8px 18px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.cat-tab{padding:8px 18px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);white-space:nowrap}
 .cat-tab:hover{border-color:var(--gold);color:var(--text)}
 .cat-tab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700}
 
 /* TEMPLATE GRID */
 .tmpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+.tmpl-grid-wrap{transition:opacity .3s ease}
+.tmpl-grid-wrap.fading{opacity:0}
 @media(max-width:600px){.tmpl-grid{grid-template-columns:repeat(2,1fr)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.tmpl-card{animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
 
-.tmpl-card{border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .3s;position:relative;background:var(--s)}
-.tmpl-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.tmpl-card{border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;background:var(--s)}
+.tmpl-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(0,0,0,.35)}
 .tmpl-card.active{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,169,110,.15)}
 
 .tmpl-preview{aspect-ratio:9/16;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -161,7 +165,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
 
     <!-- Template grid -->
-    <div class="tmpl-grid" id="tmplGrid"></div>
+    <div class="tmpl-grid-wrap" id="tmplGridWrap"><div class="tmpl-grid" id="tmplGrid"></div></div>
   </div>
 </div>
 
@@ -206,7 +210,12 @@ function filterKat(kat, el) {
   activeKat = kat;
   document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  renderGrid(kat);
+  const wrap = document.getElementById('tmplGridWrap');
+  wrap.classList.add('fading');
+  setTimeout(() => {
+    renderGrid(kat);
+    wrap.classList.remove('fading');
+  }, 250);
 }
 
 function renderGrid(kat) {
@@ -215,10 +224,10 @@ function renderGrid(kat) {
   const pw = undangan?.panggilan_wanita || 'Ninda';
   const tgl = undangan?.tanggal_resepsi ? new Date(undangan.tanggal_resepsi).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '21 Desember 2025';
 
-  document.getElementById('tmplGrid').innerHTML = list.map(t => {
+  document.getElementById('tmplGrid').innerHTML = list.map((t,i) => {
     const isActive = t.id === currentTema;
     return `
-    <div class="tmpl-card${isActive?' active':''}" id="card-${t.id}">
+    <div class="tmpl-card${isActive?' active':''}" id="card-${t.id}" style="animation-delay:${i*0.06}s">
       <div class="tmpl-preview ${t.cls}">
         <div class="tmpl-ornament">
           <div class="tmpl-symbol" style="color:${t.acc}">${t.simbol}</div>
