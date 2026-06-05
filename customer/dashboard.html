@@ -548,15 +548,98 @@ function renderUndanganCard(list) {
     return `<div class="ucard">
       <div class="ucard-top"><div class="ucard-names">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div>${badge}</div>
       <div class="ucard-meta">Tema ${u.tema} · ${exp}</div>
-      <div class="ucard-link">🔗 devundanganku.vercel.app/${u.slug}</div>
+      <div class="ucard-link" style="cursor:pointer" onclick="copyLinkSlug('${u.slug}')" title="Klik untuk salin">🔗 devundanganku.vercel.app/${u.slug}</div>
       <div class="ucard-actions">
         <a class="ua" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁️ Preview</a>
-        <a class="ua" href="#" onclick="copyLinkSlug('${u.slug}')">🔗 Salin</a>
-        <a class="ua" href="#" onclick="showPage('daftar')">📋 Tamu</a>
-        <a class="ua" href="#" onclick="showPage('foto')">📸 Foto</a>
+        <a class="ua" href="#" onclick="copyLinkSlug('${u.slug}');return false">🔗 Salin Link</a>
+        <a class="ua" href="#" onclick="bukaEdit('${u.id}');return false">✏️ Edit</a>
       </div>
     </div>`;
   }).join('');
+}
+
+// Buka halaman edit, isi form dengan data existing
+async function bukaEdit(id) {
+  const { data: u } = await sb.from('undangan').select('*').eq('id', id).single();
+  if (!u) return;
+  undangan = u;
+
+  // Isi semua field form
+  const set = (elId, val) => { const el = document.getElementById(elId); if(el) el.value = val||''; };
+  set('fSlug', u.slug);
+  set('fNamaPria', u.nama_pria); set('fPangPria', u.panggilan_pria);
+  set('fAyahPria', u.ayah_pria); set('fIbuPria', u.ibu_pria);
+  set('fIgPria', u.ig_pria);     set('fTtPria', u.tiktok_pria);
+  set('fNamaWanita', u.nama_wanita); set('fPangWanita', u.panggilan_wanita);
+  set('fAyahWanita', u.ayah_wanita); set('fIbuWanita', u.ibu_wanita);
+  set('fIgWanita', u.ig_wanita);     set('fTtWanita', u.tiktok_wanita);
+  if (u.tanggal_akad)    set('fTglAkad',    u.tanggal_akad.split('T')[0]);
+  if (u.tanggal_akad)    set('fJamAkad',    u.tanggal_akad.split('T')[1]?.slice(0,5)||'08:00');
+  set('fLokasiAkad', u.lokasi_akad); set('fMapsAkad', u.maps_akad);
+  if (u.tanggal_resepsi) set('fTglResepsi', u.tanggal_resepsi.split('T')[0]);
+  set('fJamMulai', u.jam_resepsi_mulai); set('fJamSelesai', u.jam_resepsi_selesai);
+  set('fLokasiResepsi', u.lokasi_resepsi); set('fMapsResepsi', u.maps_resepsi);
+  if (u.musik_url) set('fMusikLink', u.musik_url);
+
+  // Pilih tema
+  selectedTema = u.tema || 1;
+  document.querySelectorAll('.tema-opt').forEach(o => o.classList.remove('sel'));
+  const temaEl = document.querySelector(`.topt${selectedTema}`);
+  if (temaEl) temaEl.classList.add('sel');
+
+  // Slug field readonly saat edit
+  const slugEl = document.getElementById('fSlug');
+  if (slugEl) { slugEl.readOnly = true; slugEl.style.opacity = '.6'; }
+
+  // Ganti tombol submit jadi Update
+  const btn = document.getElementById('btnBuat');
+  if (btn) { btn.textContent = 'Simpan Perubahan →'; btn.onclick = () => submitEdit(u.id); }
+
+  showPage('buat');
+}
+
+async function submitEdit(id) {
+  const btn = document.getElementById('btnBuat');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  const payload = {
+    tema:              selectedTema,
+    nama_pria:         document.getElementById('fNamaPria').value.trim(),
+    panggilan_pria:    document.getElementById('fPangPria').value.trim(),
+    ayah_pria:         document.getElementById('fAyahPria').value.trim(),
+    ibu_pria:          document.getElementById('fIbuPria').value.trim(),
+    ig_pria:           document.getElementById('fIgPria').value.trim(),
+    tiktok_pria:       document.getElementById('fTtPria').value.trim(),
+    nama_wanita:       document.getElementById('fNamaWanita').value.trim(),
+    panggilan_wanita:  document.getElementById('fPangWanita').value.trim(),
+    ayah_wanita:       document.getElementById('fAyahWanita').value.trim(),
+    ibu_wanita:        document.getElementById('fIbuWanita').value.trim(),
+    ig_wanita:         document.getElementById('fIgWanita').value.trim(),
+    tiktok_wanita:     document.getElementById('fTtWanita').value.trim(),
+    tanggal_akad: (() => { const d=document.getElementById('fTglAkad').value, t=document.getElementById('fJamAkad')?.value||'08:00'; return d?`${d}T${t}:00`:null; })(),
+    tanggal_resepsi: (() => { const d=document.getElementById('fTglResepsi').value, t=(document.getElementById('fJamMulai').value||'10:00').replace('.',':'); return d?`${d}T${t}:00`:null; })(),
+    jam_resepsi_mulai:   document.getElementById('fJamMulai').value.trim(),
+    jam_resepsi_selesai: document.getElementById('fJamSelesai').value.trim(),
+    lokasi_akad:     document.getElementById('fLokasiAkad').value.trim(),
+    maps_akad:       document.getElementById('fMapsAkad').value.trim(),
+    lokasi_resepsi:  document.getElementById('fLokasiResepsi').value.trim(),
+    maps_resepsi:    document.getElementById('fMapsResepsi').value.trim(),
+    musik_url: (document.getElementById('musikTabLink')?.style.display!=='none' && document.getElementById('fMusikLink')?.value.trim()) ? document.getElementById('fMusikLink').value.trim() : null,
+  };
+
+  const { error } = await sb.from('undangan').update(payload).eq('id', id);
+  btn.disabled = false;
+
+  if (error) { alert('Gagal: ' + error.message); btn.textContent = 'Simpan Perubahan →'; return; }
+
+  // Reset form ke mode buat baru
+  const slugEl = document.getElementById('fSlug');
+  if (slugEl) { slugEl.readOnly = false; slugEl.style.opacity = '1'; }
+  btn.textContent = 'Simpan Undangan →'; btn.onclick = submitBuat;
+
+  await loadDashboard();
+  showPage('home');
+  alert('Undangan berhasil diperbarui! ✅');
 }
 
 // Tema
