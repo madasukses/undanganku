@@ -21,49 +21,57 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: { detectSessionInUrl: true }
+  auth: {
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  }
 });
 
+async function redirect(role) {
+  const map = {
+    admin:    '/admin/dashboard.html',
+    reseller: '/reseller/dashboard.html',
+    customer: '/customer/dashboard.html'
+  };
+  window.location.href = map[role] || '/customer/dashboard.html';
+}
+
 (async () => {
-  // Tunggu Supabase proses hash dari URL
-  const { data, error } = await sb.auth.getSession();
+  // Supabase otomatis proses code dari URL saat detectSessionInUrl: true
+  // Tunggu sebentar biar dia selesai proses
+  await new Promise(r => setTimeout(r, 500));
 
-  if (error) {
-    console.error(error);
-    window.location.href = '/login.html?error=' + encodeURIComponent(error.message);
-    return;
-  }
+  const { data: { session }, error } = await sb.auth.getSession();
 
-  if (!data.session) {
-    // Coba exchange code jika pakai PKCE flow
-    const { data: d2, error: e2 } = await sb.auth.exchangeCodeForSession(window.location.href);
-    if (e2 || !d2?.session) {
+  if (error || !session) {
+    // Coba sekali lagi setelah 1 detik
+    await new Promise(r => setTimeout(r, 1000));
+    const { data: { session: s2 } } = await sb.auth.getSession();
+    if (!s2) {
       window.location.href = '/login.html';
       return;
     }
   }
 
-  // Ambil atau buat profile
-  const session = data.session || (await sb.auth.getSession()).data.session;
-  const uid = session.user.id;
-  const email = session.user.email;
-  const nama = session.user.user_metadata?.full_name || '';
-  const avatar = session.user.user_metadata?.avatar_url || '';
+  const { data: { session: sess } } = await sb.auth.getSession();
+  const uid   = sess.user.id;
+  const email = sess.user.email;
+  const nama  = sess.user.user_metadata?.full_name || '';
+  const avatar= sess.user.user_metadata?.avatar_url || '';
 
-  const { data: profile, error: perr } = await sb
+  // Upsert profile
+  await sb.from('profiles').upsert({
+    id: uid, email, nama, avatar_url: avatar
+  }, { onConflict: 'id', ignoreDuplicates: true });
+
+  // Ambil role
+  const { data: profile } = await sb
     .from('profiles')
     .select('role')
     .eq('id', uid)
     .single();
 
-  if (!profile) {
-    await sb.from('profiles').upsert({ id: uid, email, nama, avatar_url: avatar, role: 'customer' });
-    window.location.href = '/customer/dashboard.html';
-    return;
-  }
-
-  const map = { admin: '/admin/dashboard.html', reseller: '/reseller/dashboard.html', customer: '/customer/dashboard.html' };
-  window.location.href = map[profile.role] || '/customer/dashboard.html';
+  redirect(profile?.role || 'customer');
 })();
 </script>
 </body>
