@@ -288,8 +288,8 @@ select.inp{cursor:pointer}
       <div class="form-card">
         <div class="form-sec-title">🕌 Akad Nikah</div>
         <div class="form-row">
-          <div class="inp-wrap"><label class="inp-lbl">Tanggal & Jam</label><input class="inp" id="fTglAkad" type="datetime-local"></div>
-          <div class="inp-wrap"><label class="inp-lbl">Tanggal Hijriah</label><input class="inp" id="fHijri" placeholder="24 Dzulhijjah 1446 H"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Tanggal Akad</label><input class="inp" id="fTglAkad" type="date"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Jam Akad</label><input class="inp" id="fJamAkad" type="time" value="08:00"></div>
         </div>
         <div class="inp-wrap"><label class="inp-lbl">Lokasi</label><input class="inp" id="fLokasiAkad" placeholder="Masjid Ar-Rahman, Jl. Merdeka No.12, Surabaya"></div>
         <div class="inp-wrap"><label class="inp-lbl">Link Google Maps</label><input class="inp" id="fMapsAkad" type="url" placeholder="https://maps.google.com/..."></div>
@@ -299,7 +299,7 @@ select.inp{cursor:pointer}
       <div class="form-card">
         <div class="form-sec-title">🎊 Resepsi</div>
         <div class="form-row">
-          <div class="inp-wrap"><label class="inp-lbl">Tanggal & Jam</label><input class="inp" id="fTglResepsi" type="datetime-local"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Tanggal Resepsi</label><input class="inp" id="fTglResepsi" type="date"></div>
           <div class="inp-wrap" style="display:flex;gap:8px">
             <div style="flex:1"><label class="inp-lbl">Jam Mulai</label><input class="inp" id="fJamMulai" placeholder="10.00"></div>
             <div style="flex:1"><label class="inp-lbl">Jam Selesai</label><input class="inp" id="fJamSelesai" placeholder="14.00"></div>
@@ -596,11 +596,21 @@ async function submitBuat() {
     ibu_wanita:        document.getElementById('fIbuWanita').value.trim(),
     ig_wanita:         document.getElementById('fIgWanita').value.trim(),
     tiktok_wanita:     document.getElementById('fTtWanita').value.trim(),
-    tanggal_akad:      document.getElementById('fTglAkad').value || null,
-    tanggal_hijri:     document.getElementById('fHijri').value.trim(),
+    tanggal_akad: (() => {
+      const d = document.getElementById('fTglAkad').value;
+      const t = document.getElementById('fJamAkad')?.value || '08:00';
+      return d ? `${d}T${t}:00` : null;
+    })(),
+    tanggal_hijri:     null,
     lokasi_akad:       document.getElementById('fLokasiAkad').value.trim(),
     maps_akad:         document.getElementById('fMapsAkad').value.trim(),
-    tanggal_resepsi:   document.getElementById('fTglResepsi').value || null,
+    tanggal_resepsi: (() => {
+      const d = document.getElementById('fTglResepsi').value;
+      const mulai = document.getElementById('fJamMulai').value || '10:00';
+      // Konversi jam format 10.00 ke 10:00
+      const t = mulai.replace('.', ':');
+      return d ? `${d}T${t}:00` : null;
+    })(),
     jam_resepsi_mulai: document.getElementById('fJamMulai').value.trim(),
     jam_resepsi_selesai: document.getElementById('fJamSelesai').value.trim(),
     lokasi_resepsi:    document.getElementById('fLokasiResepsi').value.trim(),
