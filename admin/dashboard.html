@@ -111,6 +111,14 @@ textarea.inp{resize:vertical;min-height:80px}
 .landing-prev strong{color:var(--text)}
 
 /* TOAST */
+.sw-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.sw-inp{display:none}
+.sw-track{width:44px;height:24px;border-radius:12px;background:var(--red);position:relative;transition:background .25s;flex-shrink:0}
+.sw-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.sw-inp:checked + .sw-track{background:var(--green)}
+.sw-inp:checked + .sw-track::after{transform:translateX(20px)}
+.sw-lbl{font-size:12px;font-weight:600;color:var(--muted);min-width:60px}
+.sw-inp:checked ~ .sw-lbl{color:var(--green)}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 
@@ -428,45 +436,52 @@ function applyWMFilter(q='') {
       <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
       <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
       <span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'✅ Aktif':'🔒 Draft'}</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁 Lihat</a>
-        ${u.status==='draft'
-          ? `<button class="act-btn success" onclick="hapusWM('${u.id}','${u.slug}')">🔓 Aktifkan</button>`
-          : `<button class="act-btn danger" onclick="pasangWM('${u.id}','${u.slug}')">🔒 Non-aktifkan</button>`}
+        <label class="sw-wrap" title="${u.status==='aktif'?'Klik untuk non-aktifkan':'Klik untuk aktifkan'}">
+          <input type="checkbox" class="sw-inp" ${u.status==='aktif'?'checked':''} onchange="toggleWM('${u.id}','${u.slug}',this)">
+          <span class="sw-track"></span>
+          <span class="sw-lbl">${u.status==='aktif'?'Aktif':'Non-aktif'}</span>
+        </label>
       </div>
     </div>`).join('')
   : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada data</div>';
 }
 
-async function hapusWM(id,slug) {
-  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus dan undangan menjadi Aktif.`)) return;
-  // Update status undangan jadi aktif
-  const {error} = await sb.from('undangan').update({
-    status: 'aktif',
-    expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString()
-  }).eq('id',id);
-  if (error){alert('Gagal: '+error.message);return;}
-  // Cari user_id dari undangan ini
-  const und = allUndData.find(u=>u.id===id);
-  if (und?.user_id) {
-    // Insert pembayaran gratis sebagai record (agar undangan.html tahu sudah bayar)
-    await sb.from('pembayaran').insert({
-      user_id: und.user_id,
-      undangan_id: id,
-      nominal: 0,
-      metode: 'admin_manual',
-      status: 'sukses',
-      kode_ref: 'ADMIN'
-    }).select();
+async function toggleWM(id, slug, checkbox) {
+  const aktifkan = checkbox.checked;
+  // Optimistic update label
+  const lbl = checkbox.closest('.sw-wrap').querySelector('.sw-lbl');
+  if (lbl) lbl.textContent = aktifkan ? 'Aktif' : 'Non-aktif';
+
+  if (aktifkan) {
+    const {error} = await sb.from('undangan').update({
+      status: 'aktif',
+      expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString()
+    }).eq('id', id);
+    if (error) { checkbox.checked=false; if(lbl)lbl.textContent='Non-aktif'; alert('Gagal: '+error.message); return; }
+    // Insert record pembayaran gratis agar watermark hilang di halaman undangan
+    const und = allUndData.find(u=>u.id===id);
+    if (und?.user_id) {
+      await sb.from('pembayaran').upsert({
+        user_id: und.user_id, undangan_id: id,
+        nominal: 0, metode: 'admin_manual', status: 'sukses', kode_ref: 'ADMIN'
+      }, {onConflict:'undangan_id,metode', ignoreDuplicates:true});
+    }
+    toast('✅ Aktif — watermark dihapus');
+  } else {
+    await sb.from('undangan').update({status:'draft', expired_at:null}).eq('id',id);
+    // Hapus record pembayaran manual
+    const und = allUndData.find(u=>u.id===id);
+    if (und?.user_id) {
+      await sb.from('pembayaran').delete().eq('undangan_id',id).eq('metode','admin_manual');
+    }
+    toast('🔒 Non-aktif — watermark dipasang kembali');
   }
-  toast('✅ Watermark dihapus! Undangan aktif.');
-  await loadWM(); await loadHome();
-}
-async function pasangWM(id,slug) {
-  if (!confirm(`Non-aktifkan undangan "${slug}"?`)) return;
-  await sb.from('undangan').update({status:'draft',expired_at:null}).eq('id',id);
-  toast('🔒 Undangan dikembalikan ke Draft.');
-  await loadWM();
+  // Update data lokal
+  const idx = allUndData.findIndex(u=>u.id===id);
+  if (idx>=0) allUndData[idx].status = aktifkan ? 'aktif' : 'draft';
+  await loadHome();
 }
 
 // ══ SEMUA UNDANGAN ══
