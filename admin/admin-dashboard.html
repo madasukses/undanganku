@@ -10,16 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gs:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+[data-theme=light]{--bg:#f5f0e8;--s:#fdfaf5;--s2:#ede6d6;--b:#ddd5c5;--gold:#8b5e2e;--gs:#6b4423;--text:#2c1f14;--muted:#8a7060;--green:#3d8a56;--red:#c0392b;--blue:#2980b9}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s,background .3s}
 .sidebar.off{transform:translateX(-100%)}
 .sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
 .sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
 .sl-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .sl-badge{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(201,169,110,.15);color:var(--gold);border:1px solid rgba(201,169,110,.3)}
 .snav{flex:1;padding:14px 10px;overflow-y:auto}
-.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
+.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:8px}
 .si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
 .si:hover{background:var(--s2);color:var(--text)}.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
 .si .ic{font-size:17px;width:20px;text-align:center}
@@ -29,15 +30,26 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .uname{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .logout-btn{border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;font-family:'Jost',sans-serif;padding:0 10px;height:28px;border-radius:8px;transition:all .2s}
 .logout-btn:hover{border-color:var(--red);color:var(--red)}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;backdrop-filter:blur(2px)}
 .overlay.on{display:block}
 .main{margin-left:240px;min-height:100vh;transition:margin .3s}.main.full{margin-left:0}
-.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
-.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100;transition:background .3s}
+[data-theme=light] .topbar{background:rgba(245,240,232,.92)}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:background .2s}
 .hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
 .ptitle{font-size:16px;font-weight:700;margin-left:12px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.icon-btn:hover{border-color:var(--gold)}
 .content{padding:22px 18px;max-width:960px}
-.page{display:none}.page.on{display:block}
+.page{display:none;opacity:0}.page.on{display:block}
+.page.visible{opacity:1}
+.page.visible > *{animation:pageIn .45s cubic-bezier(.22,1,.36,1) both}
+.page.visible > *:nth-child(1){animation-delay:.03s}
+.page.visible > *:nth-child(2){animation-delay:.09s}
+.page.visible > *:nth-child(3){animation-delay:.15s}
+.page.visible > *:nth-child(4){animation-delay:.21s}
+.page.visible > *:nth-child(5){animation-delay:.27s}
+@keyframes pageIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
 /* STATS */
 .sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
@@ -60,30 +72,49 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .badge-gd{background:rgba(201,169,110,.15);color:var(--gold)}
 .badge-rd{background:rgba(224,92,92,.15);color:var(--red)}
 .badge-bl{background:rgba(91,155,213,.15);color:var(--blue)}
-
-/* ACTION BTNS */
-.act-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.act-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;text-decoration:none;display:inline-block}
 .act-btn:hover{border-color:var(--gold);color:var(--gold)}
+.act-btn.success{background:rgba(92,184,122,.12);border-color:rgba(92,184,122,.3);color:var(--green)}
+.act-btn.success:hover{background:rgba(92,184,122,.2)}
+.act-btn.danger{color:var(--muted)}
 .act-btn.danger:hover{border-color:var(--red);color:var(--red)}
-.act-btn.success{background:rgba(92,184,122,.15);border-color:rgba(92,184,122,.3);color:var(--green)}
+
+/* FORM CARD */
+.form-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:22px;margin-bottom:14px}
+.form-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--b)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inp-wrap{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.inp-lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.inp{width:100%;padding:11px 13px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--gold)}.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;min-height:80px}
+.save-btn{padding:11px 28px;border-radius:10px;background:var(--gold);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s}
+.save-btn:hover{opacity:.85}
 
 /* SEARCH */
-.search-bar{width:100%;padding:10px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:14px;-webkit-appearance:none}
-.search-bar:focus{border-color:var(--gold)}
+.search-bar{width:100%;padding:10px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:14px;-webkit-appearance:none;transition:border-color .2s}
+.search-bar:focus{border-color:var(--gold)}.search-bar::placeholder{color:var(--muted)}
+.pg-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.pg-tab{padding:7px 16px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s}
+.pg-tab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700}
 
-/* TABS */
-.pg-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.pg-tab{padding:8px 16px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s}
-.pg-tab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
+/* PAKET CARDS */
+.paket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.paket-grid{grid-template-columns:1fr}}
+.paket-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:20px;position:relative}
+.paket-card.featured{border-color:var(--gold)}
+.paket-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.paket-nama{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--text);margin-bottom:10px}
+
+/* LANDING EDITOR */
+.landing-prev{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:20px;margin-bottom:14px;font-size:13px;color:var(--muted);line-height:1.7}
+.landing-prev strong{color:var(--text)}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}
-  .sgrid{grid-template-columns:repeat(2,1fr)}
-}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}.sgrid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -96,15 +127,17 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
   </div>
   <nav class="snav">
     <div class="snav-sec">Utama</div>
-    <a class="si on" href="#" onclick="showPage('home',this)"><span class="ic">📊</span>Dashboard</a>
-    <a class="si" href="#" onclick="showPage('undangan',this)"><span class="ic">📨</span>Semua Undangan</a>
-    <a class="si" href="#" onclick="showPage('user',this)"><span class="ic">👥</span>Semua User</a>
-    <a class="si" href="#" onclick="showPage('watermark',this)"><span class="ic">🔓</span>Kelola Watermark</a>
+    <a class="si on" href="#" onclick="nav('home',this)"><span class="ic">📊</span>Dashboard</a>
+    <a class="si" href="#" onclick="nav('undangan',this)"><span class="ic">📨</span>Semua Undangan</a>
+    <a class="si" href="#" onclick="nav('user',this)"><span class="ic">👥</span>Semua User</a>
+    <a class="si" href="#" onclick="nav('watermark',this)"><span class="ic">🔓</span>Kelola Watermark</a>
     <div class="snav-sec">Keuangan</div>
-    <a class="si" href="#" onclick="showPage('transaksi',this)"><span class="ic">💳</span>Transaksi</a>
-    <a class="si" href="#" onclick="showPage('komisi',this)"><span class="ic">💸</span>Komisi Reseller</a>
-    <div class="snav-sec">Sistem</div>
-    <a class="si" href="#"><span class="ic">⚙️</span>Pengaturan</a>
+    <a class="si" href="#" onclick="nav('transaksi',this)"><span class="ic">💳</span>Transaksi</a>
+    <a class="si" href="#" onclick="nav('komisi',this)"><span class="ic">💸</span>Komisi Reseller</a>
+    <a class="si" href="#" onclick="nav('paket',this)"><span class="ic">📦</span>Paket & Harga</a>
+    <div class="snav-sec">Konten</div>
+    <a class="si" href="#" onclick="nav('landing',this)"><span class="ic">🌐</span>Landing Page</a>
+    <a class="si" href="#" onclick="nav('template',this)"><span class="ic">🎨</span>Kelola Template</a>
   </nav>
   <div class="sfooter">
     <div class="user-row">
@@ -123,94 +156,135 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
       <div class="ptitle" id="topTitle">Dashboard</div>
     </div>
-    <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Mode Terang/Gelap">🌙</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
   </div>
 
   <div class="content">
 
     <!-- ══ HOME ══ -->
-    <div class="page on" id="page-home">
+    <div class="page on visible" id="page-home">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:22px">Overview <span style="color:var(--gold)">Undanganku.id</span></div>
       <div class="sgrid">
         <div class="scard gold"><div class="sic">👥</div><div class="sval" id="sUser">—</div><div class="slbl">Total User</div></div>
         <div class="scard gr"><div class="sic">📨</div><div class="sval" id="sUndangan">—</div><div class="slbl">Total Undangan</div></div>
         <div class="scard bl"><div class="sic">💰</div><div class="sval" id="sPendapatan">—</div><div class="slbl">Pendapatan Total</div></div>
-        <div class="scard rd"><div class="sic">🔓</div><div class="sval" id="sWatermark">—</div><div class="slbl">Watermark Aktif</div></div>
+        <div class="scard rd"><div class="sic">🔒</div><div class="sval" id="sWatermark">—</div><div class="slbl">Watermark Aktif</div></div>
       </div>
-
-      <div class="sh"><div class="st">Undangan Terbaru</div></div>
+      <div class="sh"><div class="st">Undangan Terbaru</div><a style="font-size:12px;color:var(--gold);cursor:pointer;text-decoration:none" href="#" onclick="nav('undangan')">Lihat semua →</a></div>
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
-          <div>Pengantin</div><div>User</div><div>Status</div><div>Aksi</div>
-        </div>
-        <div id="recentUndangan"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Pengantin</div><div>User</div><div>Status</div><div>Aksi</div></div>
+        <div id="recentUnd"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
     </div>
 
     <!-- ══ WATERMARK ══ -->
     <div class="page" id="page-watermark">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Watermark</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Hapus watermark undangan secara manual. Watermark otomatis hilang setelah pembayaran sukses.</div>
-
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Aktifkan undangan secara manual (hapus watermark). Otomatis aktif setelah pembayaran sukses.</div>
       <div class="pg-tabs">
         <button class="pg-tab on" onclick="filterWM('semua',this)">Semua</button>
         <button class="pg-tab" onclick="filterWM('draft',this)">🔒 Ada Watermark</button>
         <button class="pg-tab" onclick="filterWM('aktif',this)">✅ Sudah Aktif</button>
       </div>
-
-      <input class="search-bar" id="wmSearch" placeholder="🔍 Cari nama pengantin atau slug..." oninput="cariWM(this.value)">
-
+      <input class="search-bar" id="wmSearch" placeholder="🔍 Cari nama atau slug..." oninput="cariWM(this.value)">
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
-          <div>Pengantin</div><div>Slug</div><div>Status</div><div>Aksi</div>
-        </div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Pengantin</div><div>Slug</div><div>Status</div><div>Aksi</div></div>
         <div id="wmList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
     </div>
 
     <!-- ══ SEMUA UNDANGAN ══ -->
     <div class="page" id="page-undangan">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">Undangan</span></div>
-      <input class="search-bar" id="undSearch" placeholder="🔍 Cari..." oninput="cariUnd(this.value)">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Semua <span style="color:var(--gold)">Undangan</span></div>
+      <input class="search-bar" id="undSearch" placeholder="🔍 Cari pengantin atau slug..." oninput="cariUnd(this.value)">
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto">
-          <div>Pengantin</div><div>Slug</div><div>Tema</div><div>Status</div><div>Aksi</div>
-        </div>
-        <div id="allUndangan"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto"><div>Pengantin</div><div>Slug</div><div>Tema</div><div>Status</div><div>Aksi</div></div>
+        <div id="allUnd"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
     </div>
 
     <!-- ══ USER ══ -->
     <div class="page" id="page-user">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">User</span></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Semua <span style="color:var(--gold)">User</span></div>
       <input class="search-bar" id="userSearch" placeholder="🔍 Cari nama atau email..." oninput="cariUser(this.value)">
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
-          <div>Nama</div><div>Email</div><div>Role</div><div>Aksi</div>
-        </div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Nama</div><div>Email</div><div>Role</div><div>Ubah Role</div></div>
         <div id="userList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
     </div>
 
     <!-- ══ TRANSAKSI ══ -->
     <div class="page" id="page-transaksi">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">Transaksi</span></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Semua <span style="color:var(--gold)">Transaksi</span></div>
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto">
-          <div>User</div><div>Paket</div><div>Nominal</div><div>Status</div>
-        </div>
+        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto auto"><div>User</div><div>Paket</div><div>Nominal</div><div>Status</div><div>Aksi</div></div>
         <div id="txList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
     </div>
 
     <!-- ══ KOMISI ══ -->
     <div class="page" id="page-komisi">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Komisi <span style="color:var(--gold)">Reseller</span></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Komisi <span style="color:var(--gold)">Reseller</span></div>
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto">
-          <div>Reseller</div><div>Nominal</div><div>Status</div><div>Aksi</div>
-        </div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto"><div>Reseller</div><div>Rekening</div><div>Nominal</div><div>Status</div><div>Aksi</div></div>
         <div id="komisiList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ PAKET & HARGA ══ -->
+    <div class="page" id="page-paket">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Paket <span style="color:var(--gold)">& Harga</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit harga dan fitur paket. Perubahan langsung tampil di landing page.</div>
+      <div class="paket-grid" id="paketGrid"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      <button class="save-btn" onclick="simpanPaket()">Simpan Semua Paket →</button>
+    </div>
+
+    <!-- ══ LANDING PAGE ══ -->
+    <div class="page" id="page-landing">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Landing <span style="color:var(--gold)">Page</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit teks yang tampil di halaman utama undanganku.id</div>
+
+      <div class="form-card">
+        <div class="form-title">Hero Section</div>
+        <div class="inp-wrap"><label class="inp-lbl">Tagline Utama (baris 1)</label><input class="inp" id="lpTagline1" placeholder="Rayakan Cinta"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Tagline Utama (baris 2, italic)</label><input class="inp" id="lpTagline2" placeholder="dengan Elegan"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi</label><textarea class="inp" id="lpDesc" rows="3" placeholder="Buat undangan pernikahan digital yang memukau..."></textarea></div>
+        <div class="inp-wrap"><label class="inp-lbl">Teks Tombol Utama</label><input class="inp" id="lpBtn1" placeholder="Buat Undangan Saya"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Teks Tombol Kedua</label><input class="inp" id="lpBtn2" placeholder="Lihat Contoh"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Section CTA Bawah</div>
+        <div class="inp-wrap"><label class="inp-lbl">Judul CTA</label><input class="inp" id="lpCtaTitle" placeholder="Hari Istimewa Anda"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Sub CTA</label><input class="inp" id="lpCtaSub" placeholder="Layak dirayakan dengan undangan yang tak terlupakan."></div>
+        <div class="inp-wrap"><label class="inp-lbl">Teks Tombol CTA</label><input class="inp" id="lpCtaBtn" placeholder="Mulai Buat Undangan →"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Info Kontak</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">WhatsApp Admin</label><input class="inp" id="lpWa" placeholder="628xxxxxxxxxx"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Instagram</label><input class="inp" id="lpIg" placeholder="@undanganku.id"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Email</label><input class="inp" id="lpEmail" placeholder="hello@undanganku.id"></div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="save-btn" onclick="simpanLanding()">Simpan Landing Page →</button>
+        <a class="act-btn" href="/" target="_blank" style="padding:11px 20px;font-size:12px;letter-spacing:1px">👁 Preview Landing →</a>
+      </div>
+    </div>
+
+    <!-- ══ TEMPLATE ══ -->
+    <div class="page" id="page-template">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Template</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Lihat semua template yang tersedia. Nanti bisa tambah template baru dari sini.</div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:auto 1fr 1fr auto auto"><div>ID</div><div>Nama</div><div>Kategori</div><div>Status</div><div>Aksi</div></div>
+        <div id="tmplList"></div>
       </div>
     </div>
 
@@ -221,10 +295,14 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 
 <script>
 let user = null;
-let allUndanganData = [];
-let allUserData = [];
+let allUndData = [], allUserData = [], allPaketData = [];
 let wmFilter = 'semua';
+let isDark = localStorage.getItem('theme') !== 'light';
 
+if (!isDark) { document.documentElement.setAttribute('data-theme','light'); document.getElementById('themeBtn').textContent='☀️'; }
+function toggleTheme(){ isDark=!isDark; document.documentElement.setAttribute('data-theme',isDark?'':'light'); document.getElementById('themeBtn').textContent=isDark?'🌙':'☀️'; localStorage.setItem('theme',isDark?'dark':'light'); }
+
+// ══ INIT ══
 (async () => {
   user = await AUTH.requireAuth(['admin']);
   if (!user) return;
@@ -234,249 +312,287 @@ let wmFilter = 'semua';
   await loadHome();
 })();
 
+// ══ HOME ══
 async function loadHome() {
-  // Stats
-  const [
-    {count: cUser},
-    {count: cUnd},
-    {count: cWM},
-    {data: txData}
-  ] = await Promise.all([
+  const [{count:cU},{count:cUnd},{count:cWM},{data:txData}] = await Promise.all([
     sb.from('profiles').select('*',{count:'exact',head:true}),
     sb.from('undangan').select('*',{count:'exact',head:true}),
     sb.from('undangan').select('*',{count:'exact',head:true}).eq('status','draft'),
-    sb.from('pembayaran').select('nominal').eq('status','sukses')
+    sb.from('pembayaran').select('nominal').eq('status','sukses'),
   ]);
-  document.getElementById('sUser').textContent = cUser || 0;
-  document.getElementById('sUndangan').textContent = cUnd || 0;
-  document.getElementById('sWatermark').textContent = cWM || 0;
-  const total = (txData||[]).reduce((s,t)=>s+t.nominal,0);
-  document.getElementById('sPendapatan').textContent = 'Rp ' + total.toLocaleString('id-ID');
-
-  // Recent undangan
-  const {data:und} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false}).limit(8);
-  allUndanganData = und || [];
+  document.getElementById('sUser').textContent = cU||0;
+  document.getElementById('sUndangan').textContent = cUnd||0;
+  document.getElementById('sWatermark').textContent = cWM||0;
+  const tot = (txData||[]).reduce((s,t)=>s+t.nominal,0);
+  document.getElementById('sPendapatan').textContent = 'Rp '+(tot||0).toLocaleString('id-ID');
+  const {data:und} = await sb.from('undangan').select('*,profiles(nama,email)').order('created_at',{ascending:false}).limit(8);
+  allUndData = und||[];
   renderRecentUnd(und||[]);
 }
 
 function renderRecentUnd(list) {
-  document.getElementById('recentUndangan').innerHTML = list.length
-    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
-        <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.slug}</div></div>
-        <div style="font-size:12px;color:var(--muted)">${u.profiles?.nama||u.profiles?.email||'—'}</div>
-        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'Aktif':'Draft'}</span></div>
-        <div style="display:flex;gap:6px">
-          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
-          ${u.status==='draft'?`<button class="act-btn success" onclick="hapusWatermark('${u.id}')">🔓 Aktifkan</button>`:''}
-        </div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada undangan</div>';
+  document.getElementById('recentUnd').innerHTML = list.length ? list.map(u=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+      <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.slug}</div></div>
+      <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.profiles?.nama||u.profiles?.email||'—'}</div>
+      <span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'Aktif':'Draft'}</span>
+      <div style="display:flex;gap:5px">
+        <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
+        ${u.status==='draft'?`<button class="act-btn success" onclick="hapusWM('${u.id}','${u.slug}')">🔓</button>`:''}
+      </div>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada undangan</div>';
 }
 
 // ══ WATERMARK ══
-async function loadWatermark() {
-  const {data} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
-  allUndanganData = data || [];
-  renderWM(data||[]);
+async function loadWM() {
+  const {data} = await sb.from('undangan').select('*,profiles(nama,email)').order('created_at',{ascending:false});
+  allUndData = data||[];
+  applyWMFilter();
 }
 
-function filterWM(f, el) {
-  wmFilter = f;
-  document.querySelectorAll('.pg-tab').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  let list = allUndanganData;
-  if (f==='draft') list = list.filter(u=>u.status==='draft');
-  if (f==='aktif') list = list.filter(u=>u.status==='aktif');
-  renderWM(list);
+function filterWM(f,el){ wmFilter=f; document.querySelectorAll('.pg-tab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); applyWMFilter(); }
+function cariWM(q){ applyWMFilter(q); }
+function applyWMFilter(q='') {
+  let list = allUndData;
+  if (wmFilter==='draft') list=list.filter(u=>u.status==='draft');
+  if (wmFilter==='aktif') list=list.filter(u=>u.status==='aktif');
+  if (q) list=list.filter(u=>(u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase())||(u.slug||'').toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('wmList').innerHTML = list.length ? list.map(u=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+      <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
+      <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
+      <span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'✅ Aktif':'🔒 Draft'}</span>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁 Lihat</a>
+        ${u.status==='draft'
+          ? `<button class="act-btn success" onclick="hapusWM('${u.id}','${u.slug}')">🔓 Aktifkan</button>`
+          : `<button class="act-btn danger" onclick="pasangWM('${u.id}','${u.slug}')">🔒 Non-aktifkan</button>`}
+      </div>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada data</div>';
 }
 
-function cariWM(q) {
-  let list = allUndanganData;
-  if (wmFilter==='draft') list = list.filter(u=>u.status==='draft');
-  if (wmFilter==='aktif') list = list.filter(u=>u.status==='aktif');
-  if (q) list = list.filter(u =>
-    (u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase()) ||
-    (u.panggilan_wanita||'').toLowerCase().includes(q.toLowerCase()) ||
-    (u.slug||'').toLowerCase().includes(q.toLowerCase())
-  );
-  renderWM(list);
+async function hapusWM(id,slug) {
+  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus.`)) return;
+  const {error} = await sb.from('undangan').update({status:'aktif',expired_at:new Date(Date.now()+365*24*60*60*1000).toISOString()}).eq('id',id);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Watermark dihapus! Undangan aktif.');
+  await loadWM(); await loadHome();
 }
-
-function renderWM(list) {
-  document.getElementById('wmList').innerHTML = list.length
-    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
-        <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
-        <div style="font-size:13px;color:var(--blue)">${u.slug}</div>
-        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'✅ Aktif':'🔒 Draft'}</span></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁 Lihat</a>
-          ${u.status==='draft'
-            ? `<button class="act-btn success" onclick="hapusWatermark('${u.id}','${u.slug}')">🔓 Hapus Watermark</button>`
-            : `<button class="act-btn danger" onclick="kembalikanWatermark('${u.id}','${u.slug}')">🔒 Pasang Watermark</button>`
-          }
-        </div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada data</div>';
-}
-
-async function hapusWatermark(id, slug) {
-  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus dan undangan menjadi Aktif.`)) return;
-  const { error } = await sb.from('undangan').update({
-    status: 'aktif',
-    expired_at: new Date(Date.now() + 365*24*60*60*1000).toISOString()
-  }).eq('id', id);
-  if (error) { alert('Gagal: ' + error.message); return; }
-  showToast('✅ Watermark dihapus! Undangan sekarang Aktif.');
-  await loadWatermark();
-  await loadHome();
-}
-
-async function kembalikanWatermark(id, slug) {
-  if (!confirm(`Pasang kembali watermark untuk "${slug}"?`)) return;
-  const { error } = await sb.from('undangan').update({ status: 'draft', expired_at: null }).eq('id', id);
-  if (error) { alert('Gagal: ' + error.message); return; }
-  showToast('🔒 Watermark dipasang kembali.');
-  await loadWatermark();
+async function pasangWM(id,slug) {
+  if (!confirm(`Non-aktifkan undangan "${slug}"?`)) return;
+  await sb.from('undangan').update({status:'draft',expired_at:null}).eq('id',id);
+  toast('🔒 Undangan dikembalikan ke Draft.');
+  await loadWM();
 }
 
 // ══ SEMUA UNDANGAN ══
-async function loadAllUndangan() {
-  const {data} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
-  allUndanganData = data || [];
+async function loadAllUnd() {
+  const {data} = await sb.from('undangan').select('*,profiles(nama,email)').order('created_at',{ascending:false});
+  allUndData = data||[];
   renderAllUnd(data||[]);
 }
-
-function cariUnd(q) {
-  const list = q ? allUndanganData.filter(u =>
-    (u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase()) ||
-    (u.slug||'').toLowerCase().includes(q.toLowerCase())
-  ) : allUndanganData;
-  renderAllUnd(list);
-}
-
+function cariUnd(q){ renderAllUnd(q ? allUndData.filter(u=>(u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase())||(u.slug||'').toLowerCase().includes(q.toLowerCase())) : allUndData); }
 function renderAllUnd(list) {
-  document.getElementById('allUndangan').innerHTML = list.length
-    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
-        <div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div>
-        <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
-        <div style="font-size:12px;color:var(--muted)">Tema ${u.tema}</div>
-        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status}</span></div>
-        <div style="display:flex;gap:6px">
-          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
-          <button class="act-btn danger" onclick="hapusUndangan('${u.id}')">🗑</button>
-        </div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
+  document.getElementById('allUnd').innerHTML = list.length ? list.map(u=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
+      <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
+      <div style="font-size:12px;color:var(--muted)">T${u.tema}</div>
+      <span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status}</span>
+      <div style="display:flex;gap:5px">
+        <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
+        <button class="act-btn danger" onclick="hapusUnd('${u.id}')">🗑</button>
+      </div>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
 }
-
-async function hapusUndangan(id) {
+async function hapusUnd(id) {
   if (!confirm('Hapus undangan ini permanen?')) return;
-  await sb.from('undangan').delete().eq('id', id);
-  showToast('🗑 Undangan dihapus');
-  await loadAllUndangan();
+  await sb.from('undangan').delete().eq('id',id);
+  toast('🗑 Undangan dihapus');
+  await loadAllUnd();
 }
 
 // ══ USER ══
 async function loadUsers() {
   const {data} = await sb.from('profiles').select('*').order('created_at',{ascending:false});
-  allUserData = data || [];
+  allUserData = data||[];
   renderUsers(data||[]);
 }
-
-function cariUser(q) {
-  const list = q ? allUserData.filter(u =>
-    (u.nama||'').toLowerCase().includes(q.toLowerCase()) ||
-    (u.email||'').toLowerCase().includes(q.toLowerCase())
-  ) : allUserData;
-  renderUsers(list);
-}
-
+function cariUser(q){ renderUsers(q ? allUserData.filter(u=>(u.nama||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').toLowerCase().includes(q.toLowerCase())) : allUserData); }
 function renderUsers(list) {
-  document.getElementById('userList').innerHTML = list.length
-    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
-        <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
-        <div style="font-size:12px;color:var(--muted)">${u.email}</div>
-        <div><span class="badge ${u.role==='admin'?'badge-gd':u.role==='reseller'?'badge-bl':'badge-gr'}">${u.role}</span></div>
-        <div style="display:flex;gap:4px">
-          <select onchange="gantiRole('${u.id}',this.value)" style="padding:4px 8px;border-radius:7px;border:1px solid var(--b);background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer">
-            <option value="customer" ${u.role==='customer'?'selected':''}>Customer</option>
-            <option value="reseller" ${u.role==='reseller'?'selected':''}>Reseller</option>
-            <option value="admin"    ${u.role==='admin'   ?'selected':''}>Admin</option>
-          </select>
-        </div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
+  document.getElementById('userList').innerHTML = list.length ? list.map(u=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+      <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+      <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email}</div>
+      <span class="badge ${u.role==='admin'?'badge-gd':u.role==='reseller'?'badge-bl':'badge-gr'}">${u.role}</span>
+      <select onchange="gantiRole('${u.id}',this.value)" style="padding:5px 8px;border-radius:8px;border:1px solid var(--b);background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;outline:none">
+        <option value="customer" ${u.role==='customer'?'selected':''}>Customer</option>
+        <option value="reseller" ${u.role==='reseller'?'selected':''}>Reseller</option>
+        <option value="admin"    ${u.role==='admin'?'selected':''}>Admin</option>
+      </select>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
 }
-
-async function gantiRole(id, role) {
+async function gantiRole(id,role) {
   const {error} = await sb.from('profiles').update({role}).eq('id',id);
-  if (error) { alert('Gagal: '+error.message); return; }
-  showToast('✅ Role diubah ke ' + role);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Role diubah ke '+role);
   await loadUsers();
 }
 
 // ══ TRANSAKSI ══
-async function loadTransaksi() {
-  const {data} = await sb.from('pembayaran').select('*, profiles(nama,email), paket(nama)').order('created_at',{ascending:false}).limit(50);
-  document.getElementById('txList').innerHTML = (data||[]).length
-    ? (data||[]).map(t => `<div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
-        <div><div style="font-size:14px;font-weight:600">${t.profiles?.nama||t.profiles?.email||'—'}</div><div style="font-size:11px;color:var(--muted)">${new Date(t.created_at).toLocaleDateString('id-ID')}</div></div>
-        <div style="font-size:12px;color:var(--muted)">${t.paket?.nama||'—'}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${t.nominal.toLocaleString('id-ID')}</div>
-        <div><span class="badge ${t.status==='sukses'?'badge-gr':t.status==='pending'?'badge-gd':'badge-rd'}">${t.status}</span></div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada transaksi</div>';
+async function loadTx() {
+  const {data} = await sb.from('pembayaran').select('*,profiles(nama,email),paket(nama)').order('created_at',{ascending:false}).limit(50);
+  document.getElementById('txList').innerHTML = (data||[]).length ? (data||[]).map(t=>`
+    <div class="tbl-row" style="grid-template-columns:1fr auto auto auto auto">
+      <div><div style="font-size:14px;font-weight:600">${t.profiles?.nama||t.profiles?.email||'—'}</div><div style="font-size:11px;color:var(--muted)">${new Date(t.created_at).toLocaleDateString('id-ID')}</div></div>
+      <div style="font-size:12px;color:var(--muted)">${t.paket?.nama||'—'}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${t.nominal.toLocaleString('id-ID')}</div>
+      <span class="badge ${t.status==='sukses'?'badge-gr':t.status==='pending'?'badge-gd':'badge-rd'}">${t.status}</span>
+      ${t.status==='pending'?`<button class="act-btn success" onclick="approvePayment('${t.id}')">✅ Approve</button>`:`<div></div>`}
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada transaksi</div>';
+}
+async function approvePayment(id) {
+  if (!confirm('Approve transaksi ini sebagai Sukses?')) return;
+  await sb.from('pembayaran').update({status:'sukses'}).eq('id',id);
+  toast('✅ Transaksi di-approve');
+  await loadTx();
 }
 
 // ══ KOMISI ══
 async function loadKomisi() {
-  const {data} = await sb.from('penarikan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
-  document.getElementById('komisiList').innerHTML = (data||[]).length
-    ? (data||[]).map(k => `<div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
-        <div><div style="font-size:14px;font-weight:600">${k.profiles?.nama||k.profiles?.email||'—'}</div><div style="font-size:11px;color:var(--muted)">${k.bank} ${k.no_rek} · a.n. ${k.atas_nama}</div></div>
-        <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${k.nominal.toLocaleString('id-ID')}</div>
-        <div><span class="badge ${k.status==='selesai'?'badge-gr':k.status==='request'?'badge-gd':'badge-rd'}">${k.status}</span></div>
-        <div>
-          ${k.status==='request'?`<button class="act-btn success" onclick="prosesCair('${k.id}')">✅ Cairkan</button>`:''}
-        </div>
-      </div>`).join('')
-    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada request</div>';
+  const {data} = await sb.from('penarikan').select('*,profiles(nama,email)').order('created_at',{ascending:false});
+  document.getElementById('komisiList').innerHTML = (data||[]).length ? (data||[]).map(k=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div style="font-size:14px;font-weight:600">${k.profiles?.nama||k.profiles?.email||'—'}</div>
+      <div style="font-size:12px;color:var(--muted)">${k.bank||'—'} ${k.no_rek||''} · ${k.atas_nama||''}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${k.nominal.toLocaleString('id-ID')}</div>
+      <span class="badge ${k.status==='selesai'?'badge-gr':k.status==='request'?'badge-gd':'badge-rd'}">${k.status}</span>
+      ${k.status==='request'?`<button class="act-btn success" onclick="cairKomisi('${k.id}')">✅ Cairkan</button>`:`<div></div>`}
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada request</div>';
 }
-
-async function prosesCair(id) {
+async function cairKomisi(id) {
   if (!confirm('Tandai komisi ini sudah dicairkan?')) return;
   await sb.from('penarikan').update({status:'selesai'}).eq('id',id);
-  showToast('✅ Komisi ditandai selesai');
+  toast('✅ Komisi dicairkan');
   await loadKomisi();
 }
 
+// ══ PAKET & HARGA ══
+async function loadPaket() {
+  const {data} = await sb.from('paket').select('*').order('harga',{ascending:true});
+  allPaketData = data||[];
+  renderPaket(data||[]);
+}
+function renderPaket(list) {
+  document.getElementById('paketGrid').innerHTML = list.length ? list.map(p=>`
+    <div class="paket-card ${p.nama==='Premium'?'featured':''}">
+      <div class="paket-label">${p.nama==='Premium'?'⭐ Paling Diminati':''}</div>
+      <div class="paket-nama">${p.nama}</div>
+      <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="ph_${p.id}" value="${p.harga}" type="number"></div>
+      <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="pd_${p.id}" value="${p.durasi_hari}" type="number"></div>
+      <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="pf_${p.id}" value="${p.max_foto}" type="number"></div>
+      <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="pt_${p.id}" value="${p.max_tamu}" type="number"></div>
+    </div>`).join('')
+  : '<div style="color:var(--muted);font-size:13px">Tidak ada paket</div>';
+}
+async function simpanPaket() {
+  for (const p of allPaketData) {
+    const harga   = parseInt(document.getElementById('ph_'+p.id)?.value)||p.harga;
+    const durasi  = parseInt(document.getElementById('pd_'+p.id)?.value)||p.durasi_hari;
+    const maxFoto = parseInt(document.getElementById('pf_'+p.id)?.value)||p.max_foto;
+    const maxTamu = parseInt(document.getElementById('pt_'+p.id)?.value)||p.max_tamu;
+    await sb.from('paket').update({harga,durasi_hari:durasi,max_foto:maxFoto,max_tamu:maxTamu}).eq('id',p.id);
+  }
+  toast('✅ Semua paket berhasil disimpan!');
+  await loadPaket();
+}
+
+// ══ LANDING PAGE ══
+// Data landing disimpan di tabel settings (key-value)
+async function loadLanding() {
+  const {data} = await sb.from('settings').select('*');
+  const s = {};
+  (data||[]).forEach(r=>s[r.key]=r.value);
+  document.getElementById('lpTagline1').value = s.tagline1 || 'Rayakan Cinta';
+  document.getElementById('lpTagline2').value = s.tagline2 || 'dengan Elegan';
+  document.getElementById('lpDesc').value     = s.desc     || 'Buat undangan pernikahan digital yang memukau. Bagikan ke semua tamu via WhatsApp dalam hitungan menit.';
+  document.getElementById('lpBtn1').value     = s.btn1     || 'Buat Undangan Saya';
+  document.getElementById('lpBtn2').value     = s.btn2     || 'Lihat Contoh';
+  document.getElementById('lpCtaTitle').value = s.cta_title|| 'Hari Istimewa Anda';
+  document.getElementById('lpCtaSub').value   = s.cta_sub  || 'Layak dirayakan dengan undangan yang tak terlupakan.';
+  document.getElementById('lpCtaBtn').value   = s.cta_btn  || 'Mulai Buat Undangan →';
+  document.getElementById('lpWa').value       = s.wa       || '';
+  document.getElementById('lpIg').value       = s.ig       || '';
+  document.getElementById('lpEmail').value    = s.email    || '';
+}
+async function simpanLanding() {
+  const fields = {
+    tagline1: 'lpTagline1', tagline2: 'lpTagline2', desc: 'lpDesc',
+    btn1: 'lpBtn1', btn2: 'lpBtn2',
+    cta_title: 'lpCtaTitle', cta_sub: 'lpCtaSub', cta_btn: 'lpCtaBtn',
+    wa: 'lpWa', ig: 'lpIg', email: 'lpEmail'
+  };
+  for (const [key,elId] of Object.entries(fields)) {
+    const val = document.getElementById(elId)?.value||'';
+    await sb.from('settings').upsert({key,value:val},{onConflict:'key'});
+  }
+  toast('✅ Landing page berhasil disimpan!');
+}
+
+// ══ TEMPLATE ══
+const TMPL_LIST = [
+  {id:1,nama:'Classic Gold',kat:'Modern',aktif:true},
+  {id:2,nama:'Rose Garden',kat:'Garden',aktif:true},
+  {id:3,nama:'Emerald Forest',kat:'Garden',aktif:true},
+  {id:4,nama:'Midnight Blue',kat:'Modern',aktif:true},
+  {id:5,nama:'Cream Sage',kat:'Minimalis',aktif:true},
+  {id:6,nama:'Dusty Mauve',kat:'Modern',aktif:true},
+  {id:7,nama:'Batik Gold',kat:'Adat',aktif:false},
+  {id:8,nama:'Hijau Daun',kat:'Islami',aktif:false},
+  {id:9,nama:'Lavender Dream',kat:'Minimalis',aktif:false},
+];
+function loadTemplate() {
+  document.getElementById('tmplList').innerHTML = TMPL_LIST.map(t=>`
+    <div class="tbl-row" style="grid-template-columns:auto 1fr 1fr auto auto">
+      <div style="font-size:13px;color:var(--muted)">#${t.id}</div>
+      <div style="font-size:14px;font-weight:600">${t.nama}</div>
+      <div style="font-size:12px;color:var(--muted)">${t.kat}</div>
+      <span class="badge ${t.aktif?'badge-gr':'badge-gd'}">${t.aktif?'Aktif':'Coming Soon'}</span>
+      <a class="act-btn" href="/themes/undangan.html?tema=${t.id}" target="_blank">👁 Preview</a>
+    </div>`).join('');
+}
+
 // ══ NAVIGATION ══
-function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.getElementById('page-'+name).classList.add('on');
+function nav(name, el) {
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on','visible')});
+  const pg = document.getElementById('page-'+name);
+  pg.classList.add('on');
+  setTimeout(()=>pg.classList.add('visible'),20);
   document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
   if (el) el.classList.add('on');
-  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller'};
+  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller',paket:'Paket & Harga',landing:'Landing Page',template:'Kelola Template'};
   document.getElementById('topTitle').textContent = titles[name]||name;
-  if (name==='watermark') loadWatermark();
-  if (name==='undangan') loadAllUndangan();
-  if (name==='user') loadUsers();
-  if (name==='transaksi') loadTransaksi();
-  if (name==='komisi') loadKomisi();
+  if (name==='watermark') loadWM();
+  if (name==='undangan')  loadAllUnd();
+  if (name==='user')      loadUsers();
+  if (name==='transaksi') loadTx();
+  if (name==='komisi')    loadKomisi();
+  if (name==='paket')     loadPaket();
+  if (name==='landing')   loadLanding();
+  if (name==='template')  loadTemplate();
   if (window.innerWidth<769) closeSb();
+  return false;
 }
 
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-function toggleSb(){
-  if(window.innerWidth<769){document.getElementById('sb').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}
-  else{document.getElementById('sb').classList.toggle('off');document.getElementById('main').classList.toggle('full');}
-}
-function closeSb(){document.getElementById('sb').classList.remove('on');document.getElementById('ov').classList.remove('on');}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+function toggleSb(){ if(window.innerWidth<769){document.getElementById('sb').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}else{document.getElementById('sb').classList.toggle('off');document.getElementById('main').classList.toggle('full');} }
+function closeSb(){ document.getElementById('sb').classList.remove('on'); document.getElementById('ov').classList.remove('on'); }
 </script>
 </body>
 </html>
