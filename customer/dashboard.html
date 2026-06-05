@@ -362,7 +362,26 @@ select.inp{cursor:pointer}
         </div>
       </div>
 
-      <button class="submit-btn full" onclick="simpanFoto()">Simpan Foto →</button>
+      <!-- Musik -->
+      <div class="form-card">
+        <div class="form-sec-title">🎵 Musik Latar</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Musik akan autoplay saat tamu membuka undangan. Format MP3, maks 10MB. Disarankan lagu instrumental atau nasyid.</div>
+        <div class="upload-area" id="uploadMusik">
+          <input type="file" accept="audio/*" onchange="previewMusik(this)">
+          <div class="upload-icon">🎵</div>
+          <div class="upload-label">Klik untuk upload musik</div>
+          <div class="upload-hint">MP3 · Maks 10MB</div>
+        </div>
+        <div id="musikPlayer" style="display:none;margin-top:14px;background:var(--s2);border-radius:10px;padding:12px;display:none;align-items:center;gap:10px">
+          <span style="font-size:20px">🎵</span>
+          <div style="flex:1;min-width:0">
+            <div id="musikNama" style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+            <audio id="musikPreview" controls style="width:100%;margin-top:6px;height:32px"></audio>
+          </div>
+        </div>
+      </div>
+
+      <button class="submit-btn full" onclick="simpanFoto()">Simpan Semua →</button>
       <div style="height:32px"></div>
     </div>
 
@@ -576,7 +595,16 @@ function previewFoto(input, previewId, areaId) {
   reader.readAsDataURL(file);
 }
 
-function previewGaleri(input) {
+function previewMusik(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const player = document.getElementById('musikPlayer');
+  const audio  = document.getElementById('musikPreview');
+  const nama   = document.getElementById('musikNama');
+  nama.textContent = file.name;
+  audio.src = URL.createObjectURL(file);
+  player.style.display = 'flex';
+}
   const grid = document.getElementById('galeriGrid');
   Array.from(input.files).slice(0,10).forEach(file => {
     const reader = new FileReader();
@@ -591,8 +619,75 @@ function previewGaleri(input) {
 }
 
 async function simpanFoto() {
-  // TODO: upload ke Supabase Storage bucket foto-undangan
-  alert('Fitur upload foto akan aktif setelah integrasi Supabase Storage.\nHubungi admin untuk mengaktifkan bucket "foto-undangan".');
+  if (!undangan) { alert('Buat undangan dulu'); return; }
+
+  const btn = document.querySelector('#page-foto .submit-btn');
+  btn.disabled = true; btn.textContent = 'Mengupload...';
+
+  const updates = {};
+
+  async function uploadFile(inputId, field, path) {
+    const input = document.querySelector(`#${inputId} input[type=file]`);
+    if (!input?.files[0]) return;
+    const file = input.files[0];
+    const ext = file.name.split('.').pop();
+    const filePath = `${undangan.user_id}/${undangan.slug}/${path}.${ext}`;
+    const { error } = await sb.storage
+      .from('foto-undangan')
+      .upload(filePath, file, { upsert: true });
+    if (error) { console.error(field, error.message); return; }
+    const { data } = sb.storage.from('foto-undangan').getPublicUrl(filePath);
+    updates[field] = data.publicUrl;
+  }
+
+  await uploadFile('uploadCover',  'foto_cover',  'cover');
+  await uploadFile('uploadPria',   'foto_pria',   'pria');
+  await uploadFile('uploadWanita', 'foto_wanita', 'wanita');
+
+  // Galeri — upload semua file dari input galeri
+  const galeriInput = document.querySelector('#galeriGrid input[type=file]');
+  if (galeriInput?.files.length > 0) {
+    const urls = [];
+    for (let i = 0; i < Math.min(galeriInput.files.length, 10); i++) {
+      const file = galeriInput.files[i];
+      const ext = file.name.split('.').pop();
+      const filePath = `${undangan.user_id}/${undangan.slug}/galeri_${i}.${ext}`;
+      const { error } = await sb.storage
+        .from('foto-undangan')
+        .upload(filePath, file, { upsert: true });
+      if (!error) {
+        const { data } = sb.storage.from('foto-undangan').getPublicUrl(filePath);
+        urls.push(data.publicUrl);
+      }
+    }
+    if (urls.length) updates.foto_galeri = urls;
+  }
+
+  // Musik
+  const musikInput = document.querySelector('#uploadMusik input[type=file]');
+  if (musikInput?.files[0]) {
+    const file = musikInput.files[0];
+    const ext  = file.name.split('.').pop();
+    const filePath = `${undangan.user_id}/${undangan.slug}/musik.${ext}`;
+    const { error } = await sb.storage.from('musik').upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = sb.storage.from('musik').getPublicUrl(filePath);
+      updates.musik_url = data.publicUrl;
+    }
+  }
+    btn.disabled = false; btn.textContent = 'Simpan Foto →';
+    alert('Pilih foto dulu sebelum menyimpan.');
+    return;
+  }
+
+  const { error } = await sb.from('undangan').update(updates).eq('id', undangan.id);
+  btn.disabled = false; btn.textContent = 'Simpan Foto →';
+
+  if (error) { alert('Gagal menyimpan: ' + error.message); return; }
+
+  // Update local
+  Object.assign(undangan, updates);
+  alert('Foto berhasil disimpan! 🎉');
 }
 
 // Tamu
