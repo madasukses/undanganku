@@ -541,35 +541,46 @@ textarea.input-field { resize:none; min-height:90px; }
 /* ══ WATERMARK ══ */
 #watermark {
   position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
   z-index: 400;
   pointer-events: none;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+#watermark-inner {
+  transform: rotate(-25deg);
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 20px;
-  padding: 6px 14px;
-  white-space: nowrap;
-  transition: opacity .3s;
 }
-#watermark.hidden { display: none; }
-#watermark-text {
+#watermark-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(24px, 7vw, 36px);
+  color: rgba(255,255,255,.28);
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+#watermark-sub {
   font-family: 'Jost', sans-serif;
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,.55);
+  font-size: clamp(11px, 3vw, 13px);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.18);
 }
-#watermark-link {
-  font-size: 11px;
-  color: var(--accent2);
-  text-decoration: none;
-  font-weight: 600;
-  letter-spacing: .5px;
+#watermark-brand {
+  font-family: 'Jost', sans-serif;
+  font-size: clamp(10px, 2.5vw, 12px);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.22);
+  margin-top: 4px;
 }
 
 /* ══ FADE IN STAGGERED ══ */
@@ -869,83 +880,248 @@ textarea.input-field { resize:none; min-height:90px; }
 
 <!-- WATERMARK -->
 <div id="watermark">
-  <div id="watermark-text">Dibuat dengan</div>
-  <a id="watermark-link" href="https://devundanganku.vercel.app" target="_blank">Undanganku.id</a>
+  <div id="watermark-inner">
+    <div id="watermark-title">Belum Diaktifkan</div>
+    <div id="watermark-sub">Lakukan pembayaran untuk menghapus tanda air ini</div>
+    <div id="watermark-brand">undanganku.id</div>
+  </div>
 </div>
 </div>
 
 <script>
-// ══════════════════════════════
-// DATA — nanti fetch Supabase by slug
-// ══════════════════════════════
-const DATA = {
-  slug: 'rezaninda',
-  panggilanPria: 'Reza',
-  panggilanWanita: 'Ninda',
-  namaPria: 'Reza Firmansyah, S.T.',
-  namaWanita: 'Ninda Aulia, S.Pd.',
-  ayahPria: 'H. Sulaiman', ibuPria: 'Hj. Fatimah',
-  ayahWanita: 'Drs. Bambang', ibuWanita: 'Sri Wahyuni',
-  tanggal: '2025-06-21T08:00:00',
-  tanggalLabel: 'Sabtu, 21 Juni 2025',
-};
+// ══════════════════════════════════════
+// INIT SUPABASE
+// ══════════════════════════════════════
+const SUPABASE_URL  = 'https://dwrxehnyjfzighzysosw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cnhlaG55amZ6aWdoenlzb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwMjUsImV4cCI6MjA5NjIxMjAyNX0.lPPsnhRpyDcFhUvrbxJEMc7DAjlM-BMyICOVi9KPqWc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ══════════════════════════════
+// ══════════════════════════════════════
 // URL PARAMS
-// ══════════════════════════════
-const params = new URLSearchParams(window.location.search);
+// ══════════════════════════════════════
+const params    = new URLSearchParams(window.location.search);
 const guestName = params.get('tamu') || '';
+const slug      = window.location.pathname.replace(/^\//, '').split('/')[0]
+                  || params.get('slug') || 'demo';
+const temaParam = parseInt(params.get('tema')) || null;
 
-// Gate
-document.getElementById('guestDisplay').textContent = guestName || 'Tamu Undangan';
-document.getElementById('gateFrom').innerHTML = `Turut diundang oleh <b>${DATA.panggilanPria} &amp; ${DATA.panggilanWanita}</b>`;
+let DATA = null;
+let undanganId = null;
 
-// Cover nav label
-document.getElementById('navLabel0').textContent = `${DATA.panggilanPria} & ${DATA.panggilanWanita}`;
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-// Slide 1
-document.getElementById('coverNames').innerHTML =
-  `${DATA.panggilanPria} <span class="s1-amp">&</span> ${DATA.panggilanWanita}`;
-document.getElementById('coverDate').textContent = DATA.tanggalLabel;
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2,'0')}.${String(d.getMinutes()).padStart(2,'0')} WIB`;
+}
 
-// Slide 2
-document.getElementById('namaPria').textContent = DATA.namaPria;
-document.getElementById('namaWanita').textContent = DATA.namaWanita;
-document.getElementById('ayahPria').textContent = DATA.ayahPria;
-document.getElementById('ibuPria').textContent = DATA.ibuPria;
-document.getElementById('ayahWanita').textContent = DATA.ayahWanita;
-document.getElementById('ibuWanita').textContent = DATA.ibuWanita;
+// ══════════════════════════════════════
+// POPULATE — isi semua elemen dari data
+// ══════════════════════════════════════
+function populate(d) {
+  const pp = d.panggilan_pria  || d.nama_pria?.split(' ')[0]  || 'Pengantin';
+  const pw = d.panggilan_wanita || d.nama_wanita?.split(' ')[0] || 'Pengantin';
 
-// Pre-fill RSVP name
-if (guestName) document.getElementById('rsvpName').value = guestName;
+  document.title = `Undangan ${pp} & ${pw}`;
 
-document.title = `Undangan ${DATA.panggilanPria} & ${DATA.panggilanWanita}`;
+  // Gate
+  document.getElementById('guestDisplay').textContent = guestName || 'Tamu Undangan';
+  document.getElementById('gateFrom').innerHTML = `Turut diundang oleh <b>${pp} &amp; ${pw}</b>`;
 
-// ══════════════════════════════
+  // Nav label tab 1
+  document.getElementById('navLabel0').textContent = `${pp} & ${pw}`;
+
+  // Slide 1 — Cover
+  document.getElementById('coverNames').innerHTML = `${pp}<span class="s1-amp">&</span>${pw}`;
+  const tglResepsi = d.tanggal_resepsi || d.tanggal_akad;
+  document.getElementById('coverDate').textContent = fmtDate(tglResepsi);
+  if (d.foto_cover) {
+    document.getElementById('coverPhoto').innerHTML = `<img src="${d.foto_cover}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  }
+
+  // Slide 2 — Mempelai
+  document.getElementById('namaPria').textContent    = d.nama_pria    || '—';
+  document.getElementById('namaWanita').textContent  = d.nama_wanita  || '—';
+  document.getElementById('ayahPria').textContent    = d.ayah_pria    || '—';
+  document.getElementById('ibuPria').textContent     = d.ibu_pria     || '—';
+  document.getElementById('ayahWanita').textContent  = d.ayah_wanita  || '—';
+  document.getElementById('ibuWanita').textContent   = d.ibu_wanita   || '—';
+  if (d.foto_pria)   document.getElementById('fotoPria').innerHTML   = `<img src="${d.foto_pria}"   alt="" style="width:100%;height:100%;object-fit:cover">`;
+  if (d.foto_wanita) document.getElementById('fotoWanita').innerHTML = `<img src="${d.foto_wanita}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  if (d.ig_pria)   { const el = document.getElementById('igPria');   if(el){ el.textContent=`📷 ${d.ig_pria}`;   el.href=`https://instagram.com/${d.ig_pria.replace('@','')}`; } }
+  if (d.ig_wanita) { const el = document.getElementById('igWanita'); if(el){ el.textContent=`📷 ${d.ig_wanita}`; el.href=`https://instagram.com/${d.ig_wanita.replace('@','')}`; } }
+
+  // Slide 3 — Tanggal
+  if (tglResepsi) {
+    const dt = new Date(tglResepsi);
+    document.getElementById('dateDay').textContent   = DAYS[dt.getDay()];
+    document.getElementById('dateNum').textContent   = dt.getDate();
+    document.getElementById('dateMonth').textContent = MONTHS[dt.getMonth()];
+    document.getElementById('dateYear').textContent  = dt.getFullYear();
+  }
+  if (d.tanggal_hijri) document.getElementById('dateHijri').textContent = d.tanggal_hijri;
+
+  // Slide 4 — Jadwal
+  document.getElementById('akadTgl').textContent      = fmtDate(d.tanggal_akad);
+  document.getElementById('akadJam').textContent      = fmtTime(d.tanggal_akad) + ' — selesai';
+  document.getElementById('akadLokasi').textContent   = d.lokasi_akad   || '—';
+  document.getElementById('resepsiTgl').textContent   = fmtDate(d.tanggal_resepsi);
+  document.getElementById('resepsiJam').textContent   = `${d.jam_resepsi_mulai||'—'} — ${d.jam_resepsi_selesai||'—'} WIB`;
+  document.getElementById('resepsiLokasi').textContent = d.lokasi_resepsi || '—';
+  if (d.maps_akad)    document.getElementById('akadMaps').href    = d.maps_akad;
+  if (d.maps_resepsi) document.getElementById('resepsiMaps').href = d.maps_resepsi;
+
+  // Slide 5 — Galeri
+  if (d.foto_galeri && d.foto_galeri.length > 0) {
+    document.getElementById('gallery').innerHTML = d.foto_galeri.map((url, i) =>
+      `<div class="gi"${i===0?' style="grid-column:span 2;aspect-ratio:16/9"':''}><img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`
+    ).join('');
+  }
+
+  // Musik
+  const audio = document.getElementById('audio');
+  if (d.musik_url) {
+    // Cek apakah link YouTube/SoundCloud atau file langsung
+    if (d.musik_url.includes('youtube.com') || d.musik_url.includes('youtu.be')) {
+      const ytMatch = d.musik_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (ytMatch) {
+        // Pakai iframe embed tersembunyi untuk YouTube
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&loop=1&playlist=${ytMatch[1]}&controls=0`;
+        iframe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:-9999px';
+        iframe.allow = 'autoplay';
+        document.body.appendChild(iframe);
+      }
+    } else if (d.musik_url.includes('soundcloud.com')) {
+      const sc = document.createElement('iframe');
+      sc.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(d.musik_url)}&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false`;
+      sc.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:-9999px';
+      document.body.appendChild(sc);
+    } else {
+      audio.src = d.musik_url;
+    }
+  }
+
+  // Pre-fill RSVP
+  if (guestName) {
+    const rn = document.getElementById('rsvpName');
+    if (rn) rn.value = guestName;
+  }
+
+  // Tema
+  applyThema(d.tema || 1);
+}
+
+// ══════════════════════════════════════
+// TEMA
+// ══════════════════════════════════════
+const THEMES = {1:'t1',2:'t2',3:'t3',4:'t4',5:'t5',6:'t6'};
+function applyThema(n) {
+  document.body.classList.add(THEMES[n] || 't1');
+}
+
+// ══════════════════════════════════════
+// FETCH DATA
+// ══════════════════════════════════════
+(async () => {
+  // Jika ada ?tema= (preview dari landing), pakai demo data + tema
+  if (temaParam) {
+    DATA = {
+      slug: 'demo', tema: temaParam,
+      nama_pria: 'Reza Firmansyah, S.T.',  panggilan_pria: 'Reza',
+      nama_wanita: 'Ninda Aulia, S.Pd.',   panggilan_wanita: 'Ninda',
+      ayah_pria: 'H. Sulaiman', ibu_pria: 'Hj. Fatimah',
+      ayah_wanita: 'Drs. Bambang', ibu_wanita: 'Sri Wahyuni',
+      tanggal_akad: '2025-12-21T08:00:00',
+      tanggal_resepsi: '2025-12-21T10:00:00',
+      jam_resepsi_mulai: '10.00', jam_resepsi_selesai: '14.00',
+      lokasi_akad: 'Masjid Ar-Rahman, Jl. Merdeka No.12, Surabaya',
+      maps_akad: 'https://maps.google.com',
+      lokasi_resepsi: 'Gedung Graha Indah, Jl. Ahmad Yani No.45, Surabaya',
+      maps_resepsi: 'https://maps.google.com',
+      tanggal_hijri: '28 Jumadil Akhir 1447 H',
+      musik_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+      foto_galeri: []
+    };
+    populate(DATA);
+    // Sembunyikan watermark di mode preview
+    document.getElementById('watermark').style.display = 'none';
+    setInterval(tick, 1000); tick();
+    return;
+  }
+
+  // Fetch dari Supabase
+  const { data: und } = await sb.from('undangan').select('*').eq('slug', slug).single();
+
+  if (und) {
+    DATA = und;
+    undanganId = und.id;
+    // Hit view counter
+    sb.from('undangan').update({ views: (und.views||0)+1 }).eq('id', und.id);
+    // Cek sudah bayar → sembunyikan watermark
+    cekPembayaran();
+  } else {
+    // Demo fallback
+    DATA = {
+      slug, tema: 1,
+      nama_pria: 'Pengantin Pria',   panggilan_pria: 'Pria',
+      nama_wanita: 'Pengantin Wanita', panggilan_wanita: 'Wanita',
+      ayah_pria: '—', ibu_pria: '—', ayah_wanita: '—', ibu_wanita: '—',
+      tanggal_akad: null, tanggal_resepsi: null,
+      lokasi_akad: '—', lokasi_resepsi: '—',
+      musik_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+      foto_galeri: []
+    };
+  }
+
+  populate(DATA);
+
+  // Load RSVP
+  if (undanganId) {
+    const { data: rsvps } = await sb.from('rsvp').select('*').eq('undangan_id', undanganId).order('created_at',{ascending:false}).limit(10);
+    if (rsvps?.length) {
+      document.getElementById('ucapanContainer').innerHTML = rsvps.map(r => `
+        <div class="uc-item">
+          <div class="uc-name">${r.nama_tamu}</div>
+          ${r.ucapan ? `<div class="uc-text">${r.ucapan}</div>` : ''}
+          <div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div>
+        </div>`).join('');
+    }
+  }
+
+  setInterval(tick, 1000); tick();
+})();
+
+// ══════════════════════════════════════
 // GATE
-// ══════════════════════════════
+// ══════════════════════════════════════
 function openInvitation() {
   document.getElementById('gate').classList.add('gone');
   playMusic();
   triggerFirstSlide();
 }
 
-// ══════════════════════════════
+// ══════════════════════════════════════
 // SLIDER
-// ══════════════════════════════
+// ══════════════════════════════════════
 let current = 0;
 const TOTAL = 5;
 const slider = document.getElementById('slider');
-const nav = document.getElementById('bottomNav');
-const tabs = document.querySelectorAll('.nav-tab');
-
+const nav    = document.getElementById('bottomNav');
+const tabs   = document.querySelectorAll('.nav-tab');
 let startX = 0, startY = 0;
 
-slider.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  startY = e.touches[0].clientY;
-}, { passive: true });
-
+slider.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
 slider.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - startX;
   const dy = Math.abs(e.changedTouches[0].clientY - startY);
@@ -953,97 +1129,85 @@ slider.addEventListener('touchend', e => {
     if (dx < 0 && current < TOTAL-1) goTo(current+1);
     else if (dx > 0 && current > 0) goTo(current-1);
   }
-}, { passive: true });
-
+}, {passive:true});
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' && current < TOTAL-1) goTo(current+1);
-  if (e.key === 'ArrowLeft' && current > 0) goTo(current-1);
+  if (e.key==='ArrowRight' && current<TOTAL-1) goTo(current+1);
+  if (e.key==='ArrowLeft'  && current>0)        goTo(current-1);
 });
 
 function goTo(n) {
   current = n;
   slider.style.transform = `translateX(-${n*100}%)`;
-  nav.setAttribute('data-active', n);
-  tabs.forEach((t, i) => t.classList.toggle('active', i === n));
-
-  // Trigger animasi slide aktif
-  const slides = document.querySelectorAll('.slide');
-  slides.forEach((s, i) => {
+  nav.setAttribute('data-a', n);
+  tabs.forEach((t,i) => t.classList.toggle('on', i===n));
+  document.querySelectorAll('.slide').forEach((s,i) => {
     s.classList.remove('in');
     if (i === n) setTimeout(() => s.classList.add('in'), 80);
   });
 }
-
 function triggerFirstSlide() {
   document.querySelectorAll('.slide')[0].classList.add('in');
 }
 
-// ══════════════════════════════
+// ══════════════════════════════════════
 // MUSIK
-// ══════════════════════════════
-const audio = document.getElementById('audio');
-const musicBtn = document.getElementById('musicBtn');
+// ══════════════════════════════════════
+const audio    = document.getElementById('audio');
+const musicBtn = document.getElementById('mBtn');
 let playing = false;
 
 function playMusic() {
   audio.play().then(() => {
     playing = true;
     musicBtn.textContent = '🎵';
-    musicBtn.classList.add('playing');
+    musicBtn.classList.add('spin');
   }).catch(() => {});
 }
-
 function toggleMusic() {
   if (playing) {
     audio.pause(); playing = false;
-    musicBtn.classList.remove('playing');
+    musicBtn.classList.remove('spin');
     musicBtn.textContent = '🔇';
-  } else {
-    playMusic();
-  }
+  } else { playMusic(); }
 }
 
-// ══════════════════════════════
+// ══════════════════════════════════════
 // RSVP
-// ══════════════════════════════
+// ══════════════════════════════════════
 let rsvpVal = '';
 function pickRsvp(el, val) {
-  document.querySelectorAll('.rsvp-opt').forEach(o => o.classList.remove('on'));
-  el.classList.add('on');
-  rsvpVal = val;
+  document.querySelectorAll('.ro').forEach(o => o.classList.remove('on'));
+  el.classList.add('on'); rsvpVal = val;
 }
-
-function submitRsvp() {
+async function submitRsvp() {
   const name = document.getElementById('rsvpName').value.trim();
-  const msg = document.getElementById('rsvpMsg').value.trim();
-  if (!name) { alert('Masukkan nama dulu ya 😊'); return; }
-  if (!rsvpVal) { alert('Pilih konfirmasi kehadiran dulu'); return; }
-
-  // TODO: POST ke Supabase
-  const statusIcon = rsvpVal === 'hadir' ? '✅ Hadir' : rsvpVal === 'tidak' ? '❌ Tidak Hadir' : '🤔 Mungkin';
+  const msg  = document.getElementById('rsvpMsg').value.trim();
+  if (!name) { alert('Masukkan nama dulu 😊'); return; }
+  if (!rsvpVal) { alert('Pilih kehadiran dulu'); return; }
+  if (undanganId) {
+    await sb.from('rsvp').insert({ undangan_id:undanganId, nama_tamu:name, status:rsvpVal, ucapan:msg||null });
+  }
+  const icon = rsvpVal==='hadir'?'✅ Hadir':rsvpVal==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin';
   const el = document.createElement('div');
-  el.className = 'ucapan-item';
-  el.innerHTML = `
-    <div class="ucapan-sender">${name}</div>
-    ${msg ? `<div class="ucapan-text">${msg}</div>` : ''}
-    <div class="ucapan-status">${statusIcon}</div>
-  `;
-  const container = document.getElementById('ucapanContainer');
-  container.insertBefore(el, container.firstChild);
-
-  document.getElementById('rsvpName').value = guestName;
-  document.getElementById('rsvpMsg').value = '';
-  document.querySelectorAll('.rsvp-opt').forEach(o => o.classList.remove('on'));
+  el.className = 'uc-item';
+  el.innerHTML = `<div class="uc-name">${name}</div>${msg?`<div class="uc-text">${msg}</div>`:''}<div class="uc-status">${icon}</div>`;
+  document.getElementById('ucapanContainer').insertBefore(el, document.getElementById('ucapanContainer').firstChild);
+  document.getElementById('rsvpName').value = guestName||'';
+  document.getElementById('rsvpMsg').value  = '';
+  document.querySelectorAll('.ro').forEach(o => o.classList.remove('on'));
   rsvpVal = '';
 }
 
-// ══════════════════════════════
+// ══════════════════════════════════════
 // COUNTDOWN
-// ══════════════════════════════
+// ══════════════════════════════════════
 function tick() {
-  const diff = new Date(DATA.tanggal) - Date.now();
+  if (!DATA?.tanggal_resepsi && !DATA?.tanggal_akad) return;
+  const target = DATA.tanggal_resepsi || DATA.tanggal_akad;
+  const diff   = new Date(target) - Date.now();
   if (diff <= 0) {
-    ['cdD','cdH','cdM','cdS'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('cdD').textContent = '🎉';
+    ['cdH','cdM','cdS'].forEach(id => document.getElementById(id).textContent = '00');
     return;
   }
   document.getElementById('cdD').textContent = Math.floor(diff/86400000);
@@ -1051,27 +1215,22 @@ function tick() {
   document.getElementById('cdM').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
   document.getElementById('cdS').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
 }
-setInterval(tick, 1000);
-tick();
 
-// Watermark — sembunyikan jika sudah bayar
+// ══════════════════════════════════════
+// WATERMARK — hilang jika sudah bayar
+// ══════════════════════════════════════
 async function cekPembayaran() {
   if (!undanganId) return;
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
   const { data } = await sb.from('pembayaran')
-    .select('status')
-    .eq('undangan_id', undanganId)
-    .eq('user_id', session.user.id)
-    .eq('status', 'sukses')
-    .single();
+    .select('status').eq('undangan_id', undanganId)
+    .eq('user_id', session.user.id).eq('status','sukses').single();
   if (data) {
     const wm = document.getElementById('watermark');
-    if (wm) wm.classList.add('hidden');
+    if (wm) wm.style.display = 'none';
   }
 }
-cekPembayaran();
-
 </script>
 </body>
 </html>
