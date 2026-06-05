@@ -635,7 +635,7 @@ async function simpanFoto() {
     const ext = file.name.split('.').pop();
     const filePath = `${undangan.user_id}/${undangan.slug}/${path}.${ext}`;
     const { error } = await sb.storage.from('foto-undangan').upload(filePath, file, { upsert: true });
-    if (error) { console.error(field, error.message); return; }
+    if (error) { console.error(field, error.message); alert('Upload ' + field + ' gagal: ' + error.message); return; }
     const { data } = sb.storage.from('foto-undangan').getPublicUrl(filePath);
     updates[field] = data.publicUrl;
   }
@@ -677,7 +677,8 @@ async function simpanFoto() {
   btn.disabled = false; btn.textContent = 'Simpan Semua →';
 
   if (Object.keys(updates).length === 0) {
-    alert('Pilih file dulu sebelum menyimpan.');
+    alert('Upload gagal. Pastikan:\n1. Bucket "foto-undangan" dan "musik" sudah dibuat di Supabase Storage\n2. Bucket diset Public\n3. File yang dipilih tidak kosong');
+    btn.disabled = false; btn.textContent = 'Simpan Semua →';
     return;
   }
 
