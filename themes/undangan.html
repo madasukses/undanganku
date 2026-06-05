@@ -537,6 +537,40 @@ textarea.input-field { resize:none; min-height:90px; }
 .ucapan-sender { font-size:13px; font-weight:600; color:var(--gold-pale); margin-bottom:4px; }
 .ucapan-text { font-size:13px; color:rgba(245,240,232,.6); line-height:1.5; }
 .ucapan-status { font-size:11px; color:var(--gold); margin-top:6px; }
+
+/* ══ WATERMARK ══ */
+#watermark {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  padding: 6px 14px;
+  white-space: nowrap;
+  transition: opacity .3s;
+}
+#watermark.hidden { display: none; }
+#watermark-text {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.55);
+}
+#watermark-link {
+  font-size: 11px;
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: .5px;
+}
 </style>
 </head>
 <body>
@@ -816,7 +850,13 @@ textarea.input-field { resize:none; min-height:90px; }
     </div>
 
   </nav>
-</div><!-- end app -->
+
+<!-- WATERMARK -->
+<div id="watermark">
+  <div id="watermark-text">Dibuat dengan</div>
+  <a id="watermark-link" href="https://devundanganku.vercel.app" target="_blank">Undanganku.id</a>
+</div>
+</div>
 
 <script>
 // ══════════════════════════════
@@ -985,6 +1025,25 @@ function tick() {
 }
 setInterval(tick, 1000);
 tick();
+
+// Watermark — sembunyikan jika sudah bayar
+async function cekPembayaran() {
+  if (!undanganId) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const { data } = await sb.from('pembayaran')
+    .select('status')
+    .eq('undangan_id', undanganId)
+    .eq('user_id', session.user.id)
+    .eq('status', 'sukses')
+    .single();
+  if (data) {
+    const wm = document.getElementById('watermark');
+    if (wm) wm.classList.add('hidden');
+  }
+}
+cekPembayaran();
+
 </script>
 </body>
 </html>
