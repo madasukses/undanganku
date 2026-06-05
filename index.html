@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Undanganku — Undangan Digital Pernikahan</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -600,50 +601,9 @@ footer {
   <div class="pricing-inner">
     <div class="sec-label">Pilihan Paket</div>
     <div class="sec-title">Investasi untuk <em>Kenangan Abadi</em></div>
-    <div class="plans">
-      <div class="plan reveal">
-        <div class="plan-name">Basic</div>
-        <div class="plan-price">79rb</div>
-        <div class="plan-period">per undangan · aktif 90 hari</div>
-        <div class="plan-rule"></div>
-        <ul class="plan-feats">
-          <li>RSVP & Ucapan Tamu</li>
-          <li>Countdown Hari H</li>
-          <li>Musik Autoplay</li>
-          <li>Blast WhatsApp Personal</li>
-          <li>6 Pilihan Tema Eksklusif</li>
-        </ul>
-        <a class="plan-btn" href="/login.html">Mulai dengan Basic</a>
-      </div>
-      <div class="plan featured reveal">
-        <div class="plan-tag">✦ Paling Diminati</div>
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">149rb</div>
-        <div class="plan-period">per undangan · aktif 180 hari</div>
-        <div class="plan-rule"></div>
-        <ul class="plan-feats">
-          <li>Semua fitur Basic</li>
-          <li>Galeri Foto & Video</li>
-          <li>Link Live Streaming</li>
-          <li>Custom Domain Sendiri</li>
-          <li>Prioritas Dukungan</li>
-        </ul>
-        <a class="plan-btn" href="/login.html">Pilih Premium</a>
-      </div>
-      <div class="plan reveal">
-        <div class="plan-name">Royal</div>
-        <div class="plan-price">249rb</div>
-        <div class="plan-period">per undangan · aktif 1 tahun</div>
-        <div class="plan-rule"></div>
-        <ul class="plan-feats">
-          <li>Semua fitur Premium</li>
-          <li>Amplop Digital Terintegrasi</li>
-          <li>Desain Eksklusif Pilihan</li>
-          <li>Dukungan Prioritas 24 Jam</li>
-          <li>Aktif Hingga 1 Tahun</li>
-        </ul>
-        <a class="plan-btn" href="/login.html">Pesan Royal</a>
-      </div>
+    <div class="plans" id="plansContainer">
+      <!-- Diisi dari Supabase -->
+      <div style="grid-column:span 3;text-align:center;color:rgba(255,255,255,.3);padding:40px;font-size:13px;letter-spacing:2px">Memuat paket...</div>
     </div>
   </div>
 </section>
@@ -651,9 +611,9 @@ footer {
 <!-- CTA -->
 <section class="cta">
   <div class="cta-inner">
-    <div class="cta-title reveal">Hari Istimewa Anda</div>
-    <p class="cta-sub reveal">Layak dirayakan dengan undangan yang tak terlupakan.</p>
-    <a class="btn-main reveal" href="/login.html" style="display:inline-block">Mulai Buat Undangan →</a>
+    <div class="cta-title reveal" id="ctaTitle">Hari Istimewa Anda</div>
+    <p class="cta-sub reveal" id="ctaSub">Layak dirayakan dengan undangan yang tak terlupakan.</p>
+    <a class="btn-main reveal" id="ctaBtn" href="/login.html" style="display:inline-block">Mulai Buat Undangan →</a>
     <div class="cta-note reveal">Masuk dengan Google · Gratis coba · Tanpa kartu kredit</div>
   </div>
 </section>
@@ -661,10 +621,61 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Undanganku</div>
-  <div class="footer-copy">© 2025 Undanganku.id — Undangan Digital Pernikahan Indonesia</div>
+  <div class="footer-copy" id="footerCopy">© 2025 Undanganku.id — Undangan Digital Pernikahan Indonesia</div>
 </footer>
 
 <script>
+const SURL = 'https://dwrxehnyjfzighzysosw.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cnhlaG55amZ6aWdoenlzb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwMjUsImV4cCI6MjA5NjIxMjAyNX0.lPPsnhRpyDcFhUvrbxJEMc7DAjlM-BMyICOVi9KPqWc';
+const sb = supabase.createClient(SURL, SKEY);
+
+(async () => {
+  // Load settings dari DB
+  try {
+    const {data: settings} = await sb.from('settings').select('key,value');
+    if (settings && settings.length) {
+      const s = {};
+      settings.forEach(r => s[r.key] = r.value);
+      if (s.cta_title) document.getElementById('ctaTitle').textContent = s.cta_title;
+      if (s.cta_sub)   document.getElementById('ctaSub').textContent   = s.cta_sub;
+      if (s.cta_btn)   { const el=document.getElementById('ctaBtn'); if(el){el.textContent=s.cta_btn;} }
+    }
+  } catch(e) {}
+
+  // Load paket dari DB
+  try {
+    const {data: pakets} = await sb.from('paket').select('*').eq('aktif', true).order('harga', {ascending: true});
+    if (pakets && pakets.length) {
+      document.getElementById('plansContainer').innerHTML = pakets.map((p, i) => {
+        const fitur = Array.isArray(p.fitur) ? p.fitur : JSON.parse(p.fitur || '[]');
+        const hargaRb = Math.round(p.harga / 1000);
+        const isFeatured = pakets.length > 1 && i === 1;
+        return `
+          <div class="plan${isFeatured ? ' featured' : ''} reveal">
+            ${isFeatured ? '<div class="plan-tag">✦ Paling Diminati</div>' : ''}
+            <div class="plan-name">${p.nama}</div>
+            <div class="plan-price">${hargaRb}rb</div>
+            <div class="plan-period">per undangan · aktif ${p.durasi_hari} hari</div>
+            <div class="plan-rule"></div>
+            ${p.deskripsi ? `<div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:14px;font-style:italic">${p.deskripsi}</div>` : ''}
+            <ul class="plan-feats">
+              ${fitur.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+            <a class="plan-btn" href="/login.html">Pilih ${p.nama}</a>
+          </div>`;
+      }).join('');
+      // Re-observe reveal elements
+      document.querySelectorAll('#plansContainer .reveal').forEach(el => observer.observe(el));
+    }
+  } catch(e) {
+    // Fallback statis jika DB tidak terjangkau
+    document.getElementById('plansContainer').innerHTML = `
+      <div class="plan reveal"><div class="plan-name">Basic</div><div class="plan-price">79rb</div><div class="plan-period">per undangan · aktif 90 hari</div><div class="plan-rule"></div><ul class="plan-feats"><li>RSVP & Ucapan</li><li>Countdown</li><li>Musik Autoplay</li><li>Blast WA</li></ul><a class="plan-btn" href="/login.html">Pilih Basic</a></div>
+      <div class="plan featured reveal"><div class="plan-tag">✦ Paling Diminati</div><div class="plan-name">Premium</div><div class="plan-price">149rb</div><div class="plan-period">per undangan · aktif 180 hari</div><div class="plan-rule"></div><ul class="plan-feats"><li>Semua Basic</li><li>Galeri Video</li><li>Custom Domain</li></ul><a class="plan-btn" href="/login.html">Pilih Premium</a></div>
+      <div class="plan reveal"><div class="plan-name">Royal</div><div class="plan-price">249rb</div><div class="plan-period">per undangan · aktif 1 tahun</div><div class="plan-rule"></div><ul class="plan-feats"><li>Semua Premium</li><li>Amplop Digital</li><li>Prioritas Support</li></ul><a class="plan-btn" href="/login.html">Pilih Royal</a></div>`;
+  }
+})();
+
 // Scroll reveal
 const observer = new IntersectionObserver(entries => {
   entries.forEach((e, i) => {
