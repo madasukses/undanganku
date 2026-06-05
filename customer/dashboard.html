@@ -605,6 +605,8 @@ function previewMusik(input) {
   audio.src = URL.createObjectURL(file);
   player.style.display = 'flex';
 }
+
+function previewGaleri(input) {
   const grid = document.getElementById('galeriGrid');
   Array.from(input.files).slice(0,10).forEach(file => {
     const reader = new FileReader();
@@ -632,9 +634,7 @@ async function simpanFoto() {
     const file = input.files[0];
     const ext = file.name.split('.').pop();
     const filePath = `${undangan.user_id}/${undangan.slug}/${path}.${ext}`;
-    const { error } = await sb.storage
-      .from('foto-undangan')
-      .upload(filePath, file, { upsert: true });
+    const { error } = await sb.storage.from('foto-undangan').upload(filePath, file, { upsert: true });
     if (error) { console.error(field, error.message); return; }
     const { data } = sb.storage.from('foto-undangan').getPublicUrl(filePath);
     updates[field] = data.publicUrl;
@@ -644,7 +644,7 @@ async function simpanFoto() {
   await uploadFile('uploadPria',   'foto_pria',   'pria');
   await uploadFile('uploadWanita', 'foto_wanita', 'wanita');
 
-  // Galeri — upload semua file dari input galeri
+  // Galeri
   const galeriInput = document.querySelector('#galeriGrid input[type=file]');
   if (galeriInput?.files.length > 0) {
     const urls = [];
@@ -652,9 +652,7 @@ async function simpanFoto() {
       const file = galeriInput.files[i];
       const ext = file.name.split('.').pop();
       const filePath = `${undangan.user_id}/${undangan.slug}/galeri_${i}.${ext}`;
-      const { error } = await sb.storage
-        .from('foto-undangan')
-        .upload(filePath, file, { upsert: true });
+      const { error } = await sb.storage.from('foto-undangan').upload(filePath, file, { upsert: true });
       if (!error) {
         const { data } = sb.storage.from('foto-undangan').getPublicUrl(filePath);
         urls.push(data.publicUrl);
@@ -667,7 +665,7 @@ async function simpanFoto() {
   const musikInput = document.querySelector('#uploadMusik input[type=file]');
   if (musikInput?.files[0]) {
     const file = musikInput.files[0];
-    const ext  = file.name.split('.').pop();
+    const ext = file.name.split('.').pop();
     const filePath = `${undangan.user_id}/${undangan.slug}/musik.${ext}`;
     const { error } = await sb.storage.from('musik').upload(filePath, file, { upsert: true });
     if (!error) {
@@ -675,19 +673,19 @@ async function simpanFoto() {
       updates.musik_url = data.publicUrl;
     }
   }
-    btn.disabled = false; btn.textContent = 'Simpan Foto →';
-    alert('Pilih foto dulu sebelum menyimpan.');
+
+  btn.disabled = false; btn.textContent = 'Simpan Semua →';
+
+  if (Object.keys(updates).length === 0) {
+    alert('Pilih file dulu sebelum menyimpan.');
     return;
   }
 
   const { error } = await sb.from('undangan').update(updates).eq('id', undangan.id);
-  btn.disabled = false; btn.textContent = 'Simpan Foto →';
-
   if (error) { alert('Gagal menyimpan: ' + error.message); return; }
 
-  // Update local
   Object.assign(undangan, updates);
-  alert('Foto berhasil disimpan! 🎉');
+  alert('Berhasil disimpan! 🎉');
 }
 
 // Tamu
