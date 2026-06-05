@@ -404,7 +404,9 @@ const sb = supabase.createClient(SURL, SKEY);
 const params    = new URLSearchParams(window.location.search);
 const guestName = params.get('tamu') || '';
 const temaParam = parseInt(params.get('tema')) || 0;
-const slug = window.location.pathname.replace(/^\/+/,'').split('/')[0] || params.get('slug') || '';
+// Slug: dari ?slug= param, atau dari path (misal /rezaninda)
+const pathSlug  = window.location.pathname.replace(/^\/+/,'').replace(/\.html$/,'').split('/').filter(s => s && s !== 'themes' && s !== 'undangan')[0] || '';
+const slug      = params.get('slug') || pathSlug || '';
 
 const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -517,7 +519,7 @@ function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
     return;
   }
 
-  if(slug && slug !== 'undangan'){
+  if(slug){
     const {data:und} = await sb.from('undangan').select('*').eq('slug',slug).single();
     if(und){
       DATA=und; undanganId=und.id;
