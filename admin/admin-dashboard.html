@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Undanganku</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gs:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+.sidebar.off{transform:translateX(-100%)}
+.sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
+.sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
+.sl-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.sl-badge{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(201,169,110,.15);color:var(--gold);border:1px solid rgba(201,169,110,.3)}
+.snav{flex:1;padding:14px 10px;overflow-y:auto}
+.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
+.si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
+.si:hover{background:var(--s2);color:var(--text)}.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
+.si .ic{font-size:17px;width:20px;text-align:center}
+.sfooter{padding:12px 10px;border-top:1px solid var(--b)}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8b5e2e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.uname{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;font-family:'Jost',sans-serif;padding:0 10px;height:28px;border-radius:8px;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150}
+.overlay.on{display:block}
+.main{margin-left:240px;min-height:100vh;transition:margin .3s}.main.full{margin-left:0}
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
+.ptitle{font-size:16px;font-weight:700;margin-left:12px}
+.content{padding:22px 18px;max-width:960px}
+.page{display:none}.page.on{display:block}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.scard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s}
+.scard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.scard::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 var(--r) 0 50px;opacity:.08}
+.scard.gold::after{background:var(--gold)}.scard.gr::after{background:var(--green)}.scard.bl::after{background:var(--blue)}.scard.rd::after{background:var(--red)}
+.sic{font-size:20px;margin-bottom:10px}.sval{font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}.slbl{font-size:12px;color:var(--muted)}
+.scard.gold .sval{color:var(--gold)}.scard.gr .sval{color:var(--green)}.scard.bl .sval{color:var(--blue)}.scard.rd .sval{color:var(--red)}
+
+/* TABLE */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st{font-size:15px;font-weight:700}
+.tbl{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:24px}
+.tbl-head{display:grid;padding:12px 16px;border-bottom:1px solid var(--b);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);gap:10px}
+.tbl-row{display:grid;padding:13px 16px;border-bottom:1px solid var(--b);align-items:center;gap:10px;transition:background .15s}
+.tbl-row:last-child{border:none}.tbl-row:hover{background:var(--s2)}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-gr{background:rgba(92,184,122,.15);color:var(--green)}
+.badge-gd{background:rgba(201,169,110,.15);color:var(--gold)}
+.badge-rd{background:rgba(224,92,92,.15);color:var(--red)}
+.badge-bl{background:rgba(91,155,213,.15);color:var(--blue)}
+
+/* ACTION BTNS */
+.act-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.act-btn:hover{border-color:var(--gold);color:var(--gold)}
+.act-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.act-btn.success{background:rgba(92,184,122,.15);border-color:rgba(92,184,122,.3);color:var(--green)}
+
+/* SEARCH */
+.search-bar{width:100%;padding:10px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:14px;-webkit-appearance:none}
+.search-bar:focus{border-color:var(--gold)}
+
+/* TABS */
+.pg-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.pg-tab{padding:8px 16px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s}
+.pg-tab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sb">
+  <div class="sl">
+    <div class="sl-logo">Undanganku</div>
+    <div class="sl-sub">Admin Panel</div>
+    <span class="sl-badge">Admin</span>
+  </div>
+  <nav class="snav">
+    <div class="snav-sec">Utama</div>
+    <a class="si on" href="#" onclick="showPage('home',this)"><span class="ic">📊</span>Dashboard</a>
+    <a class="si" href="#" onclick="showPage('undangan',this)"><span class="ic">📨</span>Semua Undangan</a>
+    <a class="si" href="#" onclick="showPage('user',this)"><span class="ic">👥</span>Semua User</a>
+    <a class="si" href="#" onclick="showPage('watermark',this)"><span class="ic">🔓</span>Kelola Watermark</a>
+    <div class="snav-sec">Keuangan</div>
+    <a class="si" href="#" onclick="showPage('transaksi',this)"><span class="ic">💳</span>Transaksi</a>
+    <a class="si" href="#" onclick="showPage('komisi',this)"><span class="ic">💸</span>Komisi Reseller</a>
+    <div class="snav-sec">Sistem</div>
+    <a class="si" href="#"><span class="ic">⚙️</span>Pengaturan</a>
+  </nav>
+  <div class="sfooter">
+    <div class="user-row">
+      <div class="avatar" id="avEl">A</div>
+      <div class="uname" id="unEl">Admin</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" onclick="closeSb()"></div>
+
+<div class="main" id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
+      <div class="ptitle" id="topTitle">Dashboard</div>
+    </div>
+    <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ HOME ══ -->
+    <div class="page on" id="page-home">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:22px">Overview <span style="color:var(--gold)">Undanganku.id</span></div>
+      <div class="sgrid">
+        <div class="scard gold"><div class="sic">👥</div><div class="sval" id="sUser">—</div><div class="slbl">Total User</div></div>
+        <div class="scard gr"><div class="sic">📨</div><div class="sval" id="sUndangan">—</div><div class="slbl">Total Undangan</div></div>
+        <div class="scard bl"><div class="sic">💰</div><div class="sval" id="sPendapatan">—</div><div class="slbl">Pendapatan Total</div></div>
+        <div class="scard rd"><div class="sic">🔓</div><div class="sval" id="sWatermark">—</div><div class="slbl">Watermark Aktif</div></div>
+      </div>
+
+      <div class="sh"><div class="st">Undangan Terbaru</div></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
+          <div>Pengantin</div><div>User</div><div>Status</div><div>Aksi</div>
+        </div>
+        <div id="recentUndangan"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ WATERMARK ══ -->
+    <div class="page" id="page-watermark">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Watermark</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Hapus watermark undangan secara manual. Watermark otomatis hilang setelah pembayaran sukses.</div>
+
+      <div class="pg-tabs">
+        <button class="pg-tab on" onclick="filterWM('semua',this)">Semua</button>
+        <button class="pg-tab" onclick="filterWM('draft',this)">🔒 Ada Watermark</button>
+        <button class="pg-tab" onclick="filterWM('aktif',this)">✅ Sudah Aktif</button>
+      </div>
+
+      <input class="search-bar" id="wmSearch" placeholder="🔍 Cari nama pengantin atau slug..." oninput="cariWM(this.value)">
+
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
+          <div>Pengantin</div><div>Slug</div><div>Status</div><div>Aksi</div>
+        </div>
+        <div id="wmList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ SEMUA UNDANGAN ══ -->
+    <div class="page" id="page-undangan">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">Undangan</span></div>
+      <input class="search-bar" id="undSearch" placeholder="🔍 Cari..." oninput="cariUnd(this.value)">
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto">
+          <div>Pengantin</div><div>Slug</div><div>Tema</div><div>Status</div><div>Aksi</div>
+        </div>
+        <div id="allUndangan"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ USER ══ -->
+    <div class="page" id="page-user">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">User</span></div>
+      <input class="search-bar" id="userSearch" placeholder="🔍 Cari nama atau email..." oninput="cariUser(this.value)">
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto">
+          <div>Nama</div><div>Email</div><div>Role</div><div>Aksi</div>
+        </div>
+        <div id="userList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TRANSAKSI ══ -->
+    <div class="page" id="page-transaksi">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Semua <span style="color:var(--gold)">Transaksi</span></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto">
+          <div>User</div><div>Paket</div><div>Nominal</div><div>Status</div>
+        </div>
+        <div id="txList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ KOMISI ══ -->
+    <div class="page" id="page-komisi">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:20px">Komisi <span style="color:var(--gold)">Reseller</span></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto">
+          <div>Reseller</div><div>Nominal</div><div>Status</div><div>Aksi</div>
+        </div>
+        <div id="komisiList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let user = null;
+let allUndanganData = [];
+let allUserData = [];
+let wmFilter = 'semua';
+
+(async () => {
+  user = await AUTH.requireAuth(['admin']);
+  if (!user) return;
+  const nama = user.nama || user.email.split('@')[0];
+  document.getElementById('avEl').textContent = nama[0].toUpperCase();
+  document.getElementById('unEl').textContent = nama;
+  await loadHome();
+})();
+
+async function loadHome() {
+  // Stats
+  const [
+    {count: cUser},
+    {count: cUnd},
+    {count: cWM},
+    {data: txData}
+  ] = await Promise.all([
+    sb.from('profiles').select('*',{count:'exact',head:true}),
+    sb.from('undangan').select('*',{count:'exact',head:true}),
+    sb.from('undangan').select('*',{count:'exact',head:true}).eq('status','draft'),
+    sb.from('pembayaran').select('nominal').eq('status','sukses')
+  ]);
+  document.getElementById('sUser').textContent = cUser || 0;
+  document.getElementById('sUndangan').textContent = cUnd || 0;
+  document.getElementById('sWatermark').textContent = cWM || 0;
+  const total = (txData||[]).reduce((s,t)=>s+t.nominal,0);
+  document.getElementById('sPendapatan').textContent = 'Rp ' + total.toLocaleString('id-ID');
+
+  // Recent undangan
+  const {data:und} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false}).limit(8);
+  allUndanganData = und || [];
+  renderRecentUnd(und||[]);
+}
+
+function renderRecentUnd(list) {
+  document.getElementById('recentUndangan').innerHTML = list.length
+    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+        <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.slug}</div></div>
+        <div style="font-size:12px;color:var(--muted)">${u.profiles?.nama||u.profiles?.email||'—'}</div>
+        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'Aktif':'Draft'}</span></div>
+        <div style="display:flex;gap:6px">
+          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
+          ${u.status==='draft'?`<button class="act-btn success" onclick="hapusWatermark('${u.id}')">🔓 Aktifkan</button>`:''}
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada undangan</div>';
+}
+
+// ══ WATERMARK ══
+async function loadWatermark() {
+  const {data} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
+  allUndanganData = data || [];
+  renderWM(data||[]);
+}
+
+function filterWM(f, el) {
+  wmFilter = f;
+  document.querySelectorAll('.pg-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  let list = allUndanganData;
+  if (f==='draft') list = list.filter(u=>u.status==='draft');
+  if (f==='aktif') list = list.filter(u=>u.status==='aktif');
+  renderWM(list);
+}
+
+function cariWM(q) {
+  let list = allUndanganData;
+  if (wmFilter==='draft') list = list.filter(u=>u.status==='draft');
+  if (wmFilter==='aktif') list = list.filter(u=>u.status==='aktif');
+  if (q) list = list.filter(u =>
+    (u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.panggilan_wanita||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.slug||'').toLowerCase().includes(q.toLowerCase())
+  );
+  renderWM(list);
+}
+
+function renderWM(list) {
+  document.getElementById('wmList').innerHTML = list.length
+    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+        <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
+        <div style="font-size:13px;color:var(--blue)">${u.slug}</div>
+        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'✅ Aktif':'🔒 Draft'}</span></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁 Lihat</a>
+          ${u.status==='draft'
+            ? `<button class="act-btn success" onclick="hapusWatermark('${u.id}','${u.slug}')">🔓 Hapus Watermark</button>`
+            : `<button class="act-btn danger" onclick="kembalikanWatermark('${u.id}','${u.slug}')">🔒 Pasang Watermark</button>`
+          }
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada data</div>';
+}
+
+async function hapusWatermark(id, slug) {
+  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus dan undangan menjadi Aktif.`)) return;
+  const { error } = await sb.from('undangan').update({
+    status: 'aktif',
+    expired_at: new Date(Date.now() + 365*24*60*60*1000).toISOString()
+  }).eq('id', id);
+  if (error) { alert('Gagal: ' + error.message); return; }
+  showToast('✅ Watermark dihapus! Undangan sekarang Aktif.');
+  await loadWatermark();
+  await loadHome();
+}
+
+async function kembalikanWatermark(id, slug) {
+  if (!confirm(`Pasang kembali watermark untuk "${slug}"?`)) return;
+  const { error } = await sb.from('undangan').update({ status: 'draft', expired_at: null }).eq('id', id);
+  if (error) { alert('Gagal: ' + error.message); return; }
+  showToast('🔒 Watermark dipasang kembali.');
+  await loadWatermark();
+}
+
+// ══ SEMUA UNDANGAN ══
+async function loadAllUndangan() {
+  const {data} = await sb.from('undangan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
+  allUndanganData = data || [];
+  renderAllUnd(data||[]);
+}
+
+function cariUnd(q) {
+  const list = q ? allUndanganData.filter(u =>
+    (u.panggilan_pria||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.slug||'').toLowerCase().includes(q.toLowerCase())
+  ) : allUndanganData;
+  renderAllUnd(list);
+}
+
+function renderAllUnd(list) {
+  document.getElementById('allUndangan').innerHTML = list.length
+    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+        <div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div>
+        <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
+        <div style="font-size:12px;color:var(--muted)">Tema ${u.tema}</div>
+        <div><span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status}</span></div>
+        <div style="display:flex;gap:6px">
+          <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁</a>
+          <button class="act-btn danger" onclick="hapusUndangan('${u.id}')">🗑</button>
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
+}
+
+async function hapusUndangan(id) {
+  if (!confirm('Hapus undangan ini permanen?')) return;
+  await sb.from('undangan').delete().eq('id', id);
+  showToast('🗑 Undangan dihapus');
+  await loadAllUndangan();
+}
+
+// ══ USER ══
+async function loadUsers() {
+  const {data} = await sb.from('profiles').select('*').order('created_at',{ascending:false});
+  allUserData = data || [];
+  renderUsers(data||[]);
+}
+
+function cariUser(q) {
+  const list = q ? allUserData.filter(u =>
+    (u.nama||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  ) : allUserData;
+  renderUsers(list);
+}
+
+function renderUsers(list) {
+  document.getElementById('userList').innerHTML = list.length
+    ? list.map(u => `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+        <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+        <div style="font-size:12px;color:var(--muted)">${u.email}</div>
+        <div><span class="badge ${u.role==='admin'?'badge-gd':u.role==='reseller'?'badge-bl':'badge-gr'}">${u.role}</span></div>
+        <div style="display:flex;gap:4px">
+          <select onchange="gantiRole('${u.id}',this.value)" style="padding:4px 8px;border-radius:7px;border:1px solid var(--b);background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer">
+            <option value="customer" ${u.role==='customer'?'selected':''}>Customer</option>
+            <option value="reseller" ${u.role==='reseller'?'selected':''}>Reseller</option>
+            <option value="admin"    ${u.role==='admin'   ?'selected':''}>Admin</option>
+          </select>
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
+}
+
+async function gantiRole(id, role) {
+  const {error} = await sb.from('profiles').update({role}).eq('id',id);
+  if (error) { alert('Gagal: '+error.message); return; }
+  showToast('✅ Role diubah ke ' + role);
+  await loadUsers();
+}
+
+// ══ TRANSAKSI ══
+async function loadTransaksi() {
+  const {data} = await sb.from('pembayaran').select('*, profiles(nama,email), paket(nama)').order('created_at',{ascending:false}).limit(50);
+  document.getElementById('txList').innerHTML = (data||[]).length
+    ? (data||[]).map(t => `<div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
+        <div><div style="font-size:14px;font-weight:600">${t.profiles?.nama||t.profiles?.email||'—'}</div><div style="font-size:11px;color:var(--muted)">${new Date(t.created_at).toLocaleDateString('id-ID')}</div></div>
+        <div style="font-size:12px;color:var(--muted)">${t.paket?.nama||'—'}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${t.nominal.toLocaleString('id-ID')}</div>
+        <div><span class="badge ${t.status==='sukses'?'badge-gr':t.status==='pending'?'badge-gd':'badge-rd'}">${t.status}</span></div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada transaksi</div>';
+}
+
+// ══ KOMISI ══
+async function loadKomisi() {
+  const {data} = await sb.from('penarikan').select('*, profiles(nama,email)').order('created_at',{ascending:false});
+  document.getElementById('komisiList').innerHTML = (data||[]).length
+    ? (data||[]).map(k => `<div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
+        <div><div style="font-size:14px;font-weight:600">${k.profiles?.nama||k.profiles?.email||'—'}</div><div style="font-size:11px;color:var(--muted)">${k.bank} ${k.no_rek} · a.n. ${k.atas_nama}</div></div>
+        <div style="font-size:13px;font-weight:600;color:var(--gold)">Rp ${k.nominal.toLocaleString('id-ID')}</div>
+        <div><span class="badge ${k.status==='selesai'?'badge-gr':k.status==='request'?'badge-gd':'badge-rd'}">${k.status}</span></div>
+        <div>
+          ${k.status==='request'?`<button class="act-btn success" onclick="prosesCair('${k.id}')">✅ Cairkan</button>`:''}
+        </div>
+      </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada request</div>';
+}
+
+async function prosesCair(id) {
+  if (!confirm('Tandai komisi ini sudah dicairkan?')) return;
+  await sb.from('penarikan').update({status:'selesai'}).eq('id',id);
+  showToast('✅ Komisi ditandai selesai');
+  await loadKomisi();
+}
+
+// ══ NAVIGATION ══
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+name).classList.add('on');
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
+  if (el) el.classList.add('on');
+  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller'};
+  document.getElementById('topTitle').textContent = titles[name]||name;
+  if (name==='watermark') loadWatermark();
+  if (name==='undangan') loadAllUndangan();
+  if (name==='user') loadUsers();
+  if (name==='transaksi') loadTransaksi();
+  if (name==='komisi') loadKomisi();
+  if (window.innerWidth<769) closeSb();
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function toggleSb(){
+  if(window.innerWidth<769){document.getElementById('sb').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}
+  else{document.getElementById('sb').classList.toggle('off');document.getElementById('main').classList.toggle('full');}
+}
+function closeSb(){document.getElementById('sb').classList.remove('on');document.getElementById('ov').classList.remove('on');}
+</script>
+</body>
+</html>
