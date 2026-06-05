@@ -530,11 +530,18 @@ function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
       const {data:rsvps} = await sb.from('rsvp').select('*').eq('undangan_id',und.id).order('created_at',{ascending:false}).limit(10);
       if(rsvps?.length) document.getElementById('ucList').innerHTML = rsvps.map(r=>`
         <div class="uc-item"><div class="uc-name">${r.nama_tamu}</div>${r.ucapan?`<div class="uc-text">${r.ucapan}</div>`:''}<div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div></div>`).join('');
-      // Cek bayar
-      const {data:{session}} = await sb.auth.getSession();
-      if(session){
-        const {data:bayar} = await sb.from('pembayaran').select('status').eq('undangan_id',und.id).eq('user_id',session.user.id).eq('status','sukses').single();
-        if(bayar) document.getElementById('wm').style.display='none';
+      // CEK WATERMARK — cek status undangan langsung (paling reliable)
+      if (und.status === 'aktif') {
+        document.getElementById('wm').style.display = 'none';
+      } else {
+        // Fallback: cek tabel pembayaran
+        try {
+          const {data:bayarList} = await sb.from('pembayaran')
+            .select('status').eq('undangan_id', und.id).eq('status','sukses');
+          if (bayarList && bayarList.length > 0) {
+            document.getElementById('wm').style.display = 'none';
+          }
+        } catch(e) {}
       }
       setInterval(tick,1000); tick();
       return;
