@@ -10,10 +10,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gsoft:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+[data-theme="light"]{--bg:#f5f0e8;--s:#fdfaf5;--s2:#ede6d6;--b:#ddd5c5;--gold:#8b5e2e;--gsoft:#6b4423;--text:#2c1f14;--muted:#8a7060;--green:#3d8a56;--red:#c0392b;--blue:#2980b9;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-/* sidebar */
-.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s,background .3s}
 .sidebar.off{transform:translateX(-100%)}
 .sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
 .sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
@@ -22,36 +22,29 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .snav{flex:1;padding:14px 10px;overflow-y:auto}
 .snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
 .si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
-.si:hover{background:var(--s2);color:var(--text)}
-.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
+.si:hover{background:var(--s2);color:var(--text)}.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
 .si .ic{font-size:17px;width:20px;text-align:center}
 .sfooter{padding:14px 10px;border-top:1px solid var(--b)}
 .user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer}
 .user-row:hover{background:var(--s2)}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8b5e2e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
-.uname{font-size:13px;font-weight:600}
-.uemail{font-size:11px;color:var(--muted);margin-top:1px}
-/* overlay */
+.uname{font-size:13px;font-weight:600}.uemail{font-size:11px;color:var(--muted);margin-top:1px}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;backdrop-filter:blur(2px)}
 .overlay.on{display:block}
-/* main */
-.main{margin-left:240px;min-height:100vh;transition:margin .3s}
-.main.full{margin-left:0}
-/* topbar */
-.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
-.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.main{margin-left:240px;min-height:100vh;transition:margin .3s}.main.full{margin-left:0}
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100;transition:background .3s}
+[data-theme="light"] .topbar{background:rgba(245,240,232,.92)}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:background .3s}
 .hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
 .ptitle{font-size:16px;font-weight:700;margin-left:12px}
-.notif{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;position:relative}
-.ndot{position:absolute;top:7px;right:8px;width:6px;height:6px;background:var(--gold);border-radius:50%;border:1.5px solid var(--bg)}
-/* content */
+.topbar-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .3s}
 .content{padding:22px 18px;max-width:900px}
-.greet-sub{font-size:12px;color:var(--muted);margin-bottom:3px;letter-spacing:.3px}
+.greet-sub{font-size:12px;color:var(--muted);margin-bottom:3px}
 .greet-main{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,6vw,30px);margin-bottom:24px}
 .greet-main span{color:var(--gold);font-style:italic}
-/* stats */
 .sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
-.scard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.scard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;transition:border-color .2s,transform .15s,background .3s;position:relative;overflow:hidden}
 .scard:hover{border-color:var(--gold);transform:translateY(-2px)}
 .scard::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 var(--r) 0 50px;opacity:.08}
 .scard.gold::after{background:var(--gold)}.scard.gr::after{background:var(--green)}.scard.bl::after{background:var(--blue)}.scard.rd::after{background:var(--red)}
@@ -59,46 +52,67 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .sval{font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}
 .scard.gold .sval{color:var(--gold)}.scard.gr .sval{color:var(--green)}.scard.bl .sval{color:var(--blue)}.scard.rd .sval{color:var(--red)}
 .slbl{font-size:12px;color:var(--muted)}
-/* sections */
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .st{font-size:15px;font-weight:700}
-.slink{font-size:12px;color:var(--gold);cursor:pointer;text-decoration:none}
-/* action grid */
 .agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
 .abtn{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text)}
 .abtn:hover{background:var(--s2);border-color:var(--gold)}
-.aic{font-size:20px}
-.albl{font-size:13px;font-weight:600}
-.adsc{font-size:11px;color:var(--muted);margin-top:2px}
-/* undangan card */
-.ucard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:14px}
-.ucard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.ucard-names{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gsoft)}
+.aic{font-size:20px}.albl{font-size:13px;font-weight:600}.adsc{font-size:11px;color:var(--muted);margin-top:2px}
+.ucard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:14px;transition:background .3s}
+.ucard-names{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gsoft);margin-bottom:6px}
 .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .badge-gr{background:rgba(92,184,122,.15);color:var(--green)}
 .badge-gd{background:rgba(201,169,110,.15);color:var(--gold)}
-.badge-rd{background:rgba(224,92,92,.15);color:var(--red)}
-.ucard-meta{font-size:12px;color:var(--muted);margin-bottom:14px}
-.ucard-link{font-size:12px;color:var(--blue);word-break:break-all;margin-bottom:14px}
+.ucard-meta{font-size:12px;color:var(--muted);margin-bottom:10px}
+.ucard-link{font-size:12px;color:var(--blue);margin-bottom:14px;word-break:break-all}
 .ucard-actions{display:flex;gap:8px;flex-wrap:wrap}
 .ua{padding:7px 14px;border-radius:8px;border:1px solid var(--b);background:var(--s2);font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;font-family:'Jost',sans-serif;text-decoration:none;display:inline-block}
 .ua:hover{border-color:var(--gold);color:var(--gold)}
-/* blast wa modal */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);padding:20px;align-items:flex-end}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
 .modal-bg.on{display:flex}
-.modal{background:var(--s);border:1px solid var(--b);border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding:24px}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:16px}
-.inp{width:100%;padding:12px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:10px;-webkit-appearance:none}
+.modal{background:var(--s);border:1px solid var(--b);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:28px 24px;transition:background .3s}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{cursor:pointer;color:var(--muted);font-size:22px;line-height:1}
+.form-section{margin-bottom:20px}
+.form-section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.full{grid-template-columns:1fr}
+.inp-wrap{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.inp-lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.inp{width:100%;padding:11px 13px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .3s;-webkit-appearance:none}
 .inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--muted)}
+select.inp{cursor:pointer}
+
+/* TEMA PICKER */
+.tema-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.tema-opt{border-radius:10px;aspect-ratio:3/4;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative;overflow:hidden}
+.tema-opt.selected{border-color:var(--gold)}
+.tema-opt span{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.7);text-transform:uppercase}
+.tc1{background:linear-gradient(160deg,#2a1d12,#3d2b1f)}
+.tc2{background:linear-gradient(160deg,#2d1a1a,#3d2424)}
+.tc3{background:linear-gradient(160deg,#111f18,#1a2e22)}
+.tc4{background:linear-gradient(160deg,#0d1421,#152035)}
+.tc5{background:linear-gradient(160deg,#f5f0e8,#ede6d6)}
+.tc6{background:linear-gradient(160deg,#1e1520,#2c1e30)}
+.tema-opt span{color:rgba(255,255,255,.6)}
+.tc5 span{color:rgba(44,48,32,.5)}
+
+.submit-btn{width:100%;padding:14px;border-radius:11px;background:var(--gold);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s;margin-top:8px}
+.submit-btn:hover{opacity:.85}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* BLAST MODAL */
 .tamu-list{max-height:200px;overflow-y:auto;margin-bottom:14px}
 .tamu-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)}
 .tamu-row:last-child{border:none}
-.tamu-info{flex:1}
-.tamu-nama{font-size:13px;font-weight:600}
-.tamu-wa{font-size:11px;color:var(--muted)}
+.tamu-info{flex:1}.tamu-nama{font-size:13px;font-weight:600}.tamu-wa{font-size:11px;color:var(--muted)}
 .wa-btn{padding:6px 12px;border-radius:8px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:11px;cursor:pointer;text-decoration:none;font-family:'Jost',sans-serif}
-.send-all{width:100%;padding:14px;border-radius:10px;background:var(--gold);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700}
-@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}.sgrid{grid-template-columns:repeat(2,1fr)}}
+
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}.sgrid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -112,7 +126,8 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
   <nav class="snav">
     <div class="snav-sec">Undangan</div>
     <a class="si on" href="#"><span class="ic">📊</span>Dashboard</a>
-    <a class="si" href="#" onclick="openBlast()"><span class="ic">✏️</span>Edit Undangan</a>
+    <a class="si" href="#" onclick="openBuat()"><span class="ic">➕</span>Buat Undangan</a>
+    <a class="si" href="#" onclick="openEdit()"><span class="ic">✏️</span>Edit Undangan</a>
     <a class="si" href="#"><span class="ic">🎨</span>Ganti Template</a>
     <a class="si" href="#"><span class="ic">📸</span>Upload Foto</a>
     <div class="snav-sec">Tamu</div>
@@ -122,7 +137,6 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
     <a class="si" href="#"><span class="ic">💌</span>Ucapan & Doa</a>
     <div class="snav-sec">Akun</div>
     <a class="si" href="#"><span class="ic">💳</span>Upgrade Paket</a>
-    <a class="si" href="#"><span class="ic">⚙️</span>Pengaturan</a>
     <a class="si" href="#" onclick="AUTH.logout()"><span class="ic">🚪</span>Logout</a>
   </nav>
   <div class="sfooter">
@@ -141,7 +155,9 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
       <div class="ptitle">Dashboard</div>
     </div>
-    <div class="notif">🔔<div class="ndot"></div></div>
+    <div class="topbar-right">
+      <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</div>
+    </div>
   </div>
 
   <div class="content">
@@ -149,15 +165,15 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
     <div class="greet-main">Halo, <span id="greetName">—</span>!</div>
 
     <div class="sgrid">
-      <div class="scard gold"><div class="sic">📨</div><div class="sval" id="statUndangan">—</div><div class="slbl">Undangan Aktif</div></div>
-      <div class="scard gr"><div class="sic">✅</div><div class="sval" id="statRsvp">—</div><div class="slbl">RSVP Masuk</div></div>
-      <div class="scard bl"><div class="sic">💌</div><div class="sval" id="statUcapan">—</div><div class="slbl">Ucapan</div></div>
+      <div class="scard gold"><div class="sic">📨</div><div class="sval" id="statUndangan">0</div><div class="slbl">Undangan Aktif</div></div>
+      <div class="scard gr"><div class="sic">✅</div><div class="sval" id="statRsvp">0</div><div class="slbl">RSVP Masuk</div></div>
+      <div class="scard bl"><div class="sic">💌</div><div class="sval" id="statUcapan">0</div><div class="slbl">Ucapan</div></div>
       <div class="scard rd"><div class="sic">📅</div><div class="sval" id="statHari">—</div><div class="slbl">Hari Lagi</div></div>
     </div>
 
     <div class="sh"><div class="st">Aksi Cepat</div></div>
     <div class="agrid">
-      <a class="abtn" href="#"><div class="aic">✏️</div><div><div class="albl">Edit Undangan</div><div class="adsc">Ubah konten & data</div></div></a>
+      <a class="abtn" href="#" onclick="openBuat()"><div class="aic">➕</div><div><div class="albl">Buat Undangan</div><div class="adsc">Mulai dari awal</div></div></a>
       <a class="abtn" href="#" id="previewBtn"><div class="aic">👁️</div><div><div class="albl">Preview</div><div class="adsc">Lihat tampilan live</div></div></a>
       <a class="abtn" href="#" onclick="copyLink()"><div class="aic">🔗</div><div><div class="albl">Salin Link</div><div class="adsc">Share ke tamu</div></div></a>
       <a class="abtn" href="#" onclick="openBlast()"><div class="aic">📱</div><div><div class="albl">Blast WhatsApp</div><div class="adsc">Kirim ke semua tamu</div></div></a>
@@ -170,18 +186,182 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
   </div>
 </div>
 
-<!-- Modal Blast WA -->
+<!-- MODAL BUAT UNDANGAN -->
+<div class="modal-bg" id="buatModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">💌 Buat Undangan Baru</div>
+      <div class="modal-close" onclick="closeBuat()">✕</div>
+    </div>
+
+    <!-- Slug -->
+    <div class="form-section">
+      <div class="form-section-title">Link Undangan</div>
+      <div class="inp-wrap">
+        <label class="inp-lbl">Nama URL (tanpa spasi)</label>
+        <input class="inp" id="fSlug" type="text" placeholder="contoh: rezaninda" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9]/g,'')">
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">undanganku.id/<span id="slugPreview" style="color:var(--gold)">rezaninda</span></div>
+      </div>
+    </div>
+
+    <!-- Pengantin Pria -->
+    <div class="form-section">
+      <div class="form-section-title">Pengantin Pria</div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Lengkap</label>
+          <input class="inp" id="fNamaPria" placeholder="Reza Firmansyah, S.T.">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Panggilan</label>
+          <input class="inp" id="fPanggilanPria" placeholder="Reza">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Ayah</label>
+          <input class="inp" id="fAyahPria" placeholder="H. Sulaiman">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Ibu</label>
+          <input class="inp" id="fIbuPria" placeholder="Hj. Fatimah">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Instagram</label>
+          <input class="inp" id="fIgPria" placeholder="@username">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">TikTok</label>
+          <input class="inp" id="fTtPria" placeholder="@username">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pengantin Wanita -->
+    <div class="form-section">
+      <div class="form-section-title">Pengantin Wanita</div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Lengkap</label>
+          <input class="inp" id="fNamaWanita" placeholder="Ninda Aulia, S.Pd.">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Panggilan</label>
+          <input class="inp" id="fPanggilanWanita" placeholder="Ninda">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Ayah</label>
+          <input class="inp" id="fAyahWanita" placeholder="Drs. Bambang">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Nama Ibu</label>
+          <input class="inp" id="fIbuWanita" placeholder="Sri Wahyuni">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Instagram</label>
+          <input class="inp" id="fIgWanita" placeholder="@username">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">TikTok</label>
+          <input class="inp" id="fTtWanita" placeholder="@username">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tanggal & Lokasi -->
+    <div class="form-section">
+      <div class="form-section-title">Akad Nikah</div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Tanggal & Jam</label>
+          <input class="inp" id="fTglAkad" type="datetime-local">
+        </div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Tanggal Hijriah</label>
+          <input class="inp" id="fHijri" placeholder="24 Dzulhijjah 1446 H">
+        </div>
+      </div>
+      <div class="inp-wrap form-row full">
+        <label class="inp-lbl">Lokasi Akad</label>
+        <input class="inp" id="fLokasiAkad" placeholder="Masjid Ar-Rahman, Jl. Merdeka No.12">
+      </div>
+      <div class="inp-wrap form-row full">
+        <label class="inp-lbl">Link Google Maps Akad</label>
+        <input class="inp" id="fMapsAkad" type="url" placeholder="https://maps.google.com/...">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Resepsi</div>
+      <div class="form-row">
+        <div class="inp-wrap">
+          <label class="inp-lbl">Tanggal & Jam</label>
+          <input class="inp" id="fTglResepsi" type="datetime-local">
+        </div>
+        <div class="inp-wrap" style="display:flex;gap:6px">
+          <div style="flex:1">
+            <label class="inp-lbl">Jam Mulai</label>
+            <input class="inp" id="fJamMulai" placeholder="10.00">
+          </div>
+          <div style="flex:1">
+            <label class="inp-lbl">Jam Selesai</label>
+            <input class="inp" id="fJamSelesai" placeholder="14.00">
+          </div>
+        </div>
+      </div>
+      <div class="inp-wrap form-row full">
+        <label class="inp-lbl">Lokasi Resepsi</label>
+        <input class="inp" id="fLokasiResepsi" placeholder="Gedung Graha Indah, Jl. Ahmad Yani No.45">
+      </div>
+      <div class="inp-wrap form-row full">
+        <label class="inp-lbl">Link Google Maps Resepsi</label>
+        <input class="inp" id="fMapsResepsi" type="url" placeholder="https://maps.google.com/...">
+      </div>
+    </div>
+
+    <!-- Tema -->
+    <div class="form-section">
+      <div class="form-section-title">Pilih Tema</div>
+      <div class="tema-grid">
+        <div class="tema-opt tc1 selected" onclick="pilihTema(1,this)"><span>Classic Gold</span></div>
+        <div class="tema-opt tc2" onclick="pilihTema(2,this)"><span>Rose Garden</span></div>
+        <div class="tema-opt tc3" onclick="pilihTema(3,this)"><span>Emerald</span></div>
+        <div class="tema-opt tc4" onclick="pilihTema(4,this)"><span>Midnight Blue</span></div>
+        <div class="tema-opt tc5" onclick="pilihTema(5,this)"><span>Cream Sage</span></div>
+        <div class="tema-opt tc6" onclick="pilihTema(6,this)"><span>Dusty Mauve</span></div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBuat" onclick="submitBuat()">Buat Undangan →</button>
+  </div>
+</div>
+
+<!-- MODAL BLAST WA -->
 <div class="modal-bg" id="blastModal">
-  <div class="modal" style="max-width:480px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
       <div class="modal-title">📱 Blast WhatsApp</div>
-      <div style="cursor:pointer;color:var(--muted);font-size:20px" onclick="closeBlast()">✕</div>
+      <div class="modal-close" onclick="closeBlast()">✕</div>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Klik "Kirim" per tamu, atau "Kirim Semua" untuk buka satu per satu</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Tambah tamu dulu, lalu kirim link personal.</div>
+
+    <!-- Tambah tamu -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input class="inp" id="tamuNama" placeholder="Nama tamu" style="flex:1">
+      <input class="inp" id="tamuWa" placeholder="08xx (opsional)" style="flex:1">
+      <button onclick="tambahTamu()" style="padding:0 14px;border-radius:10px;background:var(--gold);color:#fff;border:none;font-size:18px;cursor:pointer;flex-shrink:0">+</button>
+    </div>
+
     <div class="tamu-list" id="tamuList">
-      <!-- diisi JS -->
+      <div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Belum ada tamu</div>
     </div>
-    <button class="send-all" onclick="blastAll()">Kirim Semua via WhatsApp</button>
+    <button onclick="blastAll()" style="width:100%;padding:13px;border-radius:10px;background:#25d366;color:#fff;border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700">Kirim Semua via WA</button>
   </div>
 </div>
 
@@ -189,12 +369,29 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 let user = null;
 let undangan = null;
 let tamuData = [];
+let selectedTema = 1;
+let isDark = true;
+
+// Theme
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') {
+  isDark = false;
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.getElementById('themeBtn').textContent = '☀️';
+}
 
 (async () => {
   user = await AUTH.requireAuth(['customer']);
   if (!user) return;
 
-  // Isi nama
   const nama = user.nama || user.email.split('@')[0];
   document.getElementById('avEl').textContent = nama[0].toUpperCase();
   document.getElementById('unEl').textContent = nama;
@@ -204,102 +401,195 @@ let tamuData = [];
   document.getElementById('greetSub').textContent = (hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam') + ' 👋';
   document.getElementById('greetName').textContent = nama.split(' ')[0];
 
-  // Load undangan
-  const { data: und } = await sb.from('undangan').select('*').eq('user_id', user.id);
+  await loadUndangan();
+})();
+
+async function loadUndangan() {
+  const { data: und } = await sb.from('undangan').select('*').eq('user_id', user.id).order('created_at', {ascending: false});
+
   if (und && und.length > 0) {
     undangan = und[0];
     document.getElementById('statUndangan').textContent = und.length;
-    document.getElementById('previewBtn').href = '/' + undangan.slug;
+    document.getElementById('previewBtn').href = '/themes/undangan.html?slug=' + undangan.slug;
 
-    // Hitung hari
     if (undangan.tanggal_resepsi) {
       const diff = Math.ceil((new Date(undangan.tanggal_resepsi) - Date.now()) / 86400000);
       document.getElementById('statHari').textContent = diff > 0 ? diff : '🎉';
     }
 
-    // RSVP count
     const { count: rsvpCount } = await sb.from('rsvp').select('*', {count:'exact',head:true}).eq('undangan_id', undangan.id);
     document.getElementById('statRsvp').textContent = rsvpCount || 0;
     document.getElementById('statUcapan').textContent = rsvpCount || 0;
 
-    // Load tamu
     const { data: tamu } = await sb.from('tamu').select('*').eq('undangan_id', undangan.id);
     tamuData = tamu || [];
 
-    renderUndangan(undangan);
+    renderUndanganList(und);
   } else {
     document.getElementById('statUndangan').textContent = '0';
-    document.getElementById('statRsvp').textContent = '0';
-    document.getElementById('statUcapan').textContent = '0';
-    document.getElementById('statHari').textContent = '—';
     document.getElementById('undanganContainer').innerHTML = `
-      <div style="background:var(--s);border:1px dashed var(--b);border-radius:var(--r);padding:32px;text-align:center">
-        <div style="font-size:32px;margin-bottom:12px">💌</div>
+      <div style="background:var(--s);border:2px dashed var(--b);border-radius:var(--r);padding:40px 24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">💌</div>
         <div style="font-size:15px;font-weight:600;margin-bottom:6px">Belum ada undangan</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Buat undangan pertama Anda sekarang</div>
-        <a href="#" style="display:inline-block;padding:10px 24px;background:var(--gold);color:var(--bg);border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">+ Buat Undangan</a>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Buat undangan digital pertama Anda sekarang</div>
+        <button onclick="openBuat()" style="padding:11px 28px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px">+ Buat Undangan</button>
       </div>`;
   }
-})();
+}
 
-function renderUndangan(u) {
-  const slug = u.slug;
-  const link = `undanganku.id/${slug}`;
-  const expired = u.expired_at ? new Date(u.expired_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '—';
-  const status = u.status === 'aktif' ? '<span class="badge badge-gr">Aktif</span>' : u.status === 'draft' ? '<span class="badge badge-gd">Draft</span>' : '<span class="badge badge-rd">Expired</span>';
-
-  document.getElementById('undanganContainer').innerHTML = `
-    <div class="ucard">
-      <div class="ucard-top">
-        <div class="ucard-names">${u.panggilan_pria||'Pria'} & ${u.panggilan_wanita||'Wanita'}</div>
-        ${status}
+function renderUndanganList(list) {
+  document.getElementById('undanganContainer').innerHTML = list.map(u => {
+    const expired = u.expired_at ? new Date(u.expired_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : 'Belum aktif';
+    const statusBadge = u.status === 'aktif'
+      ? '<span class="badge badge-gr">Aktif</span>'
+      : '<span class="badge badge-gd">Draft</span>';
+    return `<div class="ucard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div class="ucard-names">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div>
+        ${statusBadge}
       </div>
-      <div class="ucard-meta">Tema ${u.tema} · Aktif hingga ${expired}</div>
-      <div class="ucard-link">🔗 ${link}</div>
+      <div class="ucard-meta">Tema ${u.tema} · ${expired}</div>
+      <div class="ucard-link">🔗 devundanganku.vercel.app/${u.slug}</div>
       <div class="ucard-actions">
-        <a class="ua" href="/${slug}" target="_blank">👁️ Preview</a>
-        <a class="ua" href="#" onclick="copyLink()">🔗 Salin Link</a>
+        <a class="ua" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁️ Preview</a>
+        <a class="ua" href="#" onclick="copyLink('${u.slug}')">🔗 Salin</a>
         <a class="ua" href="#" onclick="openBlast()">📱 Blast WA</a>
-        <a class="ua" href="#">✏️ Edit</a>
+        <a class="ua" href="#" onclick="openEdit()">✏️ Edit</a>
       </div>
     </div>`;
+  }).join('');
 }
 
-function copyLink() {
-  if (!undangan) return;
-  navigator.clipboard.writeText(`https://undanganku.id/${undangan.slug}`);
-  alert('Link disalin! 🔗');
+// Slug preview
+document.getElementById('fSlug').addEventListener('input', function() {
+  document.getElementById('slugPreview').textContent = this.value || 'namapasangan';
+});
+
+// Tema
+function pilihTema(n, el) {
+  selectedTema = n;
+  document.querySelectorAll('.tema-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
-function openBlast() {
-  if (!undangan) { alert('Buat undangan dulu ya'); return; }
+// Buat undangan
+async function submitBuat() {
+  const slug = document.getElementById('fSlug').value.trim();
+  if (!slug) { alert('Isi nama URL dulu'); return; }
+
+  const btn = document.getElementById('submitBuat');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  // Cek slug sudah dipakai
+  const { data: existing } = await sb.from('undangan').select('id').eq('slug', slug).single();
+  if (existing) {
+    alert('URL "' + slug + '" sudah dipakai. Coba nama lain.');
+    btn.disabled = false; btn.textContent = 'Buat Undangan →';
+    return;
+  }
+
+  const payload = {
+    user_id:           user.id,
+    slug,
+    tema:              selectedTema,
+    status:            'draft',
+    nama_pria:         document.getElementById('fNamaPria').value.trim(),
+    panggilan_pria:    document.getElementById('fPanggilanPria').value.trim(),
+    ayah_pria:         document.getElementById('fAyahPria').value.trim(),
+    ibu_pria:          document.getElementById('fIbuPria').value.trim(),
+    ig_pria:           document.getElementById('fIgPria').value.trim(),
+    tiktok_pria:       document.getElementById('fTtPria').value.trim(),
+    nama_wanita:       document.getElementById('fNamaWanita').value.trim(),
+    panggilan_wanita:  document.getElementById('fPanggilanWanita').value.trim(),
+    ayah_wanita:       document.getElementById('fAyahWanita').value.trim(),
+    ibu_wanita:        document.getElementById('fIbuWanita').value.trim(),
+    ig_wanita:         document.getElementById('fIgWanita').value.trim(),
+    tiktok_wanita:     document.getElementById('fTtWanita').value.trim(),
+    tanggal_akad:      document.getElementById('fTglAkad').value || null,
+    tanggal_hijri:     document.getElementById('fHijri').value.trim(),
+    lokasi_akad:       document.getElementById('fLokasiAkad').value.trim(),
+    maps_akad:         document.getElementById('fMapsAkad').value.trim(),
+    tanggal_resepsi:   document.getElementById('fTglResepsi').value || null,
+    jam_resepsi_mulai: document.getElementById('fJamMulai').value.trim(),
+    jam_resepsi_selesai: document.getElementById('fJamSelesai').value.trim(),
+    lokasi_resepsi:    document.getElementById('fLokasiResepsi').value.trim(),
+    maps_resepsi:      document.getElementById('fMapsResepsi').value.trim(),
+  };
+
+  const { error } = await sb.from('undangan').insert(payload);
+
+  if (error) {
+    alert('Gagal: ' + error.message);
+    btn.disabled = false; btn.textContent = 'Buat Undangan →';
+    return;
+  }
+
+  closeBuat();
+  await loadUndangan();
+  alert('Undangan berhasil dibuat! 🎉\nStatus masih Draft. Lakukan pembayaran untuk mengaktifkan.');
+}
+
+// Tambah tamu
+async function tambahTamu() {
+  const nama = document.getElementById('tamuNama').value.trim();
+  const wa   = document.getElementById('tamuWa').value.trim();
+  if (!nama) { alert('Isi nama tamu'); return; }
+  if (!undangan) { alert('Buat undangan dulu'); return; }
+
+  const { data, error } = await sb.from('tamu').insert({ undangan_id: undangan.id, nama, no_wa: wa||null }).select().single();
+  if (!error && data) {
+    tamuData.push(data);
+    document.getElementById('tamuNama').value = '';
+    document.getElementById('tamuWa').value = '';
+    renderTamuList();
+  }
+}
+
+function renderTamuList() {
   const list = document.getElementById('tamuList');
   if (tamuData.length === 0) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Belum ada tamu. Tambah tamu dulu.</div>';
-  } else {
-    list.innerHTML = tamuData.map(t => {
-      const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\n\nKami mengundang Anda ke pernikahan kami.\n\n🔗 https://undanganku.id/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
-      const wa = t.no_wa ? `https://wa.me/62${t.no_wa.replace(/^0/,'')}?text=${link}` : `https://wa.me/?text=${link}`;
-      return `<div class="tamu-row">
-        <div class="tamu-info"><div class="tamu-nama">${t.nama}</div><div class="tamu-wa">${t.no_wa||'No WA belum diisi'}</div></div>
-        <a class="wa-btn" href="${wa}" target="_blank">Kirim</a>
-      </div>`;
-    }).join('');
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Belum ada tamu</div>';
+    return;
   }
-  document.getElementById('blastModal').classList.add('on');
+  list.innerHTML = tamuData.map(t => {
+    const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\nKami mengundang Anda ke pernikahan kami.\n\n🔗 https://devundanganku.vercel.app/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
+    const wa = t.no_wa ? `https://wa.me/62${t.no_wa.replace(/^0/,'')}?text=${link}` : `https://wa.me/?text=${link}`;
+    return `<div class="tamu-row">
+      <div class="tamu-info"><div class="tamu-nama">${t.nama}</div><div class="tamu-wa">${t.no_wa||'—'}</div></div>
+      <a class="wa-btn" href="${wa}" target="_blank">Kirim</a>
+    </div>`;
+  }).join('');
 }
 
-function closeBlast() { document.getElementById('blastModal').classList.remove('on'); }
-
 function blastAll() {
+  if (!undangan || tamuData.length === 0) { alert('Tambah tamu dulu'); return; }
   tamuData.forEach((t, i) => {
     setTimeout(() => {
-      const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\nKami mengundang Anda ke pernikahan kami.\n🔗 https://undanganku.id/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
+      const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\nKami mengundang Anda.\n\n🔗 https://devundanganku.vercel.app/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
       const wa = t.no_wa ? `https://wa.me/62${t.no_wa.replace(/^0/,'')}?text=${link}` : `https://wa.me/?text=${link}`;
       window.open(wa, '_blank');
     }, i * 800);
   });
 }
+
+function copyLink(slug) {
+  const s = slug || undangan?.slug;
+  if (!s) return;
+  navigator.clipboard.writeText(`https://devundanganku.vercel.app/${s}`);
+  alert('Link disalin! 🔗');
+}
+
+// Modal controls
+function openBuat()  { document.getElementById('buatModal').classList.add('on'); }
+function closeBuat() { document.getElementById('buatModal').classList.remove('on'); }
+function openBlast() {
+  if (!undangan) { alert('Buat undangan dulu'); return; }
+  renderTamuList();
+  document.getElementById('blastModal').classList.add('on');
+}
+function closeBlast(){ document.getElementById('blastModal').classList.remove('on'); }
+function openEdit()  { if (undangan) openBuat(); }
 
 // Sidebar
 function toggleSb() {
