@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilih Template — Undanganku</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gs:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--r:14px}
+[data-theme=light]{--bg:#f5f0e8;--s:#fdfaf5;--s2:#ede6d6;--b:#ddd5c5;--gold:#8b5e2e;--gs:#6b4423;--text:#2c1f14;--muted:#8a7060;--green:#3d8a56}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+.sidebar.off{transform:translateX(-100%)}
+.sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
+.sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
+.sl-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.snav{flex:1;padding:14px 10px;overflow-y:auto}
+.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
+.si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
+.si:hover{background:var(--s2);color:var(--text)}.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
+.si .ic{font-size:17px;width:20px;text-align:center}
+.sfooter{padding:12px 10px;border-top:1px solid var(--b)}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8b5e2e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.uname{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;transition:all .2s;font-family:'Jost',sans-serif;padding:0 10px;height:28px;border-radius:8px}
+.logout-btn:hover{border-color:red;color:red}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150}
+.overlay.on{display:block}
+.main{margin-left:240px;min-height:100vh;transition:margin .3s}
+.main.full{margin-left:0}
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+[data-theme=light] .topbar{background:rgba(245,240,232,.92)}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
+.ptitle{font-size:16px;font-weight:700;margin-left:12px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.icon-btn:hover{border-color:var(--gold)}
+
+/* CONTENT */
+.content{padding:22px 18px;max-width:960px}
+.page-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(24px,6vw,34px);margin-bottom:6px}
+.page-title span{color:var(--gold)}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+/* KATEGORI TABS */
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.cat-tab{padding:8px 18px;border-radius:30px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.cat-tab:hover{border-color:var(--gold);color:var(--text)}
+.cat-tab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700}
+
+/* TEMPLATE GRID */
+.tmpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+@media(max-width:600px){.tmpl-grid{grid-template-columns:repeat(2,1fr)}}
+
+.tmpl-card{border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .3s;position:relative;background:var(--s)}
+.tmpl-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.tmpl-card.active{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,169,110,.15)}
+
+.tmpl-preview{aspect-ratio:9/16;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+/* Tema warna */
+.tp1{background:linear-gradient(160deg,#2a1d12,#3d2b1f)}
+.tp2{background:linear-gradient(160deg,#2d1a1a,#3d2424)}
+.tp3{background:linear-gradient(160deg,#111f18,#1a2e22)}
+.tp4{background:linear-gradient(160deg,#0d1421,#152035)}
+.tp5{background:linear-gradient(160deg,#f5f0e8,#ede6d6)}
+.tp6{background:linear-gradient(160deg,#1e1520,#2c1e30)}
+.tp7{background:linear-gradient(160deg,#1a1208,#2e2010)}
+.tp8{background:linear-gradient(160deg,#0e1a14,#162a1e)}
+.tp9{background:linear-gradient(160deg,#1a0e1a,#2a1530)}
+
+.tmpl-ornament{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px}
+.tmpl-symbol{font-size:clamp(20px,5vw,28px);opacity:.6}
+.tmpl-names{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(14px,3.5vw,18px);color:rgba(255,255,255,.8);text-align:center;line-height:1.2}
+.tp5 .tmpl-names{color:rgba(44,48,32,.6)}
+.tmpl-line{width:40px;height:1px;background:rgba(255,255,255,.25)}
+.tp5 .tmpl-line{background:rgba(0,0,0,.15)}
+.tmpl-date{font-size:clamp(8px,2vw,10px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.tp5 .tmpl-date{color:rgba(0,0,0,.3)}
+
+/* Active badge */
+.tmpl-active-badge{position:absolute;top:8px;right:8px;background:var(--gold);color:var(--bg);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px}
+
+.tmpl-info{padding:12px 14px;border-top:1px solid var(--b)}
+.tmpl-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.tmpl-cat{font-size:11px;color:var(--muted)}
+
+.tmpl-actions{display:flex;gap:6px;padding:0 14px 12px}
+.tmpl-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;display:block}
+.tmpl-btn:hover{border-color:var(--gold);color:var(--gold)}
+.tmpl-btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
+.tmpl-btn.primary:hover{opacity:.85}
+
+/* Notif toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sb">
+  <div class="sl">
+    <div class="sl-logo">Undanganku</div>
+    <div class="sl-sub">Digital Invitation</div>
+  </div>
+  <nav class="snav">
+    <div class="snav-sec">Menu</div>
+    <a class="si" href="/customer/dashboard.html"><span class="ic">📊</span>Dashboard</a>
+    <a class="si" href="/customer/dashboard.html"><span class="ic">➕</span>Buat Undangan</a>
+    <a class="si on" href="#"><span class="ic">🎨</span>Template</a>
+    <a class="si" href="/customer/dashboard.html"><span class="ic">📋</span>Daftar Undangan</a>
+    <a class="si" href="/customer/dashboard.html"><span class="ic">✅</span>RSVP Masuk</a>
+    <a class="si" href="/customer/dashboard.html"><span class="ic">💌</span>Ucapan & Doa</a>
+    <div class="snav-sec">Akun</div>
+    <a class="si" href="#"><span class="ic">💳</span>Upgrade Paket</a>
+  </nav>
+  <div class="sfooter">
+    <div class="user-row">
+      <div class="avatar" id="avEl">?</div>
+      <div class="uname" id="unEl">—</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" onclick="closeSb()"></div>
+
+<div class="main" id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
+      <div class="ptitle">Pilih Template</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">Pilih <span>Template</span></div>
+    <div class="page-sub">Pilih desain undangan yang sesuai dengan tema pernikahan Anda. Klik "Pakai" untuk menggunakan template.</div>
+
+    <!-- Kategori tabs -->
+    <div class="cat-tabs">
+      <button class="cat-tab on" onclick="filterKat('semua',this)">✨ Semua</button>
+      <button class="cat-tab" onclick="filterKat('modern',this)">🌙 Modern</button>
+      <button class="cat-tab" onclick="filterKat('adat',this)">🏺 Adat</button>
+      <button class="cat-tab" onclick="filterKat('minimalis',this)">⬜ Minimalis</button>
+      <button class="cat-tab" onclick="filterKat('islami',this)">☪️ Islami</button>
+      <button class="cat-tab" onclick="filterKat('garden',this)">🌿 Garden</button>
+    </div>
+
+    <!-- Template grid -->
+    <div class="tmpl-grid" id="tmplGrid"></div>
+  </div>
+</div>
+
+<div id="toast">✅ Template berhasil diubah!</div>
+
+<script>
+// ── TEMPLATES DATA ──
+const TEMPLATES = [
+  {id:1, nama:'Classic Gold',    kat:'modern',    cls:'tp1', simbol:'✦', acc:'#b8935a'},
+  {id:2, nama:'Rose Garden',     kat:'garden',    cls:'tp2', simbol:'❀', acc:'#d48080'},
+  {id:3, nama:'Emerald Forest',  kat:'garden',    cls:'tp3', simbol:'◈', acc:'#64b482'},
+  {id:4, nama:'Midnight Blue',   kat:'modern',    cls:'tp4', simbol:'◆', acc:'#6490d4'},
+  {id:5, nama:'Cream Sage',      kat:'minimalis', cls:'tp5', simbol:'❧', acc:'#7a8c64'},
+  {id:6, nama:'Dusty Mauve',     kat:'modern',    cls:'tp6', simbol:'✿', acc:'#b48cc0'},
+  {id:7, nama:'Batik Gold',      kat:'adat',      cls:'tp7', simbol:'⬡', acc:'#c4922a'},
+  {id:8, nama:'Hijau Daun',      kat:'islami',    cls:'tp8', simbol:'☪', acc:'#4aab6d'},
+  {id:9, nama:'Lavender Dream',  kat:'minimalis', cls:'tp9', simbol:'◎', acc:'#9b7fc8'},
+];
+
+let user = null, undangan = null, activeKat = 'semua';
+let currentTema = 1;
+let isDark = localStorage.getItem('theme') !== 'light';
+
+if (!isDark) { document.documentElement.setAttribute('data-theme','light'); document.getElementById('themeBtn').textContent='☀️'; }
+function toggleTheme(){ isDark=!isDark; document.documentElement.setAttribute('data-theme',isDark?'':'light'); document.getElementById('themeBtn').textContent=isDark?'🌙':'☀️'; localStorage.setItem('theme',isDark?'dark':'light'); }
+
+(async () => {
+  user = await AUTH.requireAuth(['customer']);
+  if (!user) return;
+  const nama = user.nama || user.email.split('@')[0];
+  document.getElementById('avEl').textContent = nama[0].toUpperCase();
+  document.getElementById('unEl').textContent = nama;
+
+  // Ambil undangan aktif
+  const { data: und } = await sb.from('undangan').select('id,tema,slug,panggilan_pria,panggilan_wanita,tanggal_resepsi').eq('user_id', user.id).order('created_at',{ascending:false}).limit(1).single();
+  if (und) { undangan = und; currentTema = und.tema || 1; }
+
+  renderGrid('semua');
+})();
+
+function filterKat(kat, el) {
+  activeKat = kat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  renderGrid(kat);
+}
+
+function renderGrid(kat) {
+  const list = kat === 'semua' ? TEMPLATES : TEMPLATES.filter(t => t.kat === kat);
+  const pp = undangan?.panggilan_pria || 'Reza';
+  const pw = undangan?.panggilan_wanita || 'Ninda';
+  const tgl = undangan?.tanggal_resepsi ? new Date(undangan.tanggal_resepsi).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '21 Desember 2025';
+
+  document.getElementById('tmplGrid').innerHTML = list.map(t => {
+    const isActive = t.id === currentTema;
+    return `
+    <div class="tmpl-card${isActive?' active':''}" id="card-${t.id}">
+      <div class="tmpl-preview ${t.cls}">
+        <div class="tmpl-ornament">
+          <div class="tmpl-symbol" style="color:${t.acc}">${t.simbol}</div>
+          <div class="tmpl-line"></div>
+          <div class="tmpl-names">${pp}<br>&<br>${pw}</div>
+          <div class="tmpl-line"></div>
+          <div class="tmpl-date">${tgl}</div>
+        </div>
+        ${isActive ? '<div class="tmpl-active-badge">✓ Aktif</div>' : ''}
+      </div>
+      <div class="tmpl-info">
+        <div class="tmpl-name">${t.nama}</div>
+        <div class="tmpl-cat">${katLabel(t.kat)}</div>
+      </div>
+      <div class="tmpl-actions">
+        <a class="tmpl-btn" href="/themes/undangan.html?tema=${t.id}" target="_blank">👁 Preview</a>
+        <button class="tmpl-btn primary" onclick="pakaiTemplate(${t.id})" ${isActive?'disabled style="opacity:.5;cursor:default"':''}>
+          ${isActive ? '✓ Dipakai' : 'Pakai'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function katLabel(k){ return {modern:'Modern',adat:'Adat',minimalis:'Minimalis',islami:'Islami',garden:'Garden'}[k]||k; }
+
+async function pakaiTemplate(id) {
+  if (!undangan) { alert('Buat undangan dulu di dashboard'); return; }
+  const { error } = await sb.from('undangan').update({ tema: id }).eq('id', undangan.id);
+  if (error) { alert('Gagal: ' + error.message); return; }
+  currentTema = id;
+  renderGrid(activeKat);
+  showToast('✅ Template ' + (TEMPLATES.find(t=>t.id===id)?.nama||'') + ' berhasil dipakai!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function toggleSb() {
+  if (window.innerWidth < 769) { document.getElementById('sb').classList.toggle('on'); document.getElementById('ov').classList.toggle('on'); }
+  else { document.getElementById('sb').classList.toggle('off'); document.getElementById('main').classList.toggle('full'); }
+}
+function closeSb() { document.getElementById('sb').classList.remove('on'); document.getElementById('ov').classList.remove('on'); }
+</script>
+</body>
+</html>

@@ -162,6 +162,22 @@ select.inp{cursor:pointer}
 .submit-btn{padding:14px 32px;border-radius:11px;background:var(--gold);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s}
 .submit-btn:hover{opacity:.85}.submit-btn:disabled{opacity:.5;cursor:not-allowed}
 .submit-btn.full{width:100%}
+.mtab{flex:1;padding:8px 6px;border-radius:8px;border:none;background:transparent;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s}
+.mtab.on{background:var(--s);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.musik-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--b);cursor:pointer;transition:background .15s}
+.musik-item:last-child{border:none}
+.musik-item:hover{background:var(--s2)}
+.musik-item.playing{background:rgba(201,169,110,.08)}
+.musik-play-btn{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;transition:all .2s}
+.musik-play-btn:hover{background:var(--gold);border-color:var(--gold)}
+.musik-item.playing .musik-play-btn{background:var(--gold);border-color:var(--gold)}
+.musik-info{flex:1;min-width:0}
+.musik-nama{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.musik-artist{font-size:11px;color:var(--muted);margin-top:1px}
+.musik-dur{font-size:11px;color:var(--muted);flex-shrink:0}
+.musik-pilih-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;flex-shrink:0}
+.musik-pilih-btn:hover{border-color:var(--gold);color:var(--gold)}
+.musik-pilih-btn.on{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
 
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}
@@ -184,6 +200,7 @@ select.inp{cursor:pointer}
     <div class="snav-sec">Menu</div>
     <a class="si on"  href="#" onclick="showPage('home',this)"><span class="ic">📊</span>Dashboard</a>
     <a class="si"     href="#" onclick="showPage('buat',this)"><span class="ic">➕</span>Buat Undangan</a>
+    <a class="si"     href="/customer/template.html"><span class="ic">🎨</span>Template</a>
     <a class="si"     href="#" onclick="showPage('daftar',this)"><span class="ic">📋</span>Daftar Undangan</a>
     <a class="si"     href="#" onclick="showPage('rsvp',this)"><span class="ic">✅</span>RSVP Masuk</a>
     <a class="si"     href="#" onclick="showPage('ucapan',this)"><span class="ic">💌</span>Ucapan & Doa</a>
@@ -664,9 +681,11 @@ async function submitBuat() {
 
   const { error } = await sb.from('undangan').insert({
     user_id: user.id, slug, tema: selectedTema, status: 'draft',
-    musik_url: (document.getElementById('musikTabLink')?.style.display !== 'none' && document.getElementById('fMusikLink')?.value.trim())
-      ? document.getElementById('fMusikLink').value.trim()
-      : null,
+    musik_url: (() => {
+      if (aktivTab === 1 && selectedMusikUrl) return selectedMusikUrl;
+      if (aktivTab === 2 && document.getElementById('fMusikLink')?.value.trim()) return document.getElementById('fMusikLink').value.trim();
+      return null;
+    })(),
     nama_pria:         document.getElementById('fNamaPria').value.trim(),
     panggilan_pria:    document.getElementById('fPangPria').value.trim(),
     ayah_pria:         document.getElementById('fAyahPria').value.trim(),
@@ -722,17 +741,106 @@ function previewFoto(input, previewId, areaId) {
 }
 
 
-function switchMusikTab(tab) {
-  const isUpload = tab === 'upload';
-  document.getElementById('musikTabUpload').style.display = isUpload ? 'block' : 'none';
-  document.getElementById('musikTabLink').style.display   = isUpload ? 'none' : 'block';
-  document.getElementById('tabUpload').style.background   = isUpload ? 'var(--gold)' : 'transparent';
-  document.getElementById('tabUpload').style.color        = isUpload ? '#fff' : 'var(--muted)';
-  document.getElementById('tabUpload').style.borderColor  = isUpload ? 'var(--gold)' : 'var(--b)';
-  document.getElementById('tabLink').style.background     = isUpload ? 'transparent' : 'var(--gold)';
-  document.getElementById('tabLink').style.color          = isUpload ? 'var(--muted)' : '#fff';
-  document.getElementById('tabLink').style.borderColor    = isUpload ? 'var(--b)' : 'var(--gold)';
+// ══ MUSIK TABS ══
+const LAGU_LIST = [
+  // Nasyid
+  {id:1,  nama:'Deen Assalam',          artist:'Sabyan',         dur:'4:12', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', kat:'nasyid'},
+  {id:2,  nama:'Sholawat Badar',        artist:'Hadad Alwi',     dur:'3:45', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', kat:'nasyid'},
+  {id:3,  nama:'Ramadhan Tiba',         artist:'Opick',          dur:'4:02', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', kat:'nasyid'},
+  {id:4,  nama:'Ya Maulana',            artist:'Raihan',         dur:'3:58', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', kat:'nasyid'},
+  {id:5,  nama:'Insya Allah',           artist:'Maher Zain',     dur:'4:30', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', kat:'nasyid'},
+  // Instrumental Romantis
+  {id:6,  nama:'A Thousand Years',      artist:'Instrumental',   dur:'4:46', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', kat:'instrumental'},
+  {id:7,  nama:'Canon in D',            artist:'Pachelbel',      dur:'5:10', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', kat:'instrumental'},
+  {id:8,  nama:'River Flows in You',    artist:'Yiruma',         dur:'3:52', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', kat:'instrumental'},
+  {id:9,  nama:'Kiss the Rain',         artist:'Yiruma',         dur:'4:24', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', kat:'instrumental'},
+  {id:10, nama:'Comptine d Un Autre',  artist:'Yann Tiersen',   dur:'2:38', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', kat:'instrumental'},
+  // Pop Indonesia
+  {id:11, nama:'Restu',                 artist:'Tiara Andini',   dur:'3:55', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', kat:'pop'},
+  {id:12, nama:'Akhirnya Kumenemukanmu',artist:'Naff',           dur:'4:18', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', kat:'pop'},
+  {id:13, nama:'Beri Aku Kesempatan',   artist:'Sherina',        dur:'3:42', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', kat:'pop'},
+  {id:14, nama:'Sempurna',              artist:'Andra & BB',     dur:'4:01', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', kat:'pop'},
+  {id:15, nama:'Separuh Aku',           artist:'Noah',           dur:'4:35', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', kat:'pop'},
+  {id:16, nama:'Tak Ingin Usai',        artist:'Ziva Magnolya',  dur:'3:48', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', kat:'pop'},
+  {id:17, nama:'Meraih Bintang',        artist:'Via Vallen',     dur:'3:30', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', kat:'pop'},
+  // Jazz/Acoustic
+  {id:18, nama:'The Way You Look Tonight', artist:'Jazz Cover', dur:'3:22', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', kat:'jazz'},
+  {id:19, nama:'Fly Me to the Moon',    artist:'Jazz Acoustic',  dur:'3:15', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', kat:'jazz'},
+  {id:20, nama:'La Vie en Rose',        artist:'Acoustic Cover', dur:'3:48', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', kat:'jazz'},
+];
+
+let currentAudio = null;
+let playingId = null;
+let selectedMusikUrl = null;
+let selectedMusikNama = null;
+let aktivTab = 1;
+
+function switchMusikTab(n) {
+  aktivTab = n;
+  [1,2,3].forEach(i => {
+    document.getElementById(`mTab${i}`).style.display = i===n ? 'block' : 'none';
+    document.getElementById(`mtab${i}`).classList.toggle('on', i===n);
+  });
+  if (n === 1 && document.getElementById('musikList').innerHTML === '') renderLagu(LAGU_LIST);
 }
+
+function renderLagu(list) {
+  const el = document.getElementById('musikList');
+  if (!list.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ditemukan</div>'; return; }
+  el.innerHTML = list.map(l => `
+    <div class="musik-item${playingId===l.id?' playing':''}" id="mitem-${l.id}">
+      <div class="musik-play-btn" onclick="togglePlay(${l.id},'${l.url}','${l.nama}','${l.artist}')">${playingId===l.id?'⏸':'▶'}</div>
+      <div class="musik-info">
+        <div class="musik-nama">${l.nama}</div>
+        <div class="musik-artist">${l.artist} · ${l.kat}</div>
+      </div>
+      <div class="musik-dur">${l.dur}</div>
+      <button class="musik-pilih-btn${selectedMusikUrl===l.url?' on':''}" onclick="pilihLagu(${l.id},'${l.url}','${l.nama}','${l.artist}')">${selectedMusikUrl===l.url?'✓ Dipilih':'Pilih'}</button>
+    </div>`).join('');
+}
+
+function cariLagu(q) {
+  const filtered = q ? LAGU_LIST.filter(l => l.nama.toLowerCase().includes(q.toLowerCase()) || l.artist.toLowerCase().includes(q.toLowerCase())) : LAGU_LIST;
+  renderLagu(filtered);
+}
+
+function togglePlay(id, url, nama, artist) {
+  if (playingId === id) {
+    currentAudio?.pause();
+    playingId = null;
+    renderLagu(LAGU_LIST);
+    return;
+  }
+  currentAudio?.pause();
+  currentAudio = new Audio(url);
+  currentAudio.play().catch(()=>{});
+  currentAudio.onended = () => { playingId = null; renderLagu(LAGU_LIST); };
+  playingId = id;
+  renderLagu(LAGU_LIST);
+}
+
+function pilihLagu(id, url, nama, artist) {
+  currentAudio?.pause(); playingId = null;
+  selectedMusikUrl = url;
+  selectedMusikNama = nama;
+  const p = document.getElementById('musikPilihan');
+  document.getElementById('musikPilihNama').textContent = nama;
+  document.getElementById('musikPilihArtist').textContent = artist;
+  p.style.display = 'flex';
+  renderLagu(LAGU_LIST);
+}
+
+function stopPreview() {
+  currentAudio?.pause(); playingId = null;
+  renderLagu(LAGU_LIST);
+}
+
+// Init tab 1 saat form dibuka
+setTimeout(() => {
+  if (document.getElementById('musikList') && document.getElementById('musikList').innerHTML === '') {
+    renderLagu(LAGU_LIST);
+  }
+}, 500);
 
 document.getElementById && document.addEventListener('DOMContentLoaded', () => {
   const linkInp = document.getElementById('fMusikLink');
