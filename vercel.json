@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    { "source": "/auth-callback", "destination": "/auth-callback.html" },
+    { "source": "/login",         "destination": "/login.html" },
+    { "source": "/admin/:path*",  "destination": "/admin/:path*.html" },
+    { "source": "/reseller/:path*","destination": "/reseller/:path*.html" },
+    { "source": "/customer/:path*","destination": "/customer/:path*.html" },
+    { "source": "/bayar",         "destination": "/bayar.html" },
+    {
+      "source": "/:slug",
+      "destination": "/themes/undangan.html?slug=:slug",
+      "has": [{ "type": "query", "key": "slug", "value": "(?!.*\\.html)" }]
+    },
+    {
+      "source": "/:slug",
+      "destination": "/themes/undangan.html?slug=:slug"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}

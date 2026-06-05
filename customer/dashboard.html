@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Undanganku</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gsoft:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* sidebar */
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s}
+.sidebar.off{transform:translateX(-100%)}
+.sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
+.sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
+.sl-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.sl-badge{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(92,184,122,.15);color:var(--green);border:1px solid rgba(92,184,122,.3)}
+.snav{flex:1;padding:14px 10px;overflow-y:auto}
+.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
+.si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
+.si:hover{background:var(--s2);color:var(--text)}
+.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
+.si .ic{font-size:17px;width:20px;text-align:center}
+.sfooter{padding:14px 10px;border-top:1px solid var(--b)}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer}
+.user-row:hover{background:var(--s2)}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8b5e2e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.uname{font-size:13px;font-weight:600}
+.uemail{font-size:11px;color:var(--muted);margin-top:1px}
+/* overlay */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;backdrop-filter:blur(2px)}
+.overlay.on{display:block}
+/* main */
+.main{margin-left:240px;min-height:100vh;transition:margin .3s}
+.main.full{margin-left:0}
+/* topbar */
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
+.ptitle{font-size:16px;font-weight:700;margin-left:12px}
+.notif{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;position:relative}
+.ndot{position:absolute;top:7px;right:8px;width:6px;height:6px;background:var(--gold);border-radius:50%;border:1.5px solid var(--bg)}
+/* content */
+.content{padding:22px 18px;max-width:900px}
+.greet-sub{font-size:12px;color:var(--muted);margin-bottom:3px;letter-spacing:.3px}
+.greet-main{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,6vw,30px);margin-bottom:24px}
+.greet-main span{color:var(--gold);font-style:italic}
+/* stats */
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.scard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.scard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.scard::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 var(--r) 0 50px;opacity:.08}
+.scard.gold::after{background:var(--gold)}.scard.gr::after{background:var(--green)}.scard.bl::after{background:var(--blue)}.scard.rd::after{background:var(--red)}
+.sic{font-size:20px;margin-bottom:10px}
+.sval{font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}
+.scard.gold .sval{color:var(--gold)}.scard.gr .sval{color:var(--green)}.scard.bl .sval{color:var(--blue)}.scard.rd .sval{color:var(--red)}
+.slbl{font-size:12px;color:var(--muted)}
+/* sections */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st{font-size:15px;font-weight:700}
+.slink{font-size:12px;color:var(--gold);cursor:pointer;text-decoration:none}
+/* action grid */
+.agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+.abtn{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text)}
+.abtn:hover{background:var(--s2);border-color:var(--gold)}
+.aic{font-size:20px}
+.albl{font-size:13px;font-weight:600}
+.adsc{font-size:11px;color:var(--muted);margin-top:2px}
+/* undangan card */
+.ucard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.ucard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ucard-names{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gsoft)}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-gr{background:rgba(92,184,122,.15);color:var(--green)}
+.badge-gd{background:rgba(201,169,110,.15);color:var(--gold)}
+.badge-rd{background:rgba(224,92,92,.15);color:var(--red)}
+.ucard-meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.ucard-link{font-size:12px;color:var(--blue);word-break:break-all;margin-bottom:14px}
+.ucard-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ua{padding:7px 14px;border-radius:8px;border:1px solid var(--b);background:var(--s2);font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;font-family:'Jost',sans-serif;text-decoration:none;display:inline-block}
+.ua:hover{border-color:var(--gold);color:var(--gold)}
+/* blast wa modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);padding:20px;align-items:flex-end}
+.modal-bg.on{display:flex}
+.modal{background:var(--s);border:1px solid var(--b);border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding:24px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px}
+.inp{width:100%;padding:12px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:10px;-webkit-appearance:none}
+.inp:focus{border-color:var(--gold)}
+.tamu-list{max-height:200px;overflow-y:auto;margin-bottom:14px}
+.tamu-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)}
+.tamu-row:last-child{border:none}
+.tamu-info{flex:1}
+.tamu-nama{font-size:13px;font-weight:600}
+.tamu-wa{font-size:11px;color:var(--muted)}
+.wa-btn{padding:6px 12px;border-radius:8px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:11px;cursor:pointer;text-decoration:none;font-family:'Jost',sans-serif}
+.send-all{width:100%;padding:14px;border-radius:10px;background:var(--gold);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}.sgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sb">
+  <div class="sl">
+    <div class="sl-logo">Undanganku</div>
+    <div class="sl-sub">Digital Invitation</div>
+    <span class="sl-badge">Customer</span>
+  </div>
+  <nav class="snav">
+    <div class="snav-sec">Undangan</div>
+    <a class="si on" href="#"><span class="ic">📊</span>Dashboard</a>
+    <a class="si" href="#" onclick="openBlast()"><span class="ic">✏️</span>Edit Undangan</a>
+    <a class="si" href="#"><span class="ic">🎨</span>Ganti Template</a>
+    <a class="si" href="#"><span class="ic">📸</span>Upload Foto</a>
+    <div class="snav-sec">Tamu</div>
+    <a class="si" href="#"><span class="ic">👥</span>Daftar Tamu</a>
+    <a class="si" href="#" onclick="openBlast()"><span class="ic">📱</span>Blast WhatsApp</a>
+    <a class="si" href="#"><span class="ic">✅</span>RSVP Masuk</a>
+    <a class="si" href="#"><span class="ic">💌</span>Ucapan & Doa</a>
+    <div class="snav-sec">Akun</div>
+    <a class="si" href="#"><span class="ic">💳</span>Upgrade Paket</a>
+    <a class="si" href="#"><span class="ic">⚙️</span>Pengaturan</a>
+    <a class="si" href="#" onclick="AUTH.logout()"><span class="ic">🚪</span>Logout</a>
+  </nav>
+  <div class="sfooter">
+    <div class="user-row">
+      <div class="avatar" id="avEl">?</div>
+      <div><div class="uname" id="unEl">—</div><div class="uemail" id="ueEl">—</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" onclick="closeSb()"></div>
+
+<div class="main" id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
+      <div class="ptitle">Dashboard</div>
+    </div>
+    <div class="notif">🔔<div class="ndot"></div></div>
+  </div>
+
+  <div class="content">
+    <div class="greet-sub" id="greetSub">Selamat datang 👋</div>
+    <div class="greet-main">Halo, <span id="greetName">—</span>!</div>
+
+    <div class="sgrid">
+      <div class="scard gold"><div class="sic">📨</div><div class="sval" id="statUndangan">—</div><div class="slbl">Undangan Aktif</div></div>
+      <div class="scard gr"><div class="sic">✅</div><div class="sval" id="statRsvp">—</div><div class="slbl">RSVP Masuk</div></div>
+      <div class="scard bl"><div class="sic">💌</div><div class="sval" id="statUcapan">—</div><div class="slbl">Ucapan</div></div>
+      <div class="scard rd"><div class="sic">📅</div><div class="sval" id="statHari">—</div><div class="slbl">Hari Lagi</div></div>
+    </div>
+
+    <div class="sh"><div class="st">Aksi Cepat</div></div>
+    <div class="agrid">
+      <a class="abtn" href="#"><div class="aic">✏️</div><div><div class="albl">Edit Undangan</div><div class="adsc">Ubah konten & data</div></div></a>
+      <a class="abtn" href="#" id="previewBtn"><div class="aic">👁️</div><div><div class="albl">Preview</div><div class="adsc">Lihat tampilan live</div></div></a>
+      <a class="abtn" href="#" onclick="copyLink()"><div class="aic">🔗</div><div><div class="albl">Salin Link</div><div class="adsc">Share ke tamu</div></div></a>
+      <a class="abtn" href="#" onclick="openBlast()"><div class="aic">📱</div><div><div class="albl">Blast WhatsApp</div><div class="adsc">Kirim ke semua tamu</div></div></a>
+    </div>
+
+    <div class="sh"><div class="st">Undangan Saya</div></div>
+    <div id="undanganContainer">
+      <div style="color:var(--muted);font-size:13px;padding:20px 0">Memuat...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Blast WA -->
+<div class="modal-bg" id="blastModal">
+  <div class="modal" style="max-width:480px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title">📱 Blast WhatsApp</div>
+      <div style="cursor:pointer;color:var(--muted);font-size:20px" onclick="closeBlast()">✕</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Klik "Kirim" per tamu, atau "Kirim Semua" untuk buka satu per satu</div>
+    <div class="tamu-list" id="tamuList">
+      <!-- diisi JS -->
+    </div>
+    <button class="send-all" onclick="blastAll()">Kirim Semua via WhatsApp</button>
+  </div>
+</div>
+
+<script>
+let user = null;
+let undangan = null;
+let tamuData = [];
+
+(async () => {
+  user = await AUTH.requireAuth(['customer']);
+  if (!user) return;
+
+  // Isi nama
+  const nama = user.nama || user.email.split('@')[0];
+  document.getElementById('avEl').textContent = nama[0].toUpperCase();
+  document.getElementById('unEl').textContent = nama;
+  document.getElementById('ueEl').textContent = user.email;
+
+  const hr = new Date().getHours();
+  document.getElementById('greetSub').textContent = (hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam') + ' 👋';
+  document.getElementById('greetName').textContent = nama.split(' ')[0];
+
+  // Load undangan
+  const { data: und } = await sb.from('undangan').select('*').eq('user_id', user.id);
+  if (und && und.length > 0) {
+    undangan = und[0];
+    document.getElementById('statUndangan').textContent = und.length;
+    document.getElementById('previewBtn').href = '/' + undangan.slug;
+
+    // Hitung hari
+    if (undangan.tanggal_resepsi) {
+      const diff = Math.ceil((new Date(undangan.tanggal_resepsi) - Date.now()) / 86400000);
+      document.getElementById('statHari').textContent = diff > 0 ? diff : '🎉';
+    }
+
+    // RSVP count
+    const { count: rsvpCount } = await sb.from('rsvp').select('*', {count:'exact',head:true}).eq('undangan_id', undangan.id);
+    document.getElementById('statRsvp').textContent = rsvpCount || 0;
+    document.getElementById('statUcapan').textContent = rsvpCount || 0;
+
+    // Load tamu
+    const { data: tamu } = await sb.from('tamu').select('*').eq('undangan_id', undangan.id);
+    tamuData = tamu || [];
+
+    renderUndangan(undangan);
+  } else {
+    document.getElementById('statUndangan').textContent = '0';
+    document.getElementById('statRsvp').textContent = '0';
+    document.getElementById('statUcapan').textContent = '0';
+    document.getElementById('statHari').textContent = '—';
+    document.getElementById('undanganContainer').innerHTML = `
+      <div style="background:var(--s);border:1px dashed var(--b);border-radius:var(--r);padding:32px;text-align:center">
+        <div style="font-size:32px;margin-bottom:12px">💌</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Belum ada undangan</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Buat undangan pertama Anda sekarang</div>
+        <a href="#" style="display:inline-block;padding:10px 24px;background:var(--gold);color:var(--bg);border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">+ Buat Undangan</a>
+      </div>`;
+  }
+})();
+
+function renderUndangan(u) {
+  const slug = u.slug;
+  const link = `undanganku.id/${slug}`;
+  const expired = u.expired_at ? new Date(u.expired_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '—';
+  const status = u.status === 'aktif' ? '<span class="badge badge-gr">Aktif</span>' : u.status === 'draft' ? '<span class="badge badge-gd">Draft</span>' : '<span class="badge badge-rd">Expired</span>';
+
+  document.getElementById('undanganContainer').innerHTML = `
+    <div class="ucard">
+      <div class="ucard-top">
+        <div class="ucard-names">${u.panggilan_pria||'Pria'} & ${u.panggilan_wanita||'Wanita'}</div>
+        ${status}
+      </div>
+      <div class="ucard-meta">Tema ${u.tema} · Aktif hingga ${expired}</div>
+      <div class="ucard-link">🔗 ${link}</div>
+      <div class="ucard-actions">
+        <a class="ua" href="/${slug}" target="_blank">👁️ Preview</a>
+        <a class="ua" href="#" onclick="copyLink()">🔗 Salin Link</a>
+        <a class="ua" href="#" onclick="openBlast()">📱 Blast WA</a>
+        <a class="ua" href="#">✏️ Edit</a>
+      </div>
+    </div>`;
+}
+
+function copyLink() {
+  if (!undangan) return;
+  navigator.clipboard.writeText(`https://undanganku.id/${undangan.slug}`);
+  alert('Link disalin! 🔗');
+}
+
+function openBlast() {
+  if (!undangan) { alert('Buat undangan dulu ya'); return; }
+  const list = document.getElementById('tamuList');
+  if (tamuData.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Belum ada tamu. Tambah tamu dulu.</div>';
+  } else {
+    list.innerHTML = tamuData.map(t => {
+      const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\n\nKami mengundang Anda ke pernikahan kami.\n\n🔗 https://undanganku.id/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
+      const wa = t.no_wa ? `https://wa.me/62${t.no_wa.replace(/^0/,'')}?text=${link}` : `https://wa.me/?text=${link}`;
+      return `<div class="tamu-row">
+        <div class="tamu-info"><div class="tamu-nama">${t.nama}</div><div class="tamu-wa">${t.no_wa||'No WA belum diisi'}</div></div>
+        <a class="wa-btn" href="${wa}" target="_blank">Kirim</a>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('blastModal').classList.add('on');
+}
+
+function closeBlast() { document.getElementById('blastModal').classList.remove('on'); }
+
+function blastAll() {
+  tamuData.forEach((t, i) => {
+    setTimeout(() => {
+      const link = encodeURIComponent(`Assalamualaikum *${t.nama}* 🌸\nKami mengundang Anda ke pernikahan kami.\n🔗 https://undanganku.id/${undangan.slug}?tamu=${encodeURIComponent(t.nama)}`);
+      const wa = t.no_wa ? `https://wa.me/62${t.no_wa.replace(/^0/,'')}?text=${link}` : `https://wa.me/?text=${link}`;
+      window.open(wa, '_blank');
+    }, i * 800);
+  });
+}
+
+// Sidebar
+function toggleSb() {
+  const isMob = window.innerWidth < 769;
+  if (isMob) { document.getElementById('sb').classList.toggle('on'); document.getElementById('ov').classList.toggle('on'); }
+  else { document.getElementById('sb').classList.toggle('off'); document.getElementById('main').classList.toggle('full'); }
+}
+function closeSb() { document.getElementById('sb').classList.remove('on'); document.getElementById('ov').classList.remove('on'); }
+</script>
+</body>
+</html>

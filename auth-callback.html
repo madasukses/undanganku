@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Memuat...</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<style>
+body{font-family:sans-serif;background:#0f0e0d;color:#f0ece4;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.msg{text-align:center;opacity:.6;font-size:14px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<div class="msg">Memuat...</div>
+<script>
+(async () => {
+  // Supabase handle token dari URL hash otomatis
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+
+  // Cek profile sudah ada?
+  const { data: profile } = await sb
+    .from('profiles').select('role').eq('id', session.user.id).single();
+
+  if (profile) {
+    AUTH.redirectByRole(profile.role);
+  } else {
+    // Profil belum ada (harusnya dibuat trigger), fallback
+    await sb.from('profiles').upsert({
+      id: session.user.id,
+      email: session.user.email,
+      nama: session.user.user_metadata?.full_name || '',
+      avatar_url: session.user.user_metadata?.avatar_url || '',
+      role: 'customer'
+    });
+    window.location.href = '/customer/dashboard.html';
+  }
+})();
+</script>
+</body>
+</html>
