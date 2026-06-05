@@ -20,59 +20,25 @@ const SUPABASE_URL  = 'https://dwrxehnyjfzighzysosw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cnhlaG55amZ6aWdoenlzb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwMjUsImV4cCI6MjA5NjIxMjAyNX0.lPPsnhRpyDcFhUvrbxJEMc7DAjlM-BMyICOVi9KPqWc';
 
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: {
-    detectSessionInUrl: true,
-    flowType: 'pkce'
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const map = {
+  admin:    '/admin/dashboard.html',
+  reseller: '/reseller/dashboard.html',
+  customer: '/customer/dashboard.html'
+};
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    window.location.href = map[profile?.role || 'customer'];
   }
 });
-
-async function redirect(role) {
-  const map = {
-    admin:    '/admin/dashboard.html',
-    reseller: '/reseller/dashboard.html',
-    customer: '/customer/dashboard.html'
-  };
-  window.location.href = map[role] || '/customer/dashboard.html';
-}
-
-(async () => {
-  // Supabase otomatis proses code dari URL saat detectSessionInUrl: true
-  // Tunggu sebentar biar dia selesai proses
-  await new Promise(r => setTimeout(r, 500));
-
-  const { data: { session }, error } = await sb.auth.getSession();
-
-  if (error || !session) {
-    // Coba sekali lagi setelah 1 detik
-    await new Promise(r => setTimeout(r, 1000));
-    const { data: { session: s2 } } = await sb.auth.getSession();
-    if (!s2) {
-      window.location.href = '/login.html';
-      return;
-    }
-  }
-
-  const { data: { session: sess } } = await sb.auth.getSession();
-  const uid   = sess.user.id;
-  const email = sess.user.email;
-  const nama  = sess.user.user_metadata?.full_name || '';
-  const avatar= sess.user.user_metadata?.avatar_url || '';
-
-  // Upsert profile
-  await sb.from('profiles').upsert({
-    id: uid, email, nama, avatar_url: avatar
-  }, { onConflict: 'id', ignoreDuplicates: true });
-
-  // Ambil role
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('role')
-    .eq('id', uid)
-    .single();
-
-  redirect(profile?.role || 'customer');
-})();
 </script>
 </body>
 </html>
