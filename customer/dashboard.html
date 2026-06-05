@@ -30,7 +30,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8b5e2e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .uname{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.logout-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--b);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .2s}
+.logout-btn{border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;letter-spacing:.5px;flex-shrink:0;transition:all .2s;font-family:'Jost',sans-serif;padding:0 10px;height:28px;border-radius:8px}
 .logout-btn:hover{background:rgba(224,92,92,.15);border-color:var(--red)}
 
 /* OVERLAY */
@@ -50,7 +50,29 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 
 /* CONTENT */
 .content{padding:22px 18px;max-width:960px}
-.page{display:none}.page.on{display:block}
+.page{display:none;opacity:0}
+.page.on{display:block}
+.page.visible{opacity:1}
+/* stagger children */
+.page.visible .form-card,.page.visible .scard,.page.visible .agrid,.page.visible .ucard,.page.visible .greet-main,.page.visible .greet-sub,.page.visible .sgrid,.page.visible .sh,.page.visible .tamu-table,.page.visible > div{
+  animation:pageItemIn .5s cubic-bezier(.22,1,.36,1) both;
+}
+.page.visible .form-card:nth-child(1),.page.visible > div:nth-child(1){animation-delay:.03s}
+.page.visible .form-card:nth-child(2),.page.visible > div:nth-child(2){animation-delay:.09s}
+.page.visible .form-card:nth-child(3),.page.visible > div:nth-child(3){animation-delay:.15s}
+.page.visible .form-card:nth-child(4),.page.visible > div:nth-child(4){animation-delay:.21s}
+.page.visible .form-card:nth-child(5),.page.visible > div:nth-child(5){animation-delay:.27s}
+.page.visible .form-card:nth-child(6),.page.visible > div:nth-child(6){animation-delay:.33s}
+.page.visible .form-card:nth-child(7),.page.visible > div:nth-child(7){animation-delay:.39s}
+.page.visible .form-card:nth-child(8),.page.visible > div:nth-child(8){animation-delay:.45s}
+.page.visible .scard:nth-child(1){animation-delay:.03s}
+.page.visible .scard:nth-child(2){animation-delay:.09s}
+.page.visible .scard:nth-child(3){animation-delay:.15s}
+.page.visible .scard:nth-child(4){animation-delay:.21s}
+@keyframes pageItemIn{
+  from{opacity:0;transform:translateY(22px)}
+  to{opacity:1;transform:translateY(0)}
+}
 .greet-sub{font-size:12px;color:var(--muted);margin-bottom:3px}
 .greet-main{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,6vw,30px);margin-bottom:24px}
 .greet-main span{color:var(--gold);font-style:italic}
@@ -162,7 +184,6 @@ select.inp{cursor:pointer}
     <div class="snav-sec">Menu</div>
     <a class="si on"  href="#" onclick="showPage('home',this)"><span class="ic">📊</span>Dashboard</a>
     <a class="si"     href="#" onclick="showPage('buat',this)"><span class="ic">➕</span>Buat Undangan</a>
-    <a class="si"     href="#" onclick="showPage('foto',this)"><span class="ic">📸</span>Upload Foto</a>
     <a class="si"     href="#" onclick="showPage('daftar',this)"><span class="ic">📋</span>Daftar Undangan</a>
     <a class="si"     href="#" onclick="showPage('rsvp',this)"><span class="ic">✅</span>RSVP Masuk</a>
     <a class="si"     href="#" onclick="showPage('ucapan',this)"><span class="ic">💌</span>Ucapan & Doa</a>
@@ -173,7 +194,7 @@ select.inp{cursor:pointer}
     <div class="user-row">
       <div class="avatar" id="avEl">?</div>
       <div class="uname" id="unEl">—</div>
-      <button class="logout-btn" onclick="AUTH.logout()" title="Logout">🚪</button>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
     </div>
   </div>
 </div>
@@ -188,14 +209,14 @@ select.inp{cursor:pointer}
     </div>
     <div class="topbar-right">
       <div class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Ganti tema">🌙</div>
-      <div class="icon-btn" onclick="AUTH.logout()" title="Logout">🚪</div>
+      <button class="logout-btn" onclick="AUTH.logout()" style="padding:0 14px;height:36px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.5px">Keluar</button>
     </div>
   </div>
 
   <div class="content">
 
     <!-- ══ HOME ══ -->
-    <div class="page on" id="page-home">
+    <div class="page on visible" id="page-home">
       <div class="greet-sub" id="greetSub">Selamat datang 👋</div>
       <div class="greet-main">Halo, <span id="greetName">—</span>!</div>
       <div class="sgrid">
@@ -301,63 +322,47 @@ select.inp{cursor:pointer}
         </div>
       </div>
 
-      <button class="submit-btn full" id="btnBuat" onclick="submitBuat()">Simpan Undangan →</button>
-      <div style="height:32px"></div>
-    </div>
 
-    <!-- ══ UPLOAD FOTO ══ -->
-    <div class="page" id="page-foto">
-      <div class="greet-main" style="margin-bottom:8px">Upload <span>Foto</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Upload foto untuk ditampilkan di undangan. Format JPG/PNG, maks 5MB per foto.</div>
-
-      <!-- Cover -->
+      <!-- Foto -->
       <div class="form-card">
-        <div class="form-sec-title">📸 Foto Cover Bersama</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Foto utama yang muncul di halaman pertama undangan (slide cover). Disarankan foto berdua, rasio 1:1 atau 4:5.</div>
-        <div class="upload-area" id="uploadCover">
-          <input type="file" accept="image/*" onchange="previewFoto(this,'prevCover','uploadCover')">
-          <div class="upload-icon">🖼️</div>
-          <div class="upload-label">Klik untuk upload foto cover</div>
-          <div class="upload-hint">JPG / PNG · Maks 5MB · Rasio 1:1 disarankan</div>
-          <img class="upload-preview" id="prevCover">
+        <div class="form-sec-title">📸 Foto</div>
+        <div class="form-row">
+          <div class="inp-wrap">
+            <label class="inp-lbl">Cover Bersama</label>
+            <div class="upload-area" id="uploadCover" style="padding:16px">
+              <input type="file" accept="image/*" onchange="previewFoto(this,'prevCover','uploadCover')">
+              <img class="upload-preview" id="prevCover" style="height:80px">
+              <div class="upload-icon" style="font-size:20px">🖼️</div>
+              <div class="upload-hint">Foto berdua · 1:1</div>
+            </div>
+          </div>
+          <div class="inp-wrap">
+            <label class="inp-lbl">Pengantin Pria</label>
+            <div class="upload-area" id="uploadPria" style="padding:16px">
+              <input type="file" accept="image/*" onchange="previewFoto(this,'prevPria','uploadPria')">
+              <img class="upload-preview" id="prevPria" style="height:80px">
+              <div class="upload-icon" style="font-size:20px">🤵</div>
+              <div class="upload-hint">Close-up · 1:1</div>
+            </div>
+          </div>
+          <div class="inp-wrap">
+            <label class="inp-lbl">Pengantin Wanita</label>
+            <div class="upload-area" id="uploadWanita" style="padding:16px">
+              <input type="file" accept="image/*" onchange="previewFoto(this,'prevWanita','uploadWanita')">
+              <img class="upload-preview" id="prevWanita" style="height:80px">
+              <div class="upload-icon" style="font-size:20px">👰</div>
+              <div class="upload-hint">Close-up · 1:1</div>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <!-- Pria -->
-      <div class="form-card">
-        <div class="form-sec-title">🤵 Foto Pengantin Pria</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Foto close-up pengantin pria. Ditampilkan di slide Mempelai dengan nama dan data orang tua.</div>
-        <div class="upload-area" id="uploadPria">
-          <input type="file" accept="image/*" onchange="previewFoto(this,'prevPria','uploadPria')">
-          <div class="upload-icon">👔</div>
-          <div class="upload-label">Klik untuk upload foto pengantin pria</div>
-          <div class="upload-hint">JPG / PNG · Maks 5MB · Rasio 1:1 disarankan</div>
-          <img class="upload-preview" id="prevPria">
-        </div>
-      </div>
-
-      <!-- Wanita -->
-      <div class="form-card">
-        <div class="form-sec-title">👰 Foto Pengantin Wanita</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Foto close-up pengantin wanita. Ditampilkan di slide Mempelai berdampingan dengan foto pria.</div>
-        <div class="upload-area" id="uploadWanita">
-          <input type="file" accept="image/*" onchange="previewFoto(this,'prevWanita','uploadWanita')">
-          <div class="upload-icon">👗</div>
-          <div class="upload-label">Klik untuk upload foto pengantin wanita</div>
-          <div class="upload-hint">JPG / PNG · Maks 5MB · Rasio 1:1 disarankan</div>
-          <img class="upload-preview" id="prevWanita">
-        </div>
-      </div>
-
-      <!-- Galeri -->
-      <div class="form-card">
-        <div class="form-sec-title">🖼️ Foto Galeri / Story</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Foto-foto momen bersama (prewedding, story, dll). Ditampilkan di slide Galeri. Upload hingga 10 foto. Foto pertama akan ditampilkan lebih besar.</div>
-        <div class="upload-grid" id="galeriGrid">
-          <div class="upload-area" style="aspect-ratio:1">
-            <input type="file" accept="image/*" multiple onchange="previewGaleri(this)">
-            <div class="upload-icon" style="font-size:22px">➕</div>
-            <div class="upload-label" style="font-size:12px">Tambah foto</div>
+        <div class="inp-wrap">
+          <label class="inp-lbl">Galeri / Story (maks 10 foto)</label>
+          <div class="upload-grid" id="galeriGrid">
+            <div class="upload-area" style="aspect-ratio:1">
+              <input type="file" accept="image/*" multiple onchange="previewGaleri(this)">
+              <div class="upload-icon" style="font-size:22px">➕</div>
+              <div class="upload-label" style="font-size:11px">Tambah foto</div>
+            </div>
           </div>
         </div>
       </div>
@@ -365,23 +370,43 @@ select.inp{cursor:pointer}
       <!-- Musik -->
       <div class="form-card">
         <div class="form-sec-title">🎵 Musik Latar</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Musik akan autoplay saat tamu membuka undangan. Format MP3, maks 10MB. Disarankan lagu instrumental atau nasyid.</div>
-        <div class="upload-area" id="uploadMusik">
-          <input type="file" accept="audio/*" onchange="previewMusik(this)">
-          <div class="upload-icon">🎵</div>
-          <div class="upload-label">Klik untuk upload musik</div>
-          <div class="upload-hint">MP3 · Maks 10MB</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Autoplay saat undangan dibuka. Upload file MP3 atau tempel link YouTube / SoundCloud.</div>
+
+        <!-- Tab switch -->
+        <div style="display:flex;gap:6px;margin-bottom:14px">
+          <button id="tabUpload" onclick="switchMusikTab('upload')" style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--gold);background:var(--gold);color:#fff;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer">Upload File</button>
+          <button id="tabLink"   onclick="switchMusikTab('link')"   style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer">Link YouTube / SoundCloud</button>
         </div>
-        <div id="musikPlayer" style="display:none;margin-top:14px;background:var(--s2);border-radius:10px;padding:12px;display:none;align-items:center;gap:10px">
-          <span style="font-size:20px">🎵</span>
-          <div style="flex:1;min-width:0">
-            <div id="musikNama" style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
-            <audio id="musikPreview" controls style="width:100%;margin-top:6px;height:32px"></audio>
+
+        <!-- Upload -->
+        <div id="musikTabUpload">
+          <div class="upload-area" id="uploadMusik">
+            <input type="file" accept="audio/*" onchange="previewMusik(this)">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-label">Klik untuk upload musik</div>
+            <div class="upload-hint">MP3 · Maks 10MB</div>
           </div>
+          <div id="musikPlayer" style="display:none;margin-top:12px;background:var(--s2);border-radius:10px;padding:12px;align-items:center;gap:10px">
+            <span>🎵</span>
+            <div style="flex:1;min-width:0">
+              <div id="musikNama" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+              <audio id="musikPreview" controls style="width:100%;margin-top:6px;height:32px"></audio>
+            </div>
+          </div>
+        </div>
+
+        <!-- Link -->
+        <div id="musikTabLink" style="display:none">
+          <div class="inp-wrap">
+            <label class="inp-lbl">Link YouTube atau SoundCloud</label>
+            <input class="inp" id="fMusikLink" placeholder="https://www.youtube.com/watch?v=... atau https://soundcloud.com/...">
+            <div class="inp-hint">Musik akan diputar via embed. Pastikan link publik dan bisa diakses.</div>
+          </div>
+          <div id="musikEmbedPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden"></div>
         </div>
       </div>
 
-      <button class="submit-btn full" onclick="simpanFoto()">Simpan Semua →</button>
+      <button class="submit-btn full" id="btnBuat" onclick="submitBuat()">Simpan Undangan →</button>
       <div style="height:32px"></div>
     </div>
 
@@ -458,11 +483,16 @@ function toggleTheme() {
 
 // Page navigation
 function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
-  document.getElementById('page-' + name).classList.add('on');
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('on'); p.classList.remove('visible'); });
+  const pg = document.getElementById('page-' + name);
+  pg.classList.add('on');
+  // Scroll ke atas
+  document.querySelector('.content').scrollTop = 0;
+  // Trigger animasi setelah sedikit delay
+  setTimeout(() => pg.classList.add('visible'), 20);
   document.querySelectorAll('.si').forEach(s => s.classList.remove('on'));
   if (el) el.classList.add('on');
-  const titles = {home:'Dashboard',buat:'Buat Undangan',foto:'Upload Foto',daftar:'Daftar Undangan',rsvp:'RSVP Masuk',ucapan:'Ucapan & Doa'};
+  const titles = {home:'Dashboard',buat:'Buat Undangan',daftar:'Daftar Undangan',rsvp:'RSVP Masuk',ucapan:'Ucapan & Doa'};
   document.getElementById('topTitle').textContent = titles[name] || name;
   if (name === 'daftar') renderTamuList();
   if (name === 'rsvp') loadRsvp();
@@ -551,6 +581,9 @@ async function submitBuat() {
 
   const { error } = await sb.from('undangan').insert({
     user_id: user.id, slug, tema: selectedTema, status: 'draft',
+    musik_url: (document.getElementById('musikTabLink')?.style.display !== 'none' && document.getElementById('fMusikLink')?.value.trim())
+      ? document.getElementById('fMusikLink').value.trim()
+      : null,
     nama_pria:         document.getElementById('fNamaPria').value.trim(),
     panggilan_pria:    document.getElementById('fPangPria').value.trim(),
     ayah_pria:         document.getElementById('fAyahPria').value.trim(),
@@ -594,6 +627,44 @@ function previewFoto(input, previewId, areaId) {
   };
   reader.readAsDataURL(file);
 }
+
+
+function switchMusikTab(tab) {
+  const isUpload = tab === 'upload';
+  document.getElementById('musikTabUpload').style.display = isUpload ? 'block' : 'none';
+  document.getElementById('musikTabLink').style.display   = isUpload ? 'none' : 'block';
+  document.getElementById('tabUpload').style.background   = isUpload ? 'var(--gold)' : 'transparent';
+  document.getElementById('tabUpload').style.color        = isUpload ? '#fff' : 'var(--muted)';
+  document.getElementById('tabUpload').style.borderColor  = isUpload ? 'var(--gold)' : 'var(--b)';
+  document.getElementById('tabLink').style.background     = isUpload ? 'transparent' : 'var(--gold)';
+  document.getElementById('tabLink').style.color          = isUpload ? 'var(--muted)' : '#fff';
+  document.getElementById('tabLink').style.borderColor    = isUpload ? 'var(--b)' : 'var(--gold)';
+}
+
+document.getElementById && document.addEventListener('DOMContentLoaded', () => {
+  const linkInp = document.getElementById('fMusikLink');
+  if (linkInp) {
+    linkInp.addEventListener('input', function() {
+      const val = this.value.trim();
+      const preview = document.getElementById('musikEmbedPreview');
+      if (!val) { preview.style.display = 'none'; preview.innerHTML = ''; return; }
+      let embedUrl = '';
+      // YouTube
+      const ytMatch = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0`;
+      // SoundCloud
+      if (!embedUrl && val.includes('soundcloud.com')) {
+        embedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(val)}&color=%23c9a96e&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
+      }
+      if (embedUrl) {
+        const tag = val.includes('soundcloud') ? 'iframe' : 'iframe';
+        const h = val.includes('soundcloud') ? '120' : '200';
+        preview.innerHTML = `<iframe src="${embedUrl}" width="100%" height="${h}" frameborder="0" allow="autoplay" style="border-radius:10px"></iframe>`;
+        preview.style.display = 'block';
+      }
+    });
+  }
+});
 
 function previewMusik(input) {
   const file = input.files[0];
