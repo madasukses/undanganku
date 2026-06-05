@@ -3,734 +3,293 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title id="pageTitle">Undangan Pernikahan</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+<title>Undangan Pernikahan</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
-:root {
-  --cream: #f5f0e8;
-  --cream2: #ede6d6;
-  --brown: #3d2b1f;
-  --brown-light: #7a5c48;
-  --brown-dark: #2a1d12;
-  --gold: #b8935a;
-  --gold-light: #d4b483;
-  --gold-pale: #e8d5b0;
-  --white: #fdfaf5;
-  --text: #2c1f14;
-  --text-muted: #8a7060;
-  --nav-h: 72px;
-}
+/* ── TEMA VARIABLES ── */
+.t1{--bg:#2a1d12;--bg2:#3d2b1f;--acc:#b8935a;--acc2:#d4b483;--tx:#f5f0e8;--mu:rgba(212,180,131,.5);--fn:'Great Vibes',cursive;--ft:'Cormorant Garamond',serif}
+.t2{--bg:#2d1a1a;--bg2:#3d2424;--acc:#d48080;--acc2:#f0b0b0;--tx:#fdf0f0;--mu:rgba(240,176,176,.5);--fn:'Great Vibes',cursive;--ft:'Cormorant Garamond',serif}
+.t3{--bg:#111f18;--bg2:#1a2e22;--acc:#64b482;--acc2:#90d4a8;--tx:#edf5f0;--mu:rgba(144,212,168,.5);--fn:'Cormorant Garamond',serif;--ft:'Cormorant Garamond',serif}
+.t4{--bg:#0d1421;--bg2:#152035;--acc:#6490d4;--acc2:#90b4f0;--tx:#edf0f8;--mu:rgba(144,180,240,.5);--fn:'Cormorant Garamond',serif;--ft:'Cormorant Garamond',serif}
+.t5{--bg:#f5f0e8;--bg2:#ede6d6;--acc:#7a8c64;--acc2:#5a6e44;--tx:#2c3020;--mu:rgba(90,110,68,.5);--fn:'Great Vibes',cursive;--ft:'Cormorant Garamond',serif}
+.t6{--bg:#1e1520;--bg2:#2c1e30;--acc:#b48cc0;--acc2:#d4b0e0;--tx:#f5eef8;--mu:rgba(212,176,224,.5);--fn:'Great Vibes',cursive;--ft:'Cormorant Garamond',serif}
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { width:100%; height:100%; overflow:hidden; background:var(--brown-dark); }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg,#2a1d12);color:var(--tx,#f5f0e8)}
+body{font-family:'Jost',sans-serif}
 
-/* ══ GATE ══ */
-#gate {
-  position:fixed; inset:0;
-  background: linear-gradient(160deg, #2a1d12 0%, #3d2b1f 60%, #2a1d12 100%);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:1000;
-  transition: opacity .8s ease, visibility .8s ease;
+/* ── GATE ── */
+#gate{
+  position:fixed;inset:0;z-index:900;
+  background:linear-gradient(160deg,var(--bg,#2a1d12),var(--bg2,#3d2b1f));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;text-align:center;
+  transition:opacity .8s,visibility .8s;
 }
-#gate.gone { opacity:0; visibility:hidden; pointer-events:none; }
+#gate.gone{opacity:0;visibility:hidden;pointer-events:none}
+.g-line{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--acc,#b8935a),transparent);margin:0 auto}
+.g-arab{font-size:14px;font-style:italic;color:var(--acc2,#d4b483);letter-spacing:2px;opacity:.8;margin:18px 0}
+.g-to{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.g-name{font-family:var(--fn);font-size:clamp(34px,10vw,54px);color:var(--tx);line-height:1.1;margin-bottom:6px}
+.g-from{font-size:12px;color:var(--mu);margin-bottom:40px}
+.g-btn{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer}
+.g-ring{
+  width:66px;height:66px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  position:relative;transition:all .3s;background:rgba(255,255,255,.04);
+}
+.g-ring::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(255,255,255,.08);animation:rpl 2.2s ease-out infinite}
+.g-ring::after{content:'';position:absolute;inset:-22px;border-radius:50%;border:1px solid rgba(255,255,255,.04);animation:rpl 2.2s ease-out .5s infinite}
+.g-btn:hover .g-ring{background:rgba(255,255,255,.1);border-color:var(--acc)}
+.g-lbl{font-size:11px;letter-spacing:4px;color:var(--acc2);text-transform:uppercase}
+@keyframes rpl{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.6)}}
 
-.gate-ornament-line {
-  width:140px; height:1px;
-  background:linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin:0 auto;
-}
-.gate-bismillah {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic; font-size:14px;
-  color:var(--gold-light); letter-spacing:3px;
-  text-transform:uppercase; opacity:.7;
-  margin:20px 0;
-}
-.gate-to {
-  font-size:11px; letter-spacing:5px;
-  text-transform:uppercase; color:var(--text-muted);
-  margin-bottom:10px;
-}
-.gate-guest {
-  font-family:'Great Vibes',cursive;
-  font-size:clamp(36px,10vw,56px);
-  color:var(--gold-pale);
-  text-align:center; line-height:1.1;
-  padding:0 24px;
-  margin-bottom:6px;
-}
-.gate-from {
-  font-size:12px; letter-spacing:2px;
-  color:var(--text-muted); text-align:center;
-  margin-bottom:40px;
-}
-.gate-btn {
-  display:flex; flex-direction:column; align-items:center; gap:10px;
-  cursor:pointer;
-}
-.gate-btn-ring {
-  width:68px; height:68px; border-radius:50%;
-  border:1px solid rgba(184,147,90,.35);
-  display:flex; align-items:center; justify-content:center;
-  position:relative;
-  transition:all .3s;
-}
-.gate-btn-ring::before {
-  content:''; position:absolute; inset:-10px;
-  border-radius:50%;
-  border:1px solid rgba(184,147,90,.12);
-  animation:ripple 2.2s ease-out infinite;
-}
-.gate-btn-ring::after {
-  content:''; position:absolute; inset:-20px;
-  border-radius:50%;
-  border:1px solid rgba(184,147,90,.06);
-  animation:ripple 2.2s ease-out .4s infinite;
-}
-.gate-icon { font-size:26px; }
-.gate-btn:hover .gate-btn-ring { border-color:var(--gold); background:rgba(184,147,90,.08); }
-.gate-label { font-size:11px; letter-spacing:4px; color:var(--gold-light); text-transform:uppercase; }
+/* ── APP SHELL ── */
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#wrap{flex:1;overflow:hidden;position:relative}
+#slider{display:flex;height:100%;transition:transform .65s cubic-bezier(.77,0,.175,1);will-change:transform}
+.slide{min-width:100%;height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.slide::-webkit-scrollbar{display:none}
 
-@keyframes ripple { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.6)} }
+/* ── BOTTOM NAV ── */
+#nav{
+  height:68px;background:var(--bg);
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:0 4px;flex-shrink:0;position:relative;
+}
+#nav::before{content:'';position:absolute;top:-1px;left:0;width:20%;height:2px;background:var(--acc);transition:left .3s cubic-bezier(.4,0,.2,1)}
+#nav[data-a="0"]::before{left:0%}#nav[data-a="1"]::before{left:20%}
+#nav[data-a="2"]::before{left:40%}#nav[data-a="3"]::before{left:60%}
+#nav[data-a="4"]::before{left:80%}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:6px 2px;opacity:.35;transition:opacity .2s}
+.nt.on{opacity:1}
+.ni{width:24px;height:24px;fill:var(--acc)}
+.nl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--acc2);font-weight:500;white-space:nowrap}
 
-/* ══ APP SHELL ══ */
-#app {
-  position:fixed; inset:0;
-  display:flex; flex-direction:column;
-}
+/* ── MUSIC BTN ── */
+#mBtn{position:fixed;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:200;font-size:16px;transition:all .2s}
+#mBtn.spin{animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ══ SLIDER AREA ══ */
-#sliderWrap {
-  flex:1;
-  overflow:hidden;
-  position:relative;
-}
-#slider {
-  display:flex;
-  height:100%;
-  transition:transform .65s cubic-bezier(.77,0,.175,1);
-  will-change:transform;
-}
-.slide {
-  min-width:100%;
-  height:100%;
-  overflow-y:auto;
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-}
-.slide::-webkit-scrollbar { display:none; }
-.slide { scrollbar-width:none; }
+/* ── ANIMASI SLIDE ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.an{opacity:0;animation:none}
+.an-sc{opacity:0;animation:none}
+.slide.in .an{animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards}
+.slide.in .an-sc{animation:fadeIn .9s ease forwards}
+.d0{animation-delay:.0s}.d1{animation-delay:.12s}.d2{animation-delay:.22s}
+.d3{animation-delay:.32s}.d4{animation-delay:.42s}.d5{animation-delay:.52s}
 
-/* ══ BOTTOM NAV ══ */
-#bottomNav {
-  height:var(--nav-h);
-  background: linear-gradient(to bottom, #2e1f13, #241710);
-  border-top:1px solid rgba(184,147,90,.25);
-  display:flex;
-  align-items:center;
-  justify-content:space-around;
-  padding:0 4px;
-  flex-shrink:0;
-  position:relative;
+/* ── SLIDE 1: COVER ── */
+.s1{
+  background:linear-gradient(160deg,var(--bg),var(--bg2) 60%,var(--bg));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:100%;padding:32px 24px;position:relative;overflow:hidden;
 }
-/* gold top line active indicator */
-#bottomNav::before {
-  content:'';
-  position:absolute; top:-1px;
-  left:0; width:20%; height:2px;
-  background:var(--gold);
-  border-radius:2px;
-  transition:left .3s cubic-bezier(.4,0,.2,1);
-}
-#bottomNav[data-active="0"]::before { left:0% }
-#bottomNav[data-active="1"]::before { left:20% }
-#bottomNav[data-active="2"]::before { left:40% }
-#bottomNav[data-active="3"]::before { left:60% }
-#bottomNav[data-active="4"]::before { left:80% }
+.s1::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.04),transparent 70%)}
+/* corner ornaments */
+.co{position:absolute;width:64px;height:64px;opacity:.3}
+.co svg{width:100%;height:100%;stroke:var(--acc);fill:none;stroke-width:.8}
+.tl{top:14px;left:14px}.tr{top:14px;right:14px;transform:scaleX(-1)}
+.bl{bottom:78px;left:14px;transform:scaleY(-1)}.br{bottom:78px;right:14px;transform:scale(-1,-1)}
+.s1-lbl{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--mu);margin-bottom:18px}
+.s1-photo{width:min(180px,48vw);height:min(180px,48vw);border-radius:50%;border:2px solid rgba(255,255,255,.2);box-shadow:0 0 0 10px rgba(255,255,255,.03);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;margin:0 auto 20px}
+.s1-photo img{width:100%;height:100%;object-fit:cover}
+.s1-names{font-family:var(--fn);font-size:clamp(44px,14vw,80px);color:var(--tx);line-height:.95}
+.s1-amp{display:block;font-size:.5em;color:var(--acc);margin:4px 0}
+.s1-rule{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);margin:18px auto}
+.s1-date{font-size:12px;letter-spacing:4px;color:var(--acc2);text-transform:uppercase}
 
-.nav-tab {
-  flex:1;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:5px;
-  cursor:pointer;
-  padding:8px 4px;
-  transition:opacity .2s;
-  opacity:.45;
-}
-.nav-tab.active { opacity:1; }
-.nav-tab:active { opacity:.7; }
+/* ── SLIDE 2: MEMPELAI ── */
+.s2{background:var(--bg2);padding:48px 20px 100px}
+.sh{text-align:center;margin-bottom:28px}
+.sh-sup{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.sh-title{font-family:var(--ft);font-style:italic;font-size:clamp(24px,7vw,36px);color:var(--tx)}
+.mp{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:26px 20px;text-align:center;margin-bottom:12px}
+.mp-photo{width:100px;height:100px;border-radius:50%;border:2px solid rgba(255,255,255,.2);margin:0 auto 14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:42px;overflow:hidden}
+.mp-photo img{width:100%;height:100%;object-fit:cover}
+.mp-name{font-family:var(--ft);font-size:22px;color:var(--tx);margin-bottom:3px}
+.mp-sub{font-size:12px;color:var(--acc);font-style:italic;margin-bottom:8px}
+.mp-parents{font-size:13px;color:var(--mu);line-height:1.7}
+.mp-parents strong{color:var(--tx);font-weight:500}
+.mp-sosmed{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sp{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--mu);text-decoration:none}
+.mp-div{text-align:center;font-family:var(--fn);font-size:36px;color:var(--acc);padding:4px 0}
 
-.nav-icon {
-  width:28px; height:28px;
-  display:flex; align-items:center; justify-content:center;
-}
-.nav-icon svg { width:100%; height:100%; fill:var(--gold); }
+/* ── SLIDE 3: TANGGAL ── */
+.s3{background:var(--bg);padding:48px 20px 100px}
+.date-blk{text-align:center;margin:28px 0}
+.date-day{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px}
+.date-num{font-family:var(--ft);font-size:clamp(70px,22vw,110px);color:var(--acc);line-height:1;font-weight:300}
+.date-month{font-family:var(--ft);font-style:italic;font-size:clamp(26px,8vw,40px);color:var(--tx)}
+.date-year{font-size:12px;letter-spacing:6px;color:var(--mu);text-transform:uppercase;margin-top:6px}
+.cd-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:24px 16px;text-align:center}
+.cd-lbl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:18px}
+.cd-boxes{display:flex;justify-content:center;gap:8px}
+.cd-box{flex:1;max-width:68px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 6px}
+.cd-n{font-family:var(--ft);font-size:clamp(26px,8vw,40px);color:var(--acc2);line-height:1}
+.cd-u{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-top:5px}
 
-.nav-label {
-  font-size:9px;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  color:var(--gold-light);
-  font-family:'Jost',sans-serif;
-  font-weight:500;
-  white-space:nowrap;
-}
+/* ── SLIDE 4: JADWAL ── */
+.s4{background:var(--bg2);padding:48px 20px 100px}
+.ev{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:26px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+.ev::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to bottom,var(--acc),transparent)}
+.ev-type{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
+.ev-name{font-family:var(--ft);font-style:italic;font-size:24px;color:var(--tx);margin-bottom:16px}
+.ev-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:13px;color:var(--mu)}
+.ev-row .ei{font-size:15px;flex-shrink:0}
+.maps-btn{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:8px 18px;border-radius:30px;border:1px solid rgba(255,255,255,.15);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc2);text-decoration:none;font-family:'Jost',sans-serif;transition:all .2s}
+.maps-btn:hover{background:rgba(255,255,255,.08)}
 
-/* ══ MUSIC BTN ══ */
-#musicBtn {
-  position:fixed; top:16px; right:16px;
-  width:38px; height:38px; border-radius:50%;
-  background:rgba(42,29,18,.75);
-  border:1px solid rgba(184,147,90,.3);
-  backdrop-filter:blur(8px);
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; z-index:200; font-size:16px;
-  transition:all .25s;
-}
-#musicBtn.playing { animation:spin 5s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
+/* ── SLIDE 5: GALERI + RSVP ── */
+.s5{background:var(--bg)}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:0}
+.gi{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden}
+.gi:nth-child(1){grid-column:span 2;aspect-ratio:16/9}
+.gi img{width:100%;height:100%;object-fit:cover}
+.rsvp-sec{padding:28px 20px 100px}
+.rsvp-title{font-family:var(--ft);font-style:italic;font-size:26px;color:var(--tx);text-align:center;margin-bottom:20px}
+.ilbl{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);display:block;margin-bottom:5px}
+.ifield{width:100%;padding:12px 15px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.05);font-family:'Jost',sans-serif;font-size:15px;color:var(--tx);outline:none;margin-bottom:12px;-webkit-appearance:none;transition:border-color .2s}
+.ifield:focus{border-color:var(--acc)}.ifield::placeholder{color:var(--mu)}
+textarea.ifield{resize:none;min-height:86px}
+.ro-wrap{display:flex;gap:7px;margin-bottom:12px}
+.ro{flex:1;padding:10px 5px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--mu);cursor:pointer;text-align:center;transition:all .2s}
+.ro.on{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+.send-btn{width:100%;padding:14px;border-radius:11px;background:var(--acc);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s}
+.send-btn:active{opacity:.8}
+.uc-list{margin-top:28px}
+.uc-head{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mu);margin-bottom:14px}
+.uc-item{padding:13px 15px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:9px}
+.uc-name{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:3px}
+.uc-text{font-size:13px;color:var(--mu);line-height:1.5}
+.uc-status{font-size:11px;color:var(--acc);margin-top:5px}
 
-/* ══════════════════════════
-   SLIDE 1 — COVER
-══════════════════════════ */
-.s1 {
-  background:linear-gradient(160deg, #2a1d12 0%, #3d2b1f 60%, #2a1d12 100%);
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  min-height:calc(100vh - var(--nav-h));
-  position:relative; overflow:hidden;
-  padding:40px 24px 40px;
-  text-align:center;
+/* ── WATERMARK ── */
+#wm{
+  position:fixed;inset:0;z-index:500;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
 }
-.s1-bg-circles {
-  position:absolute; inset:0; overflow:hidden; pointer-events:none;
+#wm-inner{
+  transform:rotate(-28deg);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  text-align:center;padding:0 20px;
 }
-.s1-bg-circles span {
-  position:absolute; border-radius:50%;
-  border:1px solid rgba(184,147,90,.07);
+#wm-title{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(26px,8vw,42px);
+  color:rgba(255,255,255,.25);letter-spacing:2px;line-height:1.2;
 }
-.s1-bg-circles span:nth-child(1) { width:300px; height:300px; top:50%; left:50%; transform:translate(-50%,-50%); }
-.s1-bg-circles span:nth-child(2) { width:450px; height:450px; top:50%; left:50%; transform:translate(-50%,-50%); }
-.s1-bg-circles span:nth-child(3) { width:600px; height:600px; top:50%; left:50%; transform:translate(-50%,-50%); }
-
-.corner-deco {
-  position:absolute; width:70px; height:70px; opacity:.35;
+#wm-sub{
+  font-size:clamp(10px,3vw,13px);letter-spacing:3px;text-transform:uppercase;
+  color:rgba(255,255,255,.15);line-height:1.6;max-width:280px;
 }
-.corner-deco.tl { top:16px; left:16px; }
-.corner-deco.tr { top:16px; right:16px; transform:scaleX(-1); }
-.corner-deco.bl { bottom:80px; left:16px; transform:scaleY(-1); }
-.corner-deco.br { bottom:80px; right:16px; transform:scale(-1,-1); }
-
-.s1-top-label {
-  font-size:10px; letter-spacing:5px;
-  text-transform:uppercase; color:var(--text-muted);
-  margin-bottom:16px;
-  animation:fadeUp .7s ease both;
+#wm-brand{
+  font-size:clamp(9px,2.5vw,11px);letter-spacing:5px;text-transform:uppercase;
+  color:rgba(255,255,255,.18);margin-top:4px;
 }
-.s1-photo {
-  width:min(190px,50vw); height:min(190px,50vw);
-  border-radius:50%;
-  border:2px solid rgba(184,147,90,.35);
-  box-shadow:0 0 0 10px rgba(184,147,90,.05), 0 20px 60px rgba(0,0,0,.4);
-  background:var(--brown-light);
-  display:flex; align-items:center; justify-content:center;
-  font-size:64px; overflow:hidden;
-  margin:0 auto 24px;
-  animation:fadeUp .7s .1s ease both;
-}
-.s1-photo img { width:100%; height:100%; object-fit:cover; }
-
-.s1-names {
-  font-family:'Great Vibes',cursive;
-  font-size:clamp(48px,14vw,80px);
-  color:var(--cream);
-  line-height:1;
-  animation:fadeUp .7s .15s ease both;
-}
-.s1-amp {
-  font-family:'Great Vibes',cursive;
-  font-size:.5em; color:var(--gold);
-  display:block; margin:2px 0;
-}
-.s1-divider {
-  width:80px; height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  margin:20px auto;
-  animation:fadeUp .7s .2s ease both;
-}
-.s1-date {
-  font-size:12px; letter-spacing:4px;
-  color:var(--gold-light); text-transform:uppercase;
-  animation:fadeUp .7s .25s ease both;
-}
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-
-/* ══════════════════════════
-   SLIDE 2 — MEMPELAI
-══════════════════════════ */
-.s2 { background:var(--cream); padding:40px 20px 100px; }
-
-.slide-head { text-align:center; margin-bottom:28px; }
-.slide-sup {
-  font-size:10px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;
-}
-.slide-title {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic; font-size:clamp(26px,7vw,38px);
-  color:var(--brown);
-}
-
-.mempelai-card {
-  background:var(--white);
-  border:1px solid rgba(184,147,90,.2);
-  border-radius:20px;
-  padding:28px 20px;
-  margin-bottom:12px;
-  text-align:center;
-  box-shadow:0 2px 24px rgba(61,43,31,.07);
-}
-.mp-photo {
-  width:100px; height:100px; border-radius:50%;
-  border:2px solid rgba(184,147,90,.3);
-  margin:0 auto 16px;
-  background:var(--cream2);
-  display:flex; align-items:center; justify-content:center;
-  font-size:44px; overflow:hidden;
-}
-.mp-photo img { width:100%; height:100%; object-fit:cover; }
-.mp-name {
-  font-family:'Cormorant Garamond',serif;
-  font-size:24px; color:var(--brown); margin-bottom:4px;
-}
-.mp-bin { font-size:12px; color:var(--gold); font-style:italic; margin-bottom:10px; }
-.mp-parents { font-size:13px; color:var(--text-muted); line-height:1.7; margin-bottom:14px; }
-.mp-parents strong { color:var(--brown-light); font-weight:500; }
-.mp-sosmed {
-  display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
-}
-.sosmed-tag {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 12px; border-radius:20px;
-  background:rgba(184,147,90,.1);
-  border:1px solid rgba(184,147,90,.2);
-  font-size:11px; color:var(--brown-light);
-  text-decoration:none; letter-spacing:.5px;
-}
-
-.mp-divider {
-  text-align:center; padding:4px 0;
-  font-family:'Great Vibes',cursive;
-  font-size:42px; color:var(--gold);
-}
-
-/* ══════════════════════════
-   SLIDE 3 — TANGGAL & COUNTDOWN
-══════════════════════════ */
-.s3 {
-  background:linear-gradient(160deg,#2a1d12,#3d2b1f 60%,#2a1d12);
-  padding:40px 20px 100px;
-  min-height:calc(100vh - var(--nav-h));
-}
-.s3 .slide-sup { color:rgba(212,180,131,.5); }
-.s3 .slide-title { color:var(--cream); }
-
-.hijri-date {
-  text-align:center;
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic; font-size:16px;
-  color:var(--gold-light); opacity:.75;
-  margin-top:6px; letter-spacing:1px;
-}
-
-.date-big {
-  text-align:center; margin:32px 0;
-}
-.date-day {
-  font-size:11px; letter-spacing:5px;
-  text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;
-}
-.date-num {
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(72px,22vw,120px);
-  color:var(--gold); line-height:1;
-  font-weight:300;
-}
-.date-month {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;
-  font-size:clamp(28px,8vw,42px);
-  color:var(--cream); margin-top:4px;
-}
-.date-year {
-  font-size:13px; letter-spacing:6px;
-  text-transform:uppercase; color:var(--text-muted); margin-top:8px;
-}
-
-.countdown-wrap {
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(184,147,90,.2);
-  border-radius:20px;
-  padding:28px 20px;
-  text-align:center;
-}
-.countdown-label {
-  font-size:10px; letter-spacing:4px;
-  text-transform:uppercase; color:var(--gold-light);
-  opacity:.6; margin-bottom:20px;
-}
-.countdown-boxes {
-  display:flex; justify-content:center; gap:10px;
-}
-.cd-box {
-  flex:1; max-width:70px;
-  background:rgba(184,147,90,.07);
-  border:1px solid rgba(184,147,90,.15);
-  border-radius:14px; padding:14px 8px;
-}
-.cd-num {
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(28px,8vw,42px);
-  color:var(--gold-pale); line-height:1;
-}
-.cd-unit {
-  font-size:9px; letter-spacing:2px;
-  text-transform:uppercase; color:var(--text-muted);
-  margin-top:6px;
-}
-
-/* ══════════════════════════
-   SLIDE 4 — JADWAL
-══════════════════════════ */
-.s4 { background:var(--cream2); padding:40px 20px 100px; }
-.s4 .slide-title { color:var(--brown); }
-
-.event-card {
-  background:var(--white);
-  border:1px solid rgba(184,147,90,.2);
-  border-radius:20px;
-  padding:28px 22px;
-  margin-bottom:14px;
-  position:relative; overflow:hidden;
-  box-shadow:0 2px 20px rgba(61,43,31,.06);
-}
-.event-card::before {
-  content:''; position:absolute;
-  top:0; left:0; width:3px; height:100%;
-  background:linear-gradient(to bottom,var(--gold),transparent);
-}
-.event-type {
-  font-size:10px; letter-spacing:3px;
-  text-transform:uppercase; color:var(--gold);
-  margin-bottom:6px;
-}
-.event-name {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic; font-size:26px;
-  color:var(--brown); margin-bottom:18px;
-}
-.event-row {
-  display:flex; align-items:flex-start; gap:10px;
-  margin-bottom:10px; font-size:13px; color:var(--text-muted);
-}
-.event-row .ei { font-size:16px; flex-shrink:0; }
-
-.maps-btn {
-  display:inline-flex; align-items:center; gap:6px;
-  margin-top:14px; padding:8px 18px;
-  border-radius:30px;
-  border:1px solid rgba(184,147,90,.35);
-  font-size:12px; letter-spacing:1.5px;
-  text-transform:uppercase; color:var(--gold);
-  text-decoration:none; transition:all .2s;
-  font-family:'Jost',sans-serif;
-}
-.maps-btn:hover { background:rgba(184,147,90,.1); }
-
-/* ══════════════════════════
-   SLIDE 5 — GALERI
-══════════════════════════ */
-.s5 { background:var(--brown-dark); padding:40px 0 100px; }
-.s5 .slide-head { padding:0 20px; }
-.s5 .slide-sup { color:rgba(212,180,131,.5); }
-.s5 .slide-title { color:var(--cream); }
-
-.gallery-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:3px; margin-top:24px;
-}
-.g-item {
-  aspect-ratio:1;
-  background:var(--brown-light);
-  display:flex; align-items:center; justify-content:center;
-  font-size:48px; overflow:hidden; cursor:pointer;
-  transition:opacity .2s;
-}
-.g-item:nth-child(1) { grid-column:span 2; aspect-ratio:16/9; }
-.g-item:active { opacity:.8; }
-.g-item img { width:100%; height:100%; object-fit:cover; }
-
-/* RSVP section di slide 5 */
-.rsvp-section {
-  padding:32px 20px 0;
-}
-.rsvp-title {
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic; font-size:28px;
-  color:var(--cream); margin-bottom:20px;
-  text-align:center;
-}
-.input-label {
-  font-size:10px; letter-spacing:2.5px;
-  text-transform:uppercase; color:rgba(212,180,131,.5);
-  display:block; margin-bottom:6px;
-}
-.input-field {
-  width:100%; padding:13px 16px;
-  border:1px solid rgba(184,147,90,.25);
-  border-radius:12px;
-  background:rgba(255,255,255,.05);
-  font-family:'Jost',sans-serif; font-size:15px;
-  color:var(--cream); outline:none;
-  transition:border-color .2s; margin-bottom:14px;
-  -webkit-appearance:none;
-}
-.input-field:focus { border-color:var(--gold); }
-.input-field::placeholder { color:rgba(212,180,131,.3); }
-textarea.input-field { resize:none; min-height:90px; }
-
-.rsvp-opts { display:flex; gap:8px; margin-bottom:14px; }
-.rsvp-opt {
-  flex:1; padding:11px 6px; border-radius:10px;
-  border:1px solid rgba(184,147,90,.25);
-  background:transparent; font-family:'Jost',sans-serif;
-  font-size:12px; color:rgba(212,180,131,.5);
-  cursor:pointer; text-align:center; transition:all .2s;
-}
-.rsvp-opt.on { background:var(--gold); color:var(--brown-dark); border-color:var(--gold); font-weight:600; }
-
-.send-btn {
-  width:100%; padding:15px;
-  border-radius:12px; background:var(--gold);
-  color:var(--brown-dark); border:none;
-  font-family:'Jost',sans-serif; font-size:12px;
-  letter-spacing:3px; text-transform:uppercase;
-  cursor:pointer; font-weight:600; transition:opacity .2s;
-}
-.send-btn:active { opacity:.8; }
-
-.ucapan-list { margin-top:28px; }
-.ucapan-head {
-  font-size:10px; letter-spacing:3px;
-  text-transform:uppercase; color:rgba(212,180,131,.4);
-  margin-bottom:14px;
-}
-.ucapan-item {
-  padding:14px 16px; border-radius:12px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(184,147,90,.12);
-  margin-bottom:10px;
-}
-.ucapan-sender { font-size:13px; font-weight:600; color:var(--gold-pale); margin-bottom:4px; }
-.ucapan-text { font-size:13px; color:rgba(245,240,232,.6); line-height:1.5; }
-.ucapan-status { font-size:11px; color:var(--gold); margin-top:6px; }
-
-/* ══ WATERMARK ══ */
-#watermark {
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-align: center;
-  padding: 24px;
-}
-#watermark-inner {
-  transform: rotate(-25deg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-#watermark-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: clamp(24px, 7vw, 36px);
-  color: rgba(255,255,255,.28);
-  letter-spacing: 2px;
-  line-height: 1.2;
-}
-#watermark-sub {
-  font-family: 'Jost', sans-serif;
-  font-size: clamp(11px, 3vw, 13px);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.18);
-}
-#watermark-brand {
-  font-family: 'Jost', sans-serif;
-  font-size: clamp(10px, 2.5vw, 12px);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.22);
-  margin-top: 4px;
-}
-
-/* ══ FADE IN STAGGERED ══ */
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(28px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes fadeScale {
-  from { opacity:0; transform:scale(.94); }
-  to   { opacity:1; transform:scale(1); }
-}
-.anim, .anim-scale { opacity:0; animation:none; }
-.slide.in .anim       { animation:fadeUp   .7s cubic-bezier(.22,1,.36,1) forwards; }
-.slide.in .anim-scale { animation:fadeScale .7s cubic-bezier(.22,1,.36,1) forwards; }
-.d0{animation-delay:.0s}.d1{animation-delay:.1s}.d2{animation-delay:.2s}
-.d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.5s}
-.d6{animation-delay:.6s}.d7{animation-delay:.7s}.d8{animation-delay:.8s}
+.t5 #wm-title{color:rgba(0,0,0,.15)}
+.t5 #wm-sub{color:rgba(0,0,0,.1)}
+.t5 #wm-brand{color:rgba(0,0,0,.12)}
 </style>
 </head>
 <body>
 
 <!-- ══ GATE ══ -->
 <div id="gate">
-  <div class="gate-ornament-line"></div>
-  <div class="gate-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
-  <div class="gate-ornament-line"></div>
-  <br><br>
-  <div class="gate-to">Kepada Yth.</div>
-  <div class="gate-guest" id="guestDisplay">Tamu Undangan</div>
-  <div class="gate-from" id="gateFrom">Turut diundang oleh Reza &amp; Ninda</div>
-  <div class="gate-btn" onclick="openInvitation()">
-    <div class="gate-btn-ring"><div class="gate-icon">💌</div></div>
-    <div class="gate-label">Buka Undangan</div>
+  <div class="g-line"></div>
+  <div class="g-arab">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+  <div class="g-line"></div>
+  <br>
+  <div class="g-to">Kepada Yth.</div>
+  <div class="g-name" id="gName">Tamu Undangan</div>
+  <div class="g-from" id="gFrom">Turut diundang</div>
+  <div class="g-btn" onclick="openInvitation()">
+    <div class="g-ring">💌</div>
+    <div class="g-lbl">Buka Undangan</div>
   </div>
 </div>
 
-<!-- ══ MUSIK ══ -->
-<audio id="audio" loop>
-  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" type="audio/mp3">
-</audio>
-<div id="musicBtn" onclick="toggleMusic()">🎵</div>
+<!-- AUDIO -->
+<audio id="audio" loop></audio>
+<div id="mBtn" onclick="toggleMusic()">🎵</div>
 
 <!-- ══ APP ══ -->
 <div id="app">
-  <div id="sliderWrap">
+  <div id="wrap">
     <div id="slider">
 
       <!-- SLIDE 1: COVER -->
       <div class="slide">
         <div class="s1">
-          <div class="s1-bg-circles">
-            <span></span><span></span><span></span>
-          </div>
-          <!-- corner deco -->
-          <svg class="corner-deco tl" viewBox="0 0 70 70" fill="none">
-            <path d="M2 2 L2 68" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 L68 2" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 Q28 2 28 28" stroke="#b8935a" stroke-width=".4" fill="none"/>
-            <circle cx="2" cy="2" r="2.5" fill="#b8935a" opacity=".6"/>
-          </svg>
-          <svg class="corner-deco tr" viewBox="0 0 70 70" fill="none">
-            <path d="M2 2 L2 68" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 L68 2" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 Q28 2 28 28" stroke="#b8935a" stroke-width=".4" fill="none"/>
-            <circle cx="2" cy="2" r="2.5" fill="#b8935a" opacity=".6"/>
-          </svg>
-          <svg class="corner-deco bl" viewBox="0 0 70 70" fill="none">
-            <path d="M2 2 L2 68" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 L68 2" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 Q28 2 28 28" stroke="#b8935a" stroke-width=".4" fill="none"/>
-            <circle cx="2" cy="2" r="2.5" fill="#b8935a" opacity=".6"/>
-          </svg>
-          <svg class="corner-deco br" viewBox="0 0 70 70" fill="none">
-            <path d="M2 2 L2 68" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 L68 2" stroke="#b8935a" stroke-width=".8"/>
-            <path d="M2 2 Q28 2 28 28" stroke="#b8935a" stroke-width=".4" fill="none"/>
-            <circle cx="2" cy="2" r="2.5" fill="#b8935a" opacity=".6"/>
-          </svg>
+          <svg class="co tl" viewBox="0 0 64 64"><path d="M2 2L2 62"/><path d="M2 2L62 2"/><path d="M2 2Q26 2 26 26" fill="none"/><circle cx="2" cy="2" r="2.5" stroke="none" fill="var(--acc)" opacity=".6"/></svg>
+          <svg class="co tr" viewBox="0 0 64 64"><path d="M2 2L2 62"/><path d="M2 2L62 2"/><path d="M2 2Q26 2 26 26" fill="none"/><circle cx="2" cy="2" r="2.5" stroke="none" fill="var(--acc)" opacity=".6"/></svg>
+          <svg class="co bl" viewBox="0 0 64 64"><path d="M2 2L2 62"/><path d="M2 2L62 2"/><path d="M2 2Q26 2 26 26" fill="none"/><circle cx="2" cy="2" r="2.5" stroke="none" fill="var(--acc)" opacity=".6"/></svg>
+          <svg class="co br" viewBox="0 0 64 64"><path d="M2 2L2 62"/><path d="M2 2L62 2"/><path d="M2 2Q26 2 26 26" fill="none"/><circle cx="2" cy="2" r="2.5" stroke="none" fill="var(--acc)" opacity=".6"/></svg>
 
-          <div class="s1-top-label anim d0">The Wedding of</div>
-          <div class="s1-photo anim-scale d1" id="coverPhoto">📸</div>
-          <div class="s1-names anim d2" id="coverNames">
-            Reza <span class="s1-amp">&</span> Ninda
-          </div>
-          <div class="s1-divider anim d3"></div>
-          <div class="s1-date anim d4" id="coverDate">Sabtu, 21 Juni 2025</div>
+          <div class="s1-lbl an d0">The Wedding of</div>
+          <div class="s1-photo an-sc d1" id="coverPhoto"><span>📸</span></div>
+          <div class="s1-names an d2" id="coverNames">—<span class="s1-amp">&</span>—</div>
+          <div class="s1-rule an d3"></div>
+          <div class="s1-date an d4" id="coverDate">—</div>
         </div>
       </div>
 
       <!-- SLIDE 2: MEMPELAI -->
       <div class="slide">
         <div class="s2">
-          <div class="slide-head anim d0">
-            <div class="slide-sup">Mempelai</div>
-            <div class="slide-title">Dua Hati, Satu Janji</div>
+          <div class="sh an d0">
+            <div class="sh-sup">Mempelai</div>
+            <div class="sh-title">Dua Hati, Satu Janji</div>
           </div>
-
-          <div class="mempelai-card anim d1">
-            <div class="mp-photo">🤵</div>
-            <div class="mp-name" id="namaPria">Reza Firmansyah, S.T.</div>
-            <div class="mp-bin">Putra Pertama</div>
-            <div class="mp-parents">
-              Bapak <strong id="ayahPria">H. Sulaiman</strong> &amp; Ibu <strong id="ibuPria">Hj. Fatimah</strong>
-            </div>
+          <div class="mp an d1">
+            <div class="mp-photo" id="fotoPria"><span>🤵</span></div>
+            <div class="mp-name" id="namaPria">—</div>
+            <div class="mp-sub">Putra</div>
+            <div class="mp-parents">Bapak <strong id="ayahPria">—</strong> &amp; Ibu <strong id="ibuPria">—</strong></div>
             <div class="mp-sosmed">
-              <a class="sosmed-tag" href="#"><span>📷</span> @rezafirmansyah</a>
-              <a class="sosmed-tag" href="#"><span>▶</span> @rezafirmansyah</a>
+              <a class="sp" id="igPria" href="#">📷 Instagram</a>
+              <a class="sp" id="ttPria" href="#">▶ TikTok</a>
             </div>
           </div>
-
-          <div class="mp-divider anim d2">♡</div>
-
-          <div class="mempelai-card anim d3">
-            <div class="mp-photo">👰</div>
-            <div class="mp-name" id="namaWanita">Ninda Aulia, S.Pd.</div>
-            <div class="mp-bin">Putri Kedua</div>
-            <div class="mp-parents">
-              Bapak <strong id="ayahWanita">Drs. Bambang</strong> &amp; Ibu <strong id="ibuWanita">Sri Wahyuni</strong>
-            </div>
+          <div class="mp-div an d2">♡</div>
+          <div class="mp an d3">
+            <div class="mp-photo" id="fotoWanita"><span>👰</span></div>
+            <div class="mp-name" id="namaWanita">—</div>
+            <div class="mp-sub">Putri</div>
+            <div class="mp-parents">Bapak <strong id="ayahWanita">—</strong> &amp; Ibu <strong id="ibuWanita">—</strong></div>
             <div class="mp-sosmed">
-              <a class="sosmed-tag" href="#"><span>📷</span> @nindaaulia</a>
-              <a class="sosmed-tag" href="#"><span>▶</span> @nindaaulia</a>
+              <a class="sp" id="igWanita" href="#">📷 Instagram</a>
+              <a class="sp" id="ttWanita" href="#">▶ TikTok</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SLIDE 3: TANGGAL & COUNTDOWN -->
+      <!-- SLIDE 3: TANGGAL -->
       <div class="slide">
         <div class="s3">
-          <div class="slide-head anim d0" style="text-align:center">
-            <div class="slide-sup">Hari Bahagia</div>
-            <div class="slide-title">Tanggal Pernikahan</div>
-            <div class="hijri-date">24 Dzulhijjah 1446 H</div>
+          <div class="sh an d0">
+            <div class="sh-sup">Hari Bahagia</div>
+            <div class="sh-title">Tanggal Pernikahan</div>
           </div>
-
-          <div class="date-big anim d1">
-            <div class="date-day">Sabtu</div>
-            <div class="date-num">21</div>
-            <div class="date-month">Juni</div>
-            <div class="date-year">2025</div>
+          <div class="date-blk an d1">
+            <div class="date-day"  id="dateDay">—</div>
+            <div class="date-num"  id="dateNum">—</div>
+            <div class="date-month" id="dateMonth">—</div>
+            <div class="date-year"  id="dateYear">—</div>
           </div>
-
-          <div class="countdown-wrap anim d2">
-            <div class="countdown-label">Hitung Mundur Menuju Hari H</div>
-            <div class="countdown-boxes">
-              <div class="cd-box"><div class="cd-num" id="cdD">--</div><div class="cd-unit">Hari</div></div>
-              <div class="cd-box"><div class="cd-num" id="cdH">--</div><div class="cd-unit">Jam</div></div>
-              <div class="cd-box"><div class="cd-num" id="cdM">--</div><div class="cd-unit">Menit</div></div>
-              <div class="cd-box"><div class="cd-num" id="cdS">--</div><div class="cd-unit">Detik</div></div>
+          <div class="cd-wrap an d2">
+            <div class="cd-lbl">Hitung Mundur</div>
+            <div class="cd-boxes">
+              <div class="cd-box"><div class="cd-n" id="cdD">--</div><div class="cd-u">Hari</div></div>
+              <div class="cd-box"><div class="cd-n" id="cdH">--</div><div class="cd-u">Jam</div></div>
+              <div class="cd-box"><div class="cd-n" id="cdM">--</div><div class="cd-u">Menit</div></div>
+              <div class="cd-box"><div class="cd-n" id="cdS">--</div><div class="cd-u">Detik</div></div>
             </div>
           </div>
         </div>
@@ -739,29 +298,25 @@ textarea.input-field { resize:none; min-height:90px; }
       <!-- SLIDE 4: JADWAL -->
       <div class="slide">
         <div class="s4">
-          <div class="slide-head anim d0">
-            <div class="slide-sup">Rangkaian Acara</div>
-            <div class="slide-title">Jadwal Pernikahan</div>
+          <div class="sh an d0">
+            <div class="sh-sup">Rangkaian Acara</div>
+            <div class="sh-title">Jadwal Pernikahan</div>
           </div>
-
-          <div style="margin-top:24px">
-            <div class="event-card anim d1">
-              <div class="event-type">Akad Nikah</div>
-              <div class="event-name">Ijab Qabul</div>
-              <div class="event-row"><span class="ei">📅</span><span>Sabtu, 21 Juni 2025</span></div>
-              <div class="event-row"><span class="ei">🕗</span><span>08.00 WIB — selesai</span></div>
-              <div class="event-row"><span class="ei">📍</span><span>Masjid Ar-Rahman, Jl. Merdeka No. 12, Surabaya</span></div>
-              <a href="https://maps.google.com" class="maps-btn" target="_blank">🗺️ Buka Maps</a>
-            </div>
-
-            <div class="event-card anim d2">
-              <div class="event-type">Resepsi</div>
-              <div class="event-name">Walimatul 'Ursy</div>
-              <div class="event-row"><span class="ei">📅</span><span>Sabtu, 21 Juni 2025</span></div>
-              <div class="event-row"><span class="ei">🕙</span><span>10.00 — 14.00 WIB</span></div>
-              <div class="event-row"><span class="ei">📍</span><span>Gedung Graha Indah, Jl. Ahmad Yani No. 45, Surabaya</span></div>
-              <a href="https://maps.google.com" class="maps-btn" target="_blank">🗺️ Buka Maps</a>
-            </div>
+          <div class="ev an d1">
+            <div class="ev-type">Akad Nikah</div>
+            <div class="ev-name">Ijab Qabul</div>
+            <div class="ev-row"><span class="ei">📅</span><span id="akadTgl">—</span></div>
+            <div class="ev-row"><span class="ei">🕗</span><span id="akadJam">—</span></div>
+            <div class="ev-row"><span class="ei">📍</span><span id="akadLokasi">—</span></div>
+            <a class="maps-btn" id="akadMaps" href="#" target="_blank">🗺️ Buka Maps</a>
+          </div>
+          <div class="ev an d2">
+            <div class="ev-type">Resepsi</div>
+            <div class="ev-name">Walimatul 'Ursy</div>
+            <div class="ev-row"><span class="ei">📅</span><span id="resepsiTgl">—</span></div>
+            <div class="ev-row"><span class="ei">🕙</span><span id="resepsiJam">—</span></div>
+            <div class="ev-row"><span class="ei">📍</span><span id="resepsiLokasi">—</span></div>
+            <a class="maps-btn" id="resepsiMaps" href="#" target="_blank">🗺️ Buka Maps</a>
           </div>
         </div>
       </div>
@@ -769,49 +324,33 @@ textarea.input-field { resize:none; min-height:90px; }
       <!-- SLIDE 5: GALERI + RSVP -->
       <div class="slide">
         <div class="s5">
-          <div class="slide-head anim d0">
-            <div class="slide-sup">Galeri</div>
-            <div class="slide-title">Momen Bersama</div>
+          <div class="gal an d0" id="gallery">
+            <div class="gi">🌸</div>
+            <div class="gi">💐</div>
+            <div class="gi">🌿</div>
+            <div class="gi">✨</div>
+            <div class="gi">🌺</div>
           </div>
-
-          <div class="gallery-grid anim d1">
-            <div class="g-item">🌸</div>
-            <div class="g-item">💐</div>
-            <div class="g-item">🌿</div>
-            <div class="g-item">✨</div>
-            <div class="g-item">🌺</div>
-          </div>
-
-          <div class="rsvp-section anim d2">
+          <div class="rsvp-sec an d1">
             <div class="rsvp-title">RSVP &amp; Ucapan</div>
-
-            <label class="input-label">Nama Anda</label>
-            <input class="input-field" id="rsvpName" type="text" placeholder="Nama lengkap...">
-
-            <label class="input-label">Kehadiran</label>
-            <div class="rsvp-opts">
-              <div class="rsvp-opt" onclick="pickRsvp(this,'hadir')">✅ Hadir</div>
-              <div class="rsvp-opt" onclick="pickRsvp(this,'tidak')">❌ Tidak</div>
-              <div class="rsvp-opt" onclick="pickRsvp(this,'mungkin')">🤔 Mungkin</div>
+            <label class="ilbl">Nama Anda</label>
+            <input class="ifield" id="rsvpName" type="text" placeholder="Nama lengkap...">
+            <label class="ilbl">Kehadiran</label>
+            <div class="ro-wrap">
+              <div class="ro" onclick="pickR(this,'hadir')">✅ Hadir</div>
+              <div class="ro" onclick="pickR(this,'tidak')">❌ Tidak</div>
+              <div class="ro" onclick="pickR(this,'mungkin')">🤔 Mungkin</div>
             </div>
-
-            <label class="input-label">Ucapan &amp; Doa</label>
-            <textarea class="input-field" id="rsvpMsg" placeholder="Tulis ucapan..."></textarea>
-
-            <button class="send-btn" onclick="submitRsvp()">Kirim Ucapan →</button>
-
-            <div class="ucapan-list">
-              <div class="ucapan-head">Ucapan Tamu</div>
-              <div id="ucapanContainer">
-                <div class="ucapan-item">
-                  <div class="ucapan-sender">Budi Santoso</div>
-                  <div class="ucapan-text">Semoga menjadi keluarga yang sakinah, mawaddah, warahmah 🤲</div>
-                  <div class="ucapan-status">✅ Hadir</div>
-                </div>
-                <div class="ucapan-item">
-                  <div class="ucapan-sender">Dewi Rahayu</div>
-                  <div class="ucapan-text">Barakallahu lakuma, selamat menempuh hidup baru!</div>
-                  <div class="ucapan-status">✅ Hadir</div>
+            <label class="ilbl">Ucapan &amp; Doa</label>
+            <textarea class="ifield" id="rsvpMsg" placeholder="Tulis ucapan..."></textarea>
+            <button class="send-btn" onclick="submitRsvp()">Kirim →</button>
+            <div class="uc-list">
+              <div class="uc-head">Ucapan Tamu</div>
+              <div id="ucList">
+                <div class="uc-item">
+                  <div class="uc-name">Budi Santoso</div>
+                  <div class="uc-text">Semoga sakinah mawaddah warahmah 🤲</div>
+                  <div class="uc-status">✅ Hadir</div>
                 </div>
               </div>
             </div>
@@ -819,417 +358,259 @@ textarea.input-field { resize:none; min-height:90px; }
         </div>
       </div>
 
-    </div><!-- end slider -->
+    </div>
   </div>
 
-  <!-- ══ BOTTOM NAV ══ -->
-  <nav id="bottomNav" data-active="0">
-
-    <!-- Tab 1: Undangan / Cover -->
-    <div class="nav-tab active" onclick="goTo(0)">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.5 2 5 4 5 7.5c0 2 1 3.5 2.5 4.5L12 22l4.5-10C18 11 19 9.5 19 7.5 19 4 15.5 2 12 2zm0 7.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-        </svg>
-      </div>
-      <div class="nav-label" id="navLabel0">Undangan</div>
+  <!-- BOTTOM NAV -->
+  <nav id="nav" data-a="0">
+    <div class="nt on" onclick="goTo(0)">
+      <svg class="ni" viewBox="0 0 24 24"><path d="M12 2C8.5 2 5 4 5 7.5c0 2 1 3.5 2.5 4.5L12 22l4.5-10C18 11 19 9.5 19 7.5 19 4 15.5 2 12 2zm0 7.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+      <div class="nl" id="navLbl">Undangan</div>
     </div>
-
-    <!-- Tab 2: Mempelai -->
-    <div class="nav-tab" onclick="goTo(1)">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M9 12c2.2 0 4-1.8 4-4S11.2 4 9 4 5 5.8 5 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm8-2c.1 0 .2 0 .3 0 1.8-.3 3.2-1.8 3.2-3.7 0-2.1-1.6-3.8-3.5-3.8-.5 0-.9.1-1.3.3.8.9 1.3 2.1 1.3 3.5s-.5 2.6-1.3 3.5c.4.1.9.2 1.3.2zm1 2c-.7 0-1.4.1-2.1.2 1.3.7 2.1 1.7 2.1 3.1V19h5v-2c0-2.5-4.2-3-5-3z"/>
-        </svg>
-      </div>
-      <div class="nav-label">Mempelai</div>
+    <div class="nt" onclick="goTo(1)">
+      <svg class="ni" viewBox="0 0 24 24"><path d="M9 12c2.2 0 4-1.8 4-4S11.2 4 9 4 5 5.8 5 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm8-2c.1 0 .2 0 .3 0 1.8-.3 3.2-1.8 3.2-3.7 0-2.1-1.6-3.8-3.5-3.8-.5 0-.9.1-1.3.3.8.9 1.3 2.1 1.3 3.5s-.5 2.6-1.3 3.5c.4.1.9.2 1.3.2zm1 2c-.7 0-1.4.1-2.1.2 1.3.7 2.1 1.7 2.1 3.1V19h5v-2c0-2.5-4.2-3-5-3z"/></svg>
+      <div class="nl">Mempelai</div>
     </div>
-
-    <!-- Tab 3: Tanggal -->
-    <div class="nav-tab" onclick="goTo(2)">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
-          <path d="M12 16.5c.8 0 1.4-.3 1.8-.8l-.6-.6c-.3.3-.7.5-1.2.5-.9 0-1.5-.7-1.5-1.6s.6-1.6 1.5-1.6c.5 0 .9.2 1.2.5l.6-.6c-.4-.5-1-.8-1.8-.8-1.4 0-2.4 1-2.4 2.5s1 2.5 2.4 2.5z"/>
-        </svg>
-      </div>
-      <div class="nav-label">Tanggal</div>
+    <div class="nt" onclick="goTo(2)">
+      <svg class="ni" viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+      <div class="nl">Tanggal</div>
     </div>
-
-    <!-- Tab 4: Jadwal -->
-    <div class="nav-tab" onclick="goTo(3)">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.4-1.4L12 14.2l7.6-7.6L21 8l-9 9z"/>
-        </svg>
-      </div>
-      <div class="nav-label">Jadwal</div>
+    <div class="nt" onclick="goTo(3)">
+      <svg class="ni" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.4-1.4L12 14.2l7.6-7.6L21 8l-9 9z"/></svg>
+      <div class="nl">Jadwal</div>
     </div>
-
-    <!-- Tab 5: Galeri -->
-    <div class="nav-tab" onclick="goTo(4)">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-        </svg>
-      </div>
-      <div class="nav-label">Galeri</div>
+    <div class="nt" onclick="goTo(4)">
+      <svg class="ni" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+      <div class="nl">Galeri</div>
     </div>
-
   </nav>
+</div>
 
 <!-- WATERMARK -->
-<div id="watermark">
-  <div id="watermark-inner">
-    <div id="watermark-title">Belum Diaktifkan</div>
-    <div id="watermark-sub">Lakukan pembayaran untuk menghapus tanda air ini</div>
-    <div id="watermark-brand">undanganku.id</div>
+<div id="wm">
+  <div id="wm-inner">
+    <div id="wm-title">Belum Diaktifkan</div>
+    <div id="wm-sub">Lakukan pembayaran untuk<br>menghapus tanda air ini</div>
+    <div id="wm-brand">undanganku.id</div>
   </div>
 </div>
-</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ══════════════════════════════════════
-// INIT SUPABASE
-// ══════════════════════════════════════
-const SUPABASE_URL  = 'https://dwrxehnyjfzighzysosw.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cnhlaG55amZ6aWdoenlzb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwMjUsImV4cCI6MjA5NjIxMjAyNX0.lPPsnhRpyDcFhUvrbxJEMc7DAjlM-BMyICOVi9KPqWc';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const SURL = 'https://dwrxehnyjfzighzysosw.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3cnhlaG55amZ6aWdoenlzb3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwMjUsImV4cCI6MjA5NjIxMjAyNX0.lPPsnhRpyDcFhUvrbxJEMc7DAjlM-BMyICOVi9KPqWc';
+const sb = supabase.createClient(SURL, SKEY);
 
-// ══════════════════════════════════════
-// URL PARAMS
-// ══════════════════════════════════════
 const params    = new URLSearchParams(window.location.search);
 const guestName = params.get('tamu') || '';
-const slug      = window.location.pathname.replace(/^\//, '').split('/')[0]
-                  || params.get('slug') || 'demo';
-const temaParam = parseInt(params.get('tema')) || null;
+const temaParam = parseInt(params.get('tema')) || 0;
+const slug = window.location.pathname.replace(/^\/+/,'').split('/')[0] || params.get('slug') || '';
 
-let DATA = null;
-let undanganId = null;
-
-// ══════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════
 const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
+function fmtDate(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
   return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
-function fmtTime(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
+function fmtTime(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
   return `${String(d.getHours()).padStart(2,'0')}.${String(d.getMinutes()).padStart(2,'0')} WIB`;
 }
 
-// ══════════════════════════════════════
-// POPULATE — isi semua elemen dari data
-// ══════════════════════════════════════
-function populate(d) {
-  const pp = d.panggilan_pria  || d.nama_pria?.split(' ')[0]  || 'Pengantin';
-  const pw = d.panggilan_wanita || d.nama_wanita?.split(' ')[0] || 'Pengantin';
+let DATA = null, undanganId = null;
+
+function setEl(id, val){ const el=document.getElementById(id); if(el) el.textContent=val||'—'; }
+function setHref(id, url){ const el=document.getElementById(id); if(el&&url) el.href=url; }
+function setImg(id, src){ const el=document.getElementById(id); if(el&&src) el.innerHTML=`<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover">`; }
+
+function populate(d){
+  const pp = d.panggilan_pria  || (d.nama_pria||'').split(' ')[0]  || 'Pengantin';
+  const pw = d.panggilan_wanita|| (d.nama_wanita||'').split(' ')[0]|| 'Pengantin';
+  const tgl = d.tanggal_resepsi || d.tanggal_akad;
 
   document.title = `Undangan ${pp} & ${pw}`;
+  document.getElementById('gName').textContent  = guestName || 'Tamu Undangan';
+  document.getElementById('gFrom').innerHTML    = `Turut diundang oleh <b>${pp} &amp; ${pw}</b>`;
+  document.getElementById('navLbl').textContent = `${pp} & ${pw}`;
 
-  // Gate
-  document.getElementById('guestDisplay').textContent = guestName || 'Tamu Undangan';
-  document.getElementById('gateFrom').innerHTML = `Turut diundang oleh <b>${pp} &amp; ${pw}</b>`;
-
-  // Nav label tab 1
-  document.getElementById('navLabel0').textContent = `${pp} & ${pw}`;
-
-  // Slide 1 — Cover
+  // Slide 1
   document.getElementById('coverNames').innerHTML = `${pp}<span class="s1-amp">&</span>${pw}`;
-  const tglResepsi = d.tanggal_resepsi || d.tanggal_akad;
-  document.getElementById('coverDate').textContent = fmtDate(tglResepsi);
-  if (d.foto_cover) {
-    document.getElementById('coverPhoto').innerHTML = `<img src="${d.foto_cover}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  setEl('coverDate', fmtDate(tgl));
+  setImg('coverPhoto', d.foto_cover);
+
+  // Slide 2
+  setEl('namaPria', d.nama_pria); setEl('namaWanita', d.nama_wanita);
+  setEl('ayahPria', d.ayah_pria); setEl('ibuPria', d.ibu_pria);
+  setEl('ayahWanita', d.ayah_wanita); setEl('ibuWanita', d.ibu_wanita);
+  setImg('fotoPria', d.foto_pria); setImg('fotoWanita', d.foto_wanita);
+  if(d.ig_pria){ const e=document.getElementById('igPria'); if(e){e.textContent=`📷 ${d.ig_pria}`;e.href=`https://instagram.com/${d.ig_pria.replace('@','')}`}}
+  if(d.ig_wanita){ const e=document.getElementById('igWanita'); if(e){e.textContent=`📷 ${d.ig_wanita}`;e.href=`https://instagram.com/${d.ig_wanita.replace('@','')}`}}
+
+  // Slide 3
+  if(tgl){
+    const dt=new Date(tgl);
+    setEl('dateDay', DAYS[dt.getDay()]); setEl('dateNum', dt.getDate());
+    setEl('dateMonth', MONTHS[dt.getMonth()]); setEl('dateYear', dt.getFullYear());
   }
 
-  // Slide 2 — Mempelai
-  document.getElementById('namaPria').textContent    = d.nama_pria    || '—';
-  document.getElementById('namaWanita').textContent  = d.nama_wanita  || '—';
-  document.getElementById('ayahPria').textContent    = d.ayah_pria    || '—';
-  document.getElementById('ibuPria').textContent     = d.ibu_pria     || '—';
-  document.getElementById('ayahWanita').textContent  = d.ayah_wanita  || '—';
-  document.getElementById('ibuWanita').textContent   = d.ibu_wanita   || '—';
-  if (d.foto_pria)   document.getElementById('fotoPria').innerHTML   = `<img src="${d.foto_pria}"   alt="" style="width:100%;height:100%;object-fit:cover">`;
-  if (d.foto_wanita) document.getElementById('fotoWanita').innerHTML = `<img src="${d.foto_wanita}" alt="" style="width:100%;height:100%;object-fit:cover">`;
-  if (d.ig_pria)   { const el = document.getElementById('igPria');   if(el){ el.textContent=`📷 ${d.ig_pria}`;   el.href=`https://instagram.com/${d.ig_pria.replace('@','')}`; } }
-  if (d.ig_wanita) { const el = document.getElementById('igWanita'); if(el){ el.textContent=`📷 ${d.ig_wanita}`; el.href=`https://instagram.com/${d.ig_wanita.replace('@','')}`; } }
+  // Slide 4
+  setEl('akadTgl', fmtDate(d.tanggal_akad));
+  setEl('akadJam', fmtTime(d.tanggal_akad)+' — selesai');
+  setEl('akadLokasi', d.lokasi_akad);
+  setHref('akadMaps', d.maps_akad);
+  setEl('resepsiTgl', fmtDate(d.tanggal_resepsi));
+  setEl('resepsiJam', `${d.jam_resepsi_mulai||'—'} — ${d.jam_resepsi_selesai||'—'} WIB`);
+  setEl('resepsiLokasi', d.lokasi_resepsi);
+  setHref('resepsiMaps', d.maps_resepsi);
 
-  // Slide 3 — Tanggal
-  if (tglResepsi) {
-    const dt = new Date(tglResepsi);
-    document.getElementById('dateDay').textContent   = DAYS[dt.getDay()];
-    document.getElementById('dateNum').textContent   = dt.getDate();
-    document.getElementById('dateMonth').textContent = MONTHS[dt.getMonth()];
-    document.getElementById('dateYear').textContent  = dt.getFullYear();
-  }
-  if (d.tanggal_hijri) document.getElementById('dateHijri').textContent = d.tanggal_hijri;
-
-  // Slide 4 — Jadwal
-  document.getElementById('akadTgl').textContent      = fmtDate(d.tanggal_akad);
-  document.getElementById('akadJam').textContent      = fmtTime(d.tanggal_akad) + ' — selesai';
-  document.getElementById('akadLokasi').textContent   = d.lokasi_akad   || '—';
-  document.getElementById('resepsiTgl').textContent   = fmtDate(d.tanggal_resepsi);
-  document.getElementById('resepsiJam').textContent   = `${d.jam_resepsi_mulai||'—'} — ${d.jam_resepsi_selesai||'—'} WIB`;
-  document.getElementById('resepsiLokasi').textContent = d.lokasi_resepsi || '—';
-  if (d.maps_akad)    document.getElementById('akadMaps').href    = d.maps_akad;
-  if (d.maps_resepsi) document.getElementById('resepsiMaps').href = d.maps_resepsi;
-
-  // Slide 5 — Galeri
-  if (d.foto_galeri && d.foto_galeri.length > 0) {
-    document.getElementById('gallery').innerHTML = d.foto_galeri.map((url, i) =>
-      `<div class="gi"${i===0?' style="grid-column:span 2;aspect-ratio:16/9"':''}><img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover"></div>`
+  // Slide 5 galeri
+  if(d.foto_galeri?.length){
+    document.getElementById('gallery').innerHTML = d.foto_galeri.map((u,i)=>
+      `<div class="gi"${i===0?' style="grid-column:span 2;aspect-ratio:16/9"':''}><img src="${u}" style="width:100%;height:100%;object-fit:cover"></div>`
     ).join('');
   }
 
   // Musik
-  const audio = document.getElementById('audio');
-  if (d.musik_url) {
-    // Cek apakah link YouTube/SoundCloud atau file langsung
-    if (d.musik_url.includes('youtube.com') || d.musik_url.includes('youtu.be')) {
-      const ytMatch = d.musik_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (ytMatch) {
-        // Pakai iframe embed tersembunyi untuk YouTube
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&loop=1&playlist=${ytMatch[1]}&controls=0`;
-        iframe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:-9999px';
-        iframe.allow = 'autoplay';
-        document.body.appendChild(iframe);
-      }
-    } else if (d.musik_url.includes('soundcloud.com')) {
-      const sc = document.createElement('iframe');
-      sc.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(d.musik_url)}&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false`;
-      sc.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:-9999px';
-      document.body.appendChild(sc);
-    } else {
-      audio.src = d.musik_url;
-    }
+  const audio=document.getElementById('audio');
+  if(d.musik_url){
+    if(d.musik_url.match(/youtube|youtu\.be/)){
+      const m=d.musik_url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
+      if(m){ const f=document.createElement('iframe'); f.src=`https://www.youtube.com/embed/${m[1]}?autoplay=1&loop=1&playlist=${m[1]}&controls=0`; f.allow='autoplay'; f.style.cssText='position:fixed;width:1px;height:1px;opacity:0;top:-999px'; document.body.appendChild(f); }
+    } else if(d.musik_url.includes('soundcloud')){
+      const f=document.createElement('iframe'); f.src=`https://w.soundcloud.com/player/?url=${encodeURIComponent(d.musik_url)}&auto_play=true`; f.style.cssText='position:fixed;width:1px;height:1px;opacity:0;top:-999px'; document.body.appendChild(f);
+    } else { audio.src=d.musik_url; }
   }
 
   // Pre-fill RSVP
-  if (guestName) {
-    const rn = document.getElementById('rsvpName');
-    if (rn) rn.value = guestName;
-  }
-
-  // Tema
-  applyThema(d.tema || 1);
+  const rn=document.getElementById('rsvpName'); if(rn&&guestName) rn.value=guestName;
 }
 
-// ══════════════════════════════════════
-// TEMA
-// ══════════════════════════════════════
+const DEMO = {
+  tema:1, nama_pria:'Reza Firmansyah, S.T.', panggilan_pria:'Reza',
+  nama_wanita:'Ninda Aulia, S.Pd.', panggilan_wanita:'Ninda',
+  ayah_pria:'H. Sulaiman', ibu_pria:'Hj. Fatimah',
+  ayah_wanita:'Drs. Bambang', ibu_wanita:'Sri Wahyuni',
+  tanggal_akad:'2025-12-21T08:00:00', tanggal_resepsi:'2025-12-21T10:00:00',
+  jam_resepsi_mulai:'10.00', jam_resepsi_selesai:'14.00',
+  lokasi_akad:'Masjid Ar-Rahman, Jl. Merdeka No.12, Surabaya',
+  maps_akad:'https://maps.google.com',
+  lokasi_resepsi:'Gedung Graha Indah, Jl. Ahmad Yani No.45, Surabaya',
+  maps_resepsi:'https://maps.google.com',
+  musik_url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+  foto_galeri:[]
+};
+
 const THEMES = {1:'t1',2:'t2',3:'t3',4:'t4',5:'t5',6:'t6'};
-function applyThema(n) {
-  document.body.classList.add(THEMES[n] || 't1');
-}
+function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
 
-// ══════════════════════════════════════
-// FETCH DATA
-// ══════════════════════════════════════
-(async () => {
-  // Jika ada ?tema= (preview dari landing), pakai demo data + tema
-  if (temaParam) {
-    DATA = {
-      slug: 'demo', tema: temaParam,
-      nama_pria: 'Reza Firmansyah, S.T.',  panggilan_pria: 'Reza',
-      nama_wanita: 'Ninda Aulia, S.Pd.',   panggilan_wanita: 'Ninda',
-      ayah_pria: 'H. Sulaiman', ibu_pria: 'Hj. Fatimah',
-      ayah_wanita: 'Drs. Bambang', ibu_wanita: 'Sri Wahyuni',
-      tanggal_akad: '2025-12-21T08:00:00',
-      tanggal_resepsi: '2025-12-21T10:00:00',
-      jam_resepsi_mulai: '10.00', jam_resepsi_selesai: '14.00',
-      lokasi_akad: 'Masjid Ar-Rahman, Jl. Merdeka No.12, Surabaya',
-      maps_akad: 'https://maps.google.com',
-      lokasi_resepsi: 'Gedung Graha Indah, Jl. Ahmad Yani No.45, Surabaya',
-      maps_resepsi: 'https://maps.google.com',
-      tanggal_hijri: '28 Jumadil Akhir 1447 H',
-      musik_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
-      foto_galeri: []
-    };
+(async()=>{
+  if(temaParam){
+    // Preview dari landing page
+    DATA = {...DEMO, tema:temaParam};
+    applyTema(temaParam);
     populate(DATA);
-    // Sembunyikan watermark di mode preview
-    document.getElementById('watermark').style.display = 'none';
-    setInterval(tick, 1000); tick();
+    document.getElementById('wm').style.display='none';
+    setInterval(tick,1000); tick();
     return;
   }
 
-  // Fetch dari Supabase
-  const { data: und } = await sb.from('undangan').select('*').eq('slug', slug).single();
-
-  if (und) {
-    DATA = und;
-    undanganId = und.id;
-    // Hit view counter
-    sb.from('undangan').update({ views: (und.views||0)+1 }).eq('id', und.id);
-    // Cek sudah bayar → sembunyikan watermark
-    cekPembayaran();
-  } else {
-    // Demo fallback
-    DATA = {
-      slug, tema: 1,
-      nama_pria: 'Pengantin Pria',   panggilan_pria: 'Pria',
-      nama_wanita: 'Pengantin Wanita', panggilan_wanita: 'Wanita',
-      ayah_pria: '—', ibu_pria: '—', ayah_wanita: '—', ibu_wanita: '—',
-      tanggal_akad: null, tanggal_resepsi: null,
-      lokasi_akad: '—', lokasi_resepsi: '—',
-      musik_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
-      foto_galeri: []
-    };
-  }
-
-  populate(DATA);
-
-  // Load RSVP
-  if (undanganId) {
-    const { data: rsvps } = await sb.from('rsvp').select('*').eq('undangan_id', undanganId).order('created_at',{ascending:false}).limit(10);
-    if (rsvps?.length) {
-      document.getElementById('ucapanContainer').innerHTML = rsvps.map(r => `
-        <div class="uc-item">
-          <div class="uc-name">${r.nama_tamu}</div>
-          ${r.ucapan ? `<div class="uc-text">${r.ucapan}</div>` : ''}
-          <div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div>
-        </div>`).join('');
+  if(slug && slug !== 'undangan'){
+    const {data:und} = await sb.from('undangan').select('*').eq('slug',slug).single();
+    if(und){
+      DATA=und; undanganId=und.id;
+      applyTema(und.tema||1);
+      populate(und);
+      sb.from('undangan').update({views:(und.views||0)+1}).eq('id',und.id);
+      // RSVP
+      const {data:rsvps} = await sb.from('rsvp').select('*').eq('undangan_id',und.id).order('created_at',{ascending:false}).limit(10);
+      if(rsvps?.length) document.getElementById('ucList').innerHTML = rsvps.map(r=>`
+        <div class="uc-item"><div class="uc-name">${r.nama_tamu}</div>${r.ucapan?`<div class="uc-text">${r.ucapan}</div>`:''}<div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div></div>`).join('');
+      // Cek bayar
+      const {data:{session}} = await sb.auth.getSession();
+      if(session){
+        const {data:bayar} = await sb.from('pembayaran').select('status').eq('undangan_id',und.id).eq('user_id',session.user.id).eq('status','sukses').single();
+        if(bayar) document.getElementById('wm').style.display='none';
+      }
+      setInterval(tick,1000); tick();
+      return;
     }
   }
 
-  setInterval(tick, 1000); tick();
+  // Fallback demo
+  DATA={...DEMO};
+  applyTema(1);
+  populate(DATA);
+  setInterval(tick,1000); tick();
 })();
 
-// ══════════════════════════════════════
-// GATE
-// ══════════════════════════════════════
-function openInvitation() {
+// Gate
+function openInvitation(){
   document.getElementById('gate').classList.add('gone');
-  playMusic();
-  triggerFirstSlide();
-}
-
-// ══════════════════════════════════════
-// SLIDER
-// ══════════════════════════════════════
-let current = 0;
-const TOTAL = 5;
-const slider = document.getElementById('slider');
-const nav    = document.getElementById('bottomNav');
-const tabs   = document.querySelectorAll('.nav-tab');
-let startX = 0, startY = 0;
-
-slider.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
-slider.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - startX;
-  const dy = Math.abs(e.changedTouches[0].clientY - startY);
-  if (Math.abs(dx) > 48 && dy < 80) {
-    if (dx < 0 && current < TOTAL-1) goTo(current+1);
-    else if (dx > 0 && current > 0) goTo(current-1);
-  }
-}, {passive:true});
-document.addEventListener('keydown', e => {
-  if (e.key==='ArrowRight' && current<TOTAL-1) goTo(current+1);
-  if (e.key==='ArrowLeft'  && current>0)        goTo(current-1);
-});
-
-function goTo(n) {
-  current = n;
-  slider.style.transform = `translateX(-${n*100}%)`;
-  nav.setAttribute('data-a', n);
-  tabs.forEach((t,i) => t.classList.toggle('on', i===n));
-  document.querySelectorAll('.slide').forEach((s,i) => {
-    s.classList.remove('in');
-    if (i === n) setTimeout(() => s.classList.add('in'), 80);
-  });
-}
-function triggerFirstSlide() {
+  const audio=document.getElementById('audio');
+  if(audio.src) audio.play().then(()=>{document.getElementById('mBtn').classList.add('spin');playing=true;}).catch(()=>{});
   document.querySelectorAll('.slide')[0].classList.add('in');
 }
 
-// ══════════════════════════════════════
-// MUSIK
-// ══════════════════════════════════════
-const audio    = document.getElementById('audio');
-const musicBtn = document.getElementById('mBtn');
-let playing = false;
+// Slider
+let cur=0, startX=0, startY=0, playing=false;
+const slider=document.getElementById('slider');
+const navEl=document.getElementById('nav');
+const tabs=document.querySelectorAll('.nt');
 
-function playMusic() {
-  audio.play().then(() => {
-    playing = true;
-    musicBtn.textContent = '🎵';
-    musicBtn.classList.add('spin');
-  }).catch(() => {});
-}
-function toggleMusic() {
-  if (playing) {
-    audio.pause(); playing = false;
-    musicBtn.classList.remove('spin');
-    musicBtn.textContent = '🔇';
-  } else { playMusic(); }
+slider.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;},{passive:true});
+slider.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-startX, dy=Math.abs(e.changedTouches[0].clientY-startY);
+  if(Math.abs(dx)>48&&dy<80){ if(dx<0&&cur<4) goTo(cur+1); else if(dx>0&&cur>0) goTo(cur-1); }
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'&&cur<4)goTo(cur+1);if(e.key==='ArrowLeft'&&cur>0)goTo(cur-1);});
+
+function goTo(n){
+  cur=n;
+  slider.style.transform=`translateX(-${n*100}%)`;
+  navEl.setAttribute('data-a',n);
+  tabs.forEach((t,i)=>t.classList.toggle('on',i===n));
+  document.querySelectorAll('.slide').forEach((s,i)=>{s.classList.remove('in');if(i===n)setTimeout(()=>s.classList.add('in'),80);});
 }
 
-// ══════════════════════════════════════
+// Music
+function toggleMusic(){
+  const audio=document.getElementById('audio'), btn=document.getElementById('mBtn');
+  if(playing){audio.pause();playing=false;btn.classList.remove('spin');btn.textContent='🔇';}
+  else{audio.play().then(()=>{playing=true;btn.classList.add('spin');btn.textContent='🎵';}).catch(()=>{});}
+}
+
 // RSVP
-// ══════════════════════════════════════
-let rsvpVal = '';
-function pickRsvp(el, val) {
-  document.querySelectorAll('.ro').forEach(o => o.classList.remove('on'));
-  el.classList.add('on'); rsvpVal = val;
-}
-async function submitRsvp() {
-  const name = document.getElementById('rsvpName').value.trim();
-  const msg  = document.getElementById('rsvpMsg').value.trim();
-  if (!name) { alert('Masukkan nama dulu 😊'); return; }
-  if (!rsvpVal) { alert('Pilih kehadiran dulu'); return; }
-  if (undanganId) {
-    await sb.from('rsvp').insert({ undangan_id:undanganId, nama_tamu:name, status:rsvpVal, ucapan:msg||null });
-  }
-  const icon = rsvpVal==='hadir'?'✅ Hadir':rsvpVal==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin';
-  const el = document.createElement('div');
-  el.className = 'uc-item';
-  el.innerHTML = `<div class="uc-name">${name}</div>${msg?`<div class="uc-text">${msg}</div>`:''}<div class="uc-status">${icon}</div>`;
-  document.getElementById('ucapanContainer').insertBefore(el, document.getElementById('ucapanContainer').firstChild);
-  document.getElementById('rsvpName').value = guestName||'';
-  document.getElementById('rsvpMsg').value  = '';
-  document.querySelectorAll('.ro').forEach(o => o.classList.remove('on'));
-  rsvpVal = '';
+let rsvpVal='';
+function pickR(el,v){document.querySelectorAll('.ro').forEach(o=>o.classList.remove('on'));el.classList.add('on');rsvpVal=v;}
+async function submitRsvp(){
+  const name=document.getElementById('rsvpName').value.trim();
+  const msg=document.getElementById('rsvpMsg').value.trim();
+  if(!name){alert('Masukkan nama dulu 😊');return;}
+  if(!rsvpVal){alert('Pilih kehadiran dulu');return;}
+  if(undanganId) await sb.from('rsvp').insert({undangan_id:undanganId,nama_tamu:name,status:rsvpVal,ucapan:msg||null});
+  const icon=rsvpVal==='hadir'?'✅ Hadir':rsvpVal==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin';
+  const el=document.createElement('div'); el.className='uc-item';
+  el.innerHTML=`<div class="uc-name">${name}</div>${msg?`<div class="uc-text">${msg}</div>`:''}<div class="uc-status">${icon}</div>`;
+  document.getElementById('ucList').insertBefore(el,document.getElementById('ucList').firstChild);
+  document.getElementById('rsvpName').value=guestName||'';
+  document.getElementById('rsvpMsg').value='';
+  document.querySelectorAll('.ro').forEach(o=>o.classList.remove('on')); rsvpVal='';
 }
 
-// ══════════════════════════════════════
-// COUNTDOWN
-// ══════════════════════════════════════
-function tick() {
-  if (!DATA?.tanggal_resepsi && !DATA?.tanggal_akad) return;
-  const target = DATA.tanggal_resepsi || DATA.tanggal_akad;
-  const diff   = new Date(target) - Date.now();
-  if (diff <= 0) {
-    document.getElementById('cdD').textContent = '🎉';
-    ['cdH','cdM','cdS'].forEach(id => document.getElementById(id).textContent = '00');
-    return;
-  }
-  document.getElementById('cdD').textContent = Math.floor(diff/86400000);
-  document.getElementById('cdH').textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
-  document.getElementById('cdM').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
-  document.getElementById('cdS').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-}
-
-// ══════════════════════════════════════
-// WATERMARK — hilang jika sudah bayar
-// ══════════════════════════════════════
-async function cekPembayaran() {
-  if (!undanganId) return;
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
-  const { data } = await sb.from('pembayaran')
-    .select('status').eq('undangan_id', undanganId)
-    .eq('user_id', session.user.id).eq('status','sukses').single();
-  if (data) {
-    const wm = document.getElementById('watermark');
-    if (wm) wm.style.display = 'none';
-  }
+// Countdown
+function tick(){
+  if(!DATA) return;
+  const tgt=DATA.tanggal_resepsi||DATA.tanggal_akad;
+  if(!tgt) return;
+  const diff=new Date(tgt)-Date.now();
+  if(diff<=0){setEl('cdD','🎉');['cdH','cdM','cdS'].forEach(id=>setEl(id,'00'));return;}
+  setEl('cdD',Math.floor(diff/86400000));
+  setEl('cdH',String(Math.floor((diff%86400000)/3600000)).padStart(2,'0'));
+  setEl('cdM',String(Math.floor((diff%3600000)/60000)).padStart(2,'0'));
+  setEl('cdS',String(Math.floor((diff%60000)/1000)).padStart(2,'0'));
 }
 </script>
 </body>
