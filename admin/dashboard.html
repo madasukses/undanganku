@@ -209,10 +209,53 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ USER ══ -->
     <div class="page" id="page-user">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Semua <span style="color:var(--gold)">User</span></div>
+
+      <!-- Tambah user manual -->
+      <div class="form-card" style="margin-bottom:18px">
+        <div class="form-title">➕ Tambah / Undang User</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="newUserNama" placeholder="Nama lengkap"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Email</label><input class="inp" id="newUserEmail" placeholder="email@gmail.com" type="email"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Role</label>
+          <select class="inp" id="newUserRole">
+            <option value="customer">Customer</option>
+            <option value="reseller">Reseller</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">User perlu login dengan Google menggunakan email ini. Role akan otomatis terset saat pertama login.</div>
+        <button class="save-btn" onclick="tambahUserManual()" style="padding:10px 24px">Tambah User →</button>
+      </div>
+
       <input class="search-bar" id="userSearch" placeholder="🔍 Cari nama atau email..." oninput="cariUser(this.value)">
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Nama</div><div>Email</div><div>Role</div><div>Ubah Role</div></div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto"><div>Nama</div><div>Email</div><div>Role</div><div>Ubah Role</div><div>Aksi</div></div>
         <div id="userList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- Modal Edit User -->
+    <div id="editUserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:440px;padding:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">Edit User</div>
+          <div onclick="tutupEditUser()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="editUserId">
+        <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="editUserNama" placeholder="Nama lengkap"></div>
+        <div class="inp-wrap"><label class="inp-lbl">No WhatsApp</label><input class="inp" id="editUserWa" placeholder="08xx..." type="tel"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Role</label>
+          <select class="inp" id="editUserRole">
+            <option value="customer">Customer</option>
+            <option value="reseller">Reseller</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="save-btn" onclick="simpanEditUser()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditUser()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:1px">Batal</button>
+        </div>
       </div>
     </div>
 
@@ -237,9 +280,31 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ PAKET & HARGA ══ -->
     <div class="page" id="page-paket">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Paket <span style="color:var(--gold)">& Harga</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit harga dan fitur paket. Perubahan langsung tampil di landing page.</div>
-      <div class="paket-grid" id="paketGrid"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
-      <button class="save-btn" onclick="simpanPaket()">Simpan Semua Paket →</button>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit, tambah, atau hapus paket. Perubahan langsung tampil di landing page.</div>
+
+      <!-- Paket List -->
+      <div id="paketGrid" style="margin-bottom:16px"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+
+      <!-- Form Tambah Paket -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Paket Baru</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama Paket</label><input class="inp" id="np_nama" placeholder="contoh: Gold"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="np_harga" type="number" placeholder="99000"></div>
+        </div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="np_durasi" type="number" placeholder="120"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="np_foto" type="number" placeholder="20"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="np_tamu" type="number" placeholder="200"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi (tampil di landing page)</label><textarea class="inp" id="np_desc" rows="2" placeholder="Cocok untuk undangan sederhana namun elegan"></textarea></div>
+        <div class="inp-wrap"><label class="inp-lbl">Fitur (pisahkan dengan koma)</label><input class="inp" id="np_fitur" placeholder="RSVP, Countdown, Musik, Galeri"></div>
+        <div class="inp-wrap" style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="np_populer" style="width:16px;height:16px;cursor:pointer">
+          <label for="np_populer" class="inp-lbl" style="margin:0;cursor:pointer">Tandai sebagai "Paling Diminati"</label>
+        </div>
+        <button class="save-btn" onclick="tambahPaket()" style="margin-top:8px">Tambah Paket →</button>
+      </div>
     </div>
 
     <!-- ══ LANDING PAGE ══ -->
@@ -374,9 +439,26 @@ function applyWMFilter(q='') {
 }
 
 async function hapusWM(id,slug) {
-  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus.`)) return;
-  const {error} = await sb.from('undangan').update({status:'aktif',expired_at:new Date(Date.now()+365*24*60*60*1000).toISOString()}).eq('id',id);
+  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus dan undangan menjadi Aktif.`)) return;
+  // Update status undangan jadi aktif
+  const {error} = await sb.from('undangan').update({
+    status: 'aktif',
+    expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString()
+  }).eq('id',id);
   if (error){alert('Gagal: '+error.message);return;}
+  // Cari user_id dari undangan ini
+  const und = allUndData.find(u=>u.id===id);
+  if (und?.user_id) {
+    // Insert pembayaran gratis sebagai record (agar undangan.html tahu sudah bayar)
+    await sb.from('pembayaran').insert({
+      user_id: und.user_id,
+      undangan_id: id,
+      nominal: 0,
+      metode: 'admin_manual',
+      status: 'sukses',
+      kode_ref: 'ADMIN'
+    }).select();
+  }
   toast('✅ Watermark dihapus! Undangan aktif.');
   await loadWM(); await loadHome();
 }
@@ -424,8 +506,11 @@ async function loadUsers() {
 function cariUser(q){ renderUsers(q ? allUserData.filter(u=>(u.nama||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').toLowerCase().includes(q.toLowerCase())) : allUserData); }
 function renderUsers(list) {
   document.getElementById('userList').innerHTML = list.length ? list.map(u=>`
-    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
-      <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div>
+        <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${u.no_wa||''}</div>
+      </div>
       <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email}</div>
       <span class="badge ${u.role==='admin'?'badge-gd':u.role==='reseller'?'badge-bl':'badge-gr'}">${u.role}</span>
       <select onchange="gantiRole('${u.id}',this.value)" style="padding:5px 8px;border-radius:8px;border:1px solid var(--b);background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;outline:none">
@@ -433,6 +518,7 @@ function renderUsers(list) {
         <option value="reseller" ${u.role==='reseller'?'selected':''}>Reseller</option>
         <option value="admin"    ${u.role==='admin'?'selected':''}>Admin</option>
       </select>
+      <button class="act-btn" onclick="bukaEditUser('${u.id}','${(u.nama||'').replace(/'/g,'').replace(/"/g,'')}','${u.no_wa||''}','${u.role}')">✏️ Edit</button>
     </div>`).join('')
   : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
 }
@@ -440,6 +526,43 @@ async function gantiRole(id,role) {
   const {error} = await sb.from('profiles').update({role}).eq('id',id);
   if (error){alert('Gagal: '+error.message);return;}
   toast('✅ Role diubah ke '+role);
+  await loadUsers();
+}
+
+function bukaEditUser(id, nama, wa, role) {
+  document.getElementById('editUserId').value  = id;
+  document.getElementById('editUserNama').value = nama;
+  document.getElementById('editUserWa').value   = wa;
+  document.getElementById('editUserRole').value  = role;
+  document.getElementById('editUserModal').style.display = 'flex';
+}
+function tutupEditUser() { document.getElementById('editUserModal').style.display = 'none'; }
+
+async function simpanEditUser() {
+  const id   = document.getElementById('editUserId').value;
+  const nama = document.getElementById('editUserNama').value.trim();
+  const wa   = document.getElementById('editUserWa').value.trim();
+  const role = document.getElementById('editUserRole').value;
+  const {error} = await sb.from('profiles').update({nama,no_wa:wa||null,role}).eq('id',id);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ User berhasil diupdate');
+  tutupEditUser();
+  await loadUsers();
+}
+
+async function tambahUserManual() {
+  const nama  = document.getElementById('newUserNama').value.trim();
+  const email = document.getElementById('newUserEmail').value.trim();
+  const role  = document.getElementById('newUserRole').value;
+  if (!email) { alert('Isi email dulu'); return; }
+  // Insert ke profiles dengan UUID baru (user belum terdaftar)
+  // Saat user login nanti, trigger akan update profilenya
+  const id = crypto.randomUUID();
+  const {error} = await sb.from('profiles').insert({id, email, nama:nama||email.split('@')[0], role});
+  if (error) { alert('Gagal: '+error.message); return; }
+  toast('✅ User ditambahkan. Minta user login dengan email ini.');
+  document.getElementById('newUserNama').value = '';
+  document.getElementById('newUserEmail').value = '';
   await loadUsers();
 }
 
@@ -490,26 +613,66 @@ async function loadPaket() {
   renderPaket(data||[]);
 }
 function renderPaket(list) {
-  document.getElementById('paketGrid').innerHTML = list.length ? list.map(p=>`
-    <div class="paket-card ${p.nama==='Premium'?'featured':''}">
-      <div class="paket-label">${p.nama==='Premium'?'⭐ Paling Diminati':''}</div>
-      <div class="paket-nama">${p.nama}</div>
-      <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="ph_${p.id}" value="${p.harga}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="pd_${p.id}" value="${p.durasi_hari}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="pf_${p.id}" value="${p.max_foto}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="pt_${p.id}" value="${p.max_tamu}" type="number"></div>
-    </div>`).join('')
-  : '<div style="color:var(--muted);font-size:13px">Tidak ada paket</div>';
+  if (!list.length) { document.getElementById('paketGrid').innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px">Tidak ada paket</div>'; return; }
+  document.getElementById('paketGrid').innerHTML = list.map(p=>{
+    const fitur = Array.isArray(p.fitur) ? p.fitur : JSON.parse(p.fitur||'[]');
+    const isPopuler = p.nama==='Premium' || (p.fitur&&p.fitur.includes&&p.fitur.includes('populer'));
+    return `<div class="form-card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div class="form-title" style="margin:0;padding:0;border:none;font-size:14px">${p.nama} ${isPopuler?'⭐':''}</div>
+          <div style="font-size:12px;color:var(--gold);margin-top:2px">Rp ${p.harga.toLocaleString('id-ID')} / ${p.durasi_hari} hari</div>
+        </div>
+        <button class="act-btn danger" onclick="hapusPaket('${p.id}','${p.nama}')">🗑 Hapus</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="ph_${p.id}" value="${p.harga}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="pd_${p.id}" value="${p.durasi_hari}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="pf_${p.id}" value="${p.max_foto}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="pt_${p.id}" value="${p.max_tamu}" type="number"></div>
+      </div>
+      <div class="inp-wrap"><label class="inp-lbl">Deskripsi Landing Page</label><input class="inp" id="pdesc_${p.id}" value="${p.deskripsi||''}" placeholder="Deskripsi tampil di landing page"></div>
+      <div class="inp-wrap"><label class="inp-lbl">Fitur (pisah koma)</label><input class="inp" id="pfitur_${p.id}" value="${fitur.join(', ')}" placeholder="RSVP, Countdown, Musik"></div>
+      <button class="save-btn" onclick="simpanSatuPaket('${p.id}')" style="padding:9px 20px;font-size:11px;letter-spacing:1px">Simpan Paket Ini</button>
+    </div>`;
+  }).join('');
 }
-async function simpanPaket() {
-  for (const p of allPaketData) {
-    const harga   = parseInt(document.getElementById('ph_'+p.id)?.value)||p.harga;
-    const durasi  = parseInt(document.getElementById('pd_'+p.id)?.value)||p.durasi_hari;
-    const maxFoto = parseInt(document.getElementById('pf_'+p.id)?.value)||p.max_foto;
-    const maxTamu = parseInt(document.getElementById('pt_'+p.id)?.value)||p.max_tamu;
-    await sb.from('paket').update({harga,durasi_hari:durasi,max_foto:maxFoto,max_tamu:maxTamu}).eq('id',p.id);
-  }
-  toast('✅ Semua paket berhasil disimpan!');
+
+async function simpanSatuPaket(id) {
+  const harga   = parseInt(document.getElementById('ph_'+id)?.value);
+  const durasi  = parseInt(document.getElementById('pd_'+id)?.value);
+  const maxFoto = parseInt(document.getElementById('pf_'+id)?.value);
+  const maxTamu = parseInt(document.getElementById('pt_'+id)?.value);
+  const desc    = document.getElementById('pdesc_'+id)?.value.trim();
+  const fiturStr= document.getElementById('pfitur_'+id)?.value.trim();
+  const fitur   = fiturStr ? JSON.stringify(fiturStr.split(',').map(s=>s.trim()).filter(Boolean)) : '[]';
+  const {error} = await sb.from('paket').update({harga,durasi_hari:durasi,max_foto:maxFoto,max_tamu:maxTamu,deskripsi:desc,fitur}).eq('id',id);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Paket disimpan!');
+  await loadPaket();
+}
+
+async function hapusPaket(id, nama) {
+  if (!confirm(`Hapus paket "${nama}" permanen?`)) return;
+  await sb.from('paket').delete().eq('id',id);
+  toast('🗑 Paket dihapus');
+  await loadPaket();
+}
+
+async function tambahPaket() {
+  const nama  = document.getElementById('np_nama').value.trim();
+  const harga = parseInt(document.getElementById('np_harga').value);
+  const durasi= parseInt(document.getElementById('np_durasi').value);
+  const foto  = parseInt(document.getElementById('np_foto').value)||10;
+  const tamu  = parseInt(document.getElementById('np_tamu').value)||100;
+  const desc  = document.getElementById('np_desc').value.trim();
+  const fiturStr = document.getElementById('np_fitur').value.trim();
+  const fitur = fiturStr ? JSON.stringify(fiturStr.split(',').map(s=>s.trim()).filter(Boolean)) : '[]';
+  if (!nama||!harga||!durasi){alert('Isi nama, harga, dan durasi dulu');return;}
+  const {error} = await sb.from('paket').insert({nama,harga,durasi_hari:durasi,max_foto:foto,max_tamu:tamu,deskripsi:desc,fitur,aktif:true});
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Paket baru ditambahkan!');
+  ['np_nama','np_harga','np_durasi','np_foto','np_tamu','np_desc','np_fitur'].forEach(id=>document.getElementById(id).value='');
   await loadPaket();
 }
 
