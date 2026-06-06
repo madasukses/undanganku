@@ -1290,6 +1290,16 @@ async function submitEdit(id) {
 
   if (error) { alert('Gagal: '+error.message); btn.textContent='Simpan Perubahan →'; return; }
 
+  // Upload foto jika ada
+  if (galeriFileList.length > 0 ||
+      document.querySelector('#uploadCover input[type=file]')?.files[0] ||
+      document.querySelector('#uploadPria input[type=file]')?.files[0] ||
+      document.querySelector('#uploadWanita input[type=file]')?.files[0]) {
+    btn.disabled = true; btn.textContent = 'Upload foto...';
+    await simpanFoto();
+    btn.disabled = false;
+  }
+
   // Reset form ke mode buat baru
   const slugEl = document.getElementById('fSlug');
   if (slugEl) { slugEl.readOnly=false; slugEl.style.opacity='1'; }
