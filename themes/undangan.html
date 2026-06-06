@@ -81,10 +81,25 @@ body{font-family:'Jost',sans-serif}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .an{opacity:0;animation:none}
 .an-sc{opacity:0;animation:none}
-.slide.in .an{animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards}
-.slide.in .an-sc{animation:fadeIn .9s ease forwards}
-.d0{animation-delay:.0s}.d1{animation-delay:.12s}.d2{animation-delay:.22s}
-.d3{animation-delay:.32s}.d4{animation-delay:.42s}.d5{animation-delay:.52s}
+.slide.in .an{animation:fadeUp .75s cubic-bezier(.22,1,.36,1) forwards}
+.slide.in .an-sc{animation:fadeIn 1s ease forwards}
+.d0{animation-delay:.05s}.d1{animation-delay:.18s}.d2{animation-delay:.30s}
+.d3{animation-delay:.42s}.d4{animation-delay:.54s}.d5{animation-delay:.66s}
+/* Fade-in per item dalam slide */
+.slide.in .mp{animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards}
+.slide.in .mp:nth-child(1){animation-delay:.1s;opacity:0}
+.slide.in .mp:nth-child(2){animation-delay:.3s;opacity:0}
+.slide.in .mp-div{animation:fadeIn .6s ease forwards;animation-delay:.2s;opacity:0}
+.slide.in .ev{animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards;opacity:0}
+.slide.in .ev:nth-child(1){animation-delay:.15s}
+.slide.in .ev:nth-child(2){animation-delay:.3s}
+.slide.in .gi{animation:fadeIn .6s ease forwards;opacity:0}
+.slide.in .gi:nth-child(1){animation-delay:.05s}
+.slide.in .gi:nth-child(2){animation-delay:.15s}
+.slide.in .gi:nth-child(3){animation-delay:.25s}
+.slide.in .gi:nth-child(4){animation-delay:.35s}
+.slide.in .gi:nth-child(5){animation-delay:.45s}
+.slide.in .rsvp-sec{animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards;animation-delay:.3s;opacity:0}
 
 /* ── SLIDE 1: COVER ── */
 .s1{
