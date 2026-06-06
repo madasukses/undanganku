@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reseller — Undanganku</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gs:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+[data-theme=light]{--bg:#f5f0e8;--s:#fdfaf5;--s2:#ede6d6;--b:#ddd5c5;--gold:#8b5e2e;--gs:#6b4423;--text:#2c1f14;--muted:#8a7060;--green:#3d8a56;--red:#c0392b;--blue:#2980b9}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:200;transition:transform .3s,background .3s}
+.sidebar.off{transform:translateX(-100%)}
+.sl{padding:22px 18px 18px;border-bottom:1px solid var(--b)}
+.sl-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--gold)}
+.sl-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.sl-badge{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(91,155,213,.15);color:var(--blue);border:1px solid rgba(91,155,213,.3)}
+.snav{flex:1;padding:14px 10px;overflow-y:auto}
+.snav-sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 8px 4px;margin-top:6px}
+.si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;text-decoration:none}
+.si:hover{background:var(--s2);color:var(--text)}.si.on{background:rgba(201,169,110,.12);color:var(--gold)}
+.si .ic{font-size:17px;width:20px;text-align:center}
+.sfooter{padding:12px 10px;border-top:1px solid var(--b)}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#2c5f8a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.uname{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;font-family:'Jost',sans-serif;padding:0 10px;height:28px;border-radius:8px;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;backdrop-filter:blur(2px)}
+.overlay.on{display:block}
+.main{margin-left:240px;min-height:100vh;transition:margin .3s}.main.full{margin-left:0}
+.topbar{position:sticky;top:0;background:rgba(15,14,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;z-index:100;transition:background .3s}
+[data-theme=light] .topbar{background:rgba(245,240,232,.92)}
+.hbg{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hbg span{display:block;width:15px;height:1.5px;background:var(--muted);border-radius:2px}
+.ptitle{font-size:16px;font-weight:700;margin-left:12px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--b);border-radius:9px;background:var(--s);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.icon-btn:hover{border-color:var(--gold)}
+.content{padding:22px 18px;max-width:900px}
+.page{display:none;opacity:0}.page.on{display:block}
+.page.visible{opacity:1}
+.page.visible > *{animation:pgIn .45s cubic-bezier(.22,1,.36,1) both}
+.page.visible > *:nth-child(1){animation-delay:.03s}
+.page.visible > *:nth-child(2){animation-delay:.09s}
+.page.visible > *:nth-child(3){animation-delay:.15s}
+.page.visible > *:nth-child(4){animation-delay:.21s}
+@keyframes pgIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.scard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s}
+.scard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.scard::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 var(--r) 0 50px;opacity:.08}
+.scard.gold::after{background:var(--gold)}.scard.gr::after{background:var(--green)}.scard.bl::after{background:var(--blue)}.scard.rd::after{background:var(--red)}
+.sic{font-size:20px;margin-bottom:10px}.sval{font-size:24px;font-weight:700;line-height:1;margin-bottom:3px}.slbl{font-size:12px;color:var(--muted)}
+.scard.gold .sval{color:var(--gold)}.scard.gr .sval{color:var(--green)}.scard.bl .sval{color:var(--blue)}.scard.rd .sval{color:var(--red)}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st{font-size:15px;font-weight:700}
+/* TABLE */
+.tbl{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.tbl-head{display:grid;padding:11px 16px;border-bottom:1px solid var(--b);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);gap:10px}
+.tbl-row{display:grid;padding:13px 16px;border-bottom:1px solid var(--b);align-items:center;gap:10px;transition:background .15s}
+.tbl-row:last-child{border:none}.tbl-row:hover{background:var(--s2)}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-gr{background:rgba(92,184,122,.15);color:var(--green)}
+.badge-gd{background:rgba(201,169,110,.15);color:var(--gold)}
+.badge-rd{background:rgba(224,92,92,.15);color:var(--red)}
+.badge-bl{background:rgba(91,155,213,.15);color:var(--blue)}
+/* REF BOX */
+.ref-box{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:20px;margin-bottom:20px}
+.ref-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.ref-link{font-size:15px;font-weight:600;color:var(--blue);word-break:break-all;margin-bottom:12px}
+.ref-actions{display:flex;gap:8px;flex-wrap:wrap}
+.act-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--b);background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.act-btn:hover{border-color:var(--gold);color:var(--gold)}
+.act-btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700}
+/* FORM */
+.form-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:22px;margin-bottom:14px}
+.form-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--b)}
+.inp-wrap{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.inp-lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.inp{width:100%;padding:11px 13px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--gold)}.inp::placeholder{color:var(--muted)}
+select.inp{cursor:pointer}
+.save-btn{padding:12px 28px;border-radius:10px;background:var(--gold);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s}
+.save-btn:hover{opacity:.85}
+.save-btn.full{width:100%}
+/* SALDO BOX */
+.saldo-box{background:linear-gradient(135deg,#1a2a3a,#0d1824);border:1px solid rgba(91,155,213,.3);border-radius:var(--r);padding:24px;margin-bottom:20px;text-align:center}
+.saldo-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(144,180,240,.5);margin-bottom:8px}
+.saldo-val{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,8vw,48px);color:var(--blue);font-weight:300;line-height:1;margin-bottom:6px}
+.saldo-sub{font-size:12px;color:var(--muted)}
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;padding:0}
+.modal-bg.on{display:flex}
+.modal{background:var(--s);border:1px solid var(--b);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 24px 40px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{cursor:pointer;color:var(--muted);font-size:22px}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.on{transform:translateX(0)}.main{margin-left:0!important}.sgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sb">
+  <div class="sl">
+    <div class="sl-logo">Undanganku</div>
+    <div class="sl-sub">Reseller Panel</div>
+    <span class="sl-badge">Reseller</span>
+  </div>
+  <nav class="snav">
+    <div class="snav-sec">Utama</div>
+    <a class="si on" href="#" onclick="nav('home',this)"><span class="ic">📊</span>Dashboard</a>
+    <a class="si" href="#" onclick="nav('customer',this)"><span class="ic">👥</span>Customer Saya</a>
+    <a class="si" href="#" onclick="nav('order',this)"><span class="ic">➕</span>Buat Order</a>
+    <div class="snav-sec">Komisi</div>
+    <a class="si" href="#" onclick="nav('komisi',this)"><span class="ic">💰</span>Saldo & Komisi</a>
+    <a class="si" href="#" onclick="nav('tarik',this)"><span class="ic">💸</span>Tarik Saldo</a>
+    <a class="si" href="#" onclick="nav('riwayat',this)"><span class="ic">📋</span>Riwayat Penarikan</a>
+    <div class="snav-sec">Akun</div>
+    <a class="si" href="#" onclick="nav('profil',this)"><span class="ic">👤</span>Profil & Referral</a>
+  </nav>
+  <div class="sfooter">
+    <div class="user-row">
+      <div class="avatar" id="avEl">R</div>
+      <div class="uname" id="unEl">—</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" onclick="closeSb()"></div>
+
+<div class="main" id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="hbg" onclick="toggleSb()"><span></span><span></span><span></span></div>
+      <div class="ptitle" id="topTitle">Dashboard</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</div>
+      <button class="logout-btn" onclick="AUTH.logout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ HOME ══ -->
+    <div class="page on visible" id="page-home">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:22px">Halo, <span style="color:var(--gold)" id="greetName">—</span>!</div>
+      <div class="sgrid">
+        <div class="scard gold" onclick="nav('komisi')"><div class="sic">💰</div><div class="sval" id="sSaldo">Rp 0</div><div class="slbl">Saldo Komisi</div></div>
+        <div class="scard bl"   onclick="nav('customer')"><div class="sic">👥</div><div class="sval" id="sCustomer">0</div><div class="slbl">Total Customer</div></div>
+        <div class="scard gr"   onclick="nav('komisi')"><div class="sic">📈</div><div class="sval" id="sBulanIni">Rp 0</div><div class="slbl">Komisi Bulan Ini</div></div>
+        <div class="scard rd"   onclick="nav('tarik')"><div class="sic">💸</div><div class="sval" id="sTotalKomisi">Rp 0</div><div class="slbl">Total Komisi</div></div>
+      </div>
+
+      <!-- Ref link -->
+      <div class="sh"><div class="st">Link Referral Saya</div></div>
+      <div class="ref-box">
+        <div class="ref-label">Bagikan link ini ke calon customer</div>
+        <div class="ref-link" id="refLinkDisplay">—</div>
+        <div class="ref-actions">
+          <button class="act-btn primary" onclick="copyRef()">🔗 Salin Link</button>
+          <button class="act-btn" onclick="shareWa()">📱 Share WA</button>
+        </div>
+      </div>
+
+      <!-- Customer terbaru -->
+      <div class="sh"><div class="st">Customer Terbaru</div><a style="font-size:12px;color:var(--gold);text-decoration:none;cursor:pointer" onclick="nav('customer')">Lihat semua →</a></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto"><div>Nama</div><div>Email</div><div>Komisi</div></div>
+        <div id="recentCustomer"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ CUSTOMER ══ -->
+    <div class="page" id="page-customer">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:18px">Customer <span style="color:var(--gold)">Saya</span></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Nama</div><div>Email</div><div>Status</div><div>Komisi</div></div>
+        <div id="customerList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ BUAT ORDER ══ -->
+    <div class="page" id="page-order">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:6px">Buat <span style="color:var(--gold)">Order</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Daftarkan customer baru atas nama kamu. Komisi 30% otomatis masuk saldo.</div>
+
+      <div class="form-card">
+        <div class="form-title">Data Customer</div>
+        <div class="inp-wrap"><label class="inp-lbl">Nama Customer</label><input class="inp" id="oNama" placeholder="Nama lengkap customer"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Email Customer</label><input class="inp" id="oEmail" type="email" placeholder="email@gmail.com"></div>
+        <div class="inp-wrap"><label class="inp-lbl">No. WhatsApp Customer</label><input class="inp" id="oWa" placeholder="08xx..."></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Pilih Paket</div>
+        <div id="orderPaketList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px">
+          <div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Memuat...</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Info Pembayaran</div>
+        <div style="background:var(--s2);border-radius:10px;padding:16px;margin-bottom:12px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Komisi yang akan kamu dapat</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green)" id="komisiPreview">Rp —</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">30% dari harga paket</div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Catatan (opsional)</label><input class="inp" id="oCatatan" placeholder="Catatan untuk admin"></div>
+        <button class="save-btn full" onclick="buatOrder()">Buat Order →</button>
+      </div>
+    </div>
+
+    <!-- ══ SALDO & KOMISI ══ -->
+    <div class="page" id="page-komisi">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:18px">Saldo <span style="color:var(--gold)">& Komisi</span></div>
+
+      <div class="saldo-box">
+        <div class="saldo-label">Saldo Tersedia</div>
+        <div class="saldo-val" id="saldoVal">Rp 0</div>
+        <div class="saldo-sub">Siap ditarik ke rekening kamu</div>
+        <button onclick="nav('tarik')" style="margin-top:14px;padding:9px 24px;border-radius:8px;background:var(--blue);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px">💸 Tarik Saldo</button>
+      </div>
+
+      <div class="sh"><div class="st">Riwayat Komisi</div></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto"><div>Dari</div><div>Nominal</div><div>Persen</div><div>Status</div></div>
+        <div id="komisiList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TARIK SALDO ══ -->
+    <div class="page" id="page-tarik">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:18px">Tarik <span style="color:var(--gold)">Saldo</span></div>
+
+      <div class="saldo-box" style="margin-bottom:20px">
+        <div class="saldo-label">Saldo Tersedia</div>
+        <div class="saldo-val" id="saldoTarik">Rp 0</div>
+        <div class="saldo-sub">Minimum penarikan Rp 50.000</div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Info Rekening Tujuan</div>
+        <div class="inp-wrap"><label class="inp-lbl">Nama Bank / E-Wallet</label>
+          <select class="inp" id="wdBank">
+            <option value="BCA">BCA</option>
+            <option value="BRI">BRI</option>
+            <option value="BNI">BNI</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BSI">BSI</option>
+            <option value="GoPay">GoPay</option>
+            <option value="OVO">OVO</option>
+            <option value="Dana">Dana</option>
+            <option value="ShopeePay">ShopeePay</option>
+          </select>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Nomor Rekening / Akun</label><input class="inp" id="wdNorek" placeholder="0812345678 atau 1234567890" type="tel"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Atas Nama</label><input class="inp" id="wdAtas" placeholder="Nama sesuai rekening"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Nominal Penarikan (Rp)</label><input class="inp" id="wdNominal" placeholder="Minimal 50000" type="number" oninput="cekNominalWd(this.value)"></div>
+        <div id="wdInfo" style="font-size:12px;color:var(--muted);margin-bottom:14px;padding:10px;background:var(--s2);border-radius:8px;display:none"></div>
+        <button class="save-btn full" onclick="ajukanTarik()">Ajukan Penarikan →</button>
+      </div>
+    </div>
+
+    <!-- ══ RIWAYAT PENARIKAN ══ -->
+    <div class="page" id="page-riwayat">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:18px">Riwayat <span style="color:var(--gold)">Penarikan</span></div>
+      <div class="tbl">
+        <div class="tbl-head" style="grid-template-columns:1fr auto auto auto"><div>Rekening</div><div>Nominal</div><div>Tanggal</div><div>Status</div></div>
+        <div id="riwayatList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ PROFIL ══ -->
+    <div class="page" id="page-profil">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,5vw,28px);margin-bottom:18px">Profil <span style="color:var(--gold)">& Referral</span></div>
+
+      <div class="form-card">
+        <div class="form-title">Data Profil</div>
+        <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="pNama" placeholder="Nama lengkap"></div>
+        <div class="inp-wrap"><label class="inp-lbl">No. WhatsApp</label><input class="inp" id="pWa" placeholder="08xx..." type="tel"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Email</label><input class="inp" id="pEmail" disabled style="opacity:.5"></div>
+        <button class="save-btn" onclick="simpanProfil()">Simpan Profil →</button>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Kode & Link Referral</div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Kode Referral</div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:6px;color:var(--gold)" id="kodeRef">—</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Link Referral</div>
+          <div style="font-size:13px;color:var(--blue);word-break:break-all" id="linkRefProfil">—</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="act-btn primary" onclick="copyRef()">🔗 Salin Link</button>
+          <button class="act-btn" onclick="shareWa()">📱 Share WA</button>
+          <button class="act-btn" onclick="generateKode()">🔄 Generate Kode Baru</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Setiap customer yang daftar via link kamu akan otomatis terhubung. Komisi 30% dari setiap transaksi mereka.</div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Statistik Referral</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+          <div style="background:var(--s2);border-radius:10px;padding:14px">
+            <div style="font-size:20px;font-weight:700;color:var(--blue)" id="statKlik">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">Klik Link</div>
+          </div>
+          <div style="background:var(--s2);border-radius:10px;padding:14px">
+            <div style="font-size:20px;font-weight:700;color:var(--green)" id="statDaftar">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">Daftar</div>
+          </div>
+          <div style="background:var(--s2);border-radius:10px;padding:14px">
+            <div style="font-size:20px;font-weight:700;color:var(--gold)" id="statBayar">0</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">Bayar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let user = null;
+let saldo = 0;
+let pakets = [];
+let selOrderPaket = null;
+let isDark = localStorage.getItem('theme') !== 'light';
+
+if (!isDark) { document.documentElement.setAttribute('data-theme','light'); document.getElementById('themeBtn').textContent='☀️'; }
+function toggleTheme(){ isDark=!isDark; document.documentElement.setAttribute('data-theme',isDark?'':'light'); document.getElementById('themeBtn').textContent=isDark?'🌙':'☀️'; localStorage.setItem('theme',isDark?'dark':'light'); }
+
+// ══ INIT ══
+(async () => {
+  user = await AUTH.requireAuth(['reseller']);
+  if (!user) return;
+
+  const nama = user.nama || user.email.split('@')[0];
+  document.getElementById('avEl').textContent = nama[0].toUpperCase();
+  document.getElementById('unEl').textContent  = nama;
+  document.getElementById('greetName').textContent = nama.split(' ')[0];
+
+  // Generate kode referral jika belum ada
+  if (!user.kode_ref) await generateKode(true);
+
+  // Set ref link
+  const ref = user.kode_ref || '';
+  const refLink = `https://devundanganku.vercel.app?ref=${ref}`;
+  document.getElementById('refLinkDisplay').textContent = refLink;
+
+  await loadHome();
+})();
+
+// ══ HOME ══
+async function loadHome() {
+  // Saldo
+  const {data:komisiData} = await sb.from('komisi').select('nominal,status').eq('reseller_id', user.id);
+  const allKomisi = komisiData || [];
+  saldo = allKomisi.filter(k=>k.status==='siap_cair').reduce((s,k)=>s+k.nominal,0);
+  const totalKomisi = allKomisi.reduce((s,k)=>s+k.nominal,0);
+  document.getElementById('sSaldo').textContent      = 'Rp '+saldo.toLocaleString('id-ID');
+  document.getElementById('sTotalKomisi').textContent = 'Rp '+totalKomisi.toLocaleString('id-ID');
+
+  // Komisi bulan ini
+  const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const {data:komBulan} = await sb.from('komisi').select('nominal').eq('reseller_id',user.id).gte('created_at',start.toISOString());
+  const bulanIni = (komBulan||[]).reduce((s,k)=>s+k.nominal,0);
+  document.getElementById('sBulanIni').textContent = 'Rp '+bulanIni.toLocaleString('id-ID');
+
+  // Customer count
+  const {count:cCount} = await sb.from('profiles').select('*',{count:'exact',head:true}).eq('reseller_id',user.id);
+  document.getElementById('sCustomer').textContent = cCount||0;
+
+  // Customer terbaru
+  const {data:customers} = await sb.from('profiles').select('*').eq('reseller_id',user.id).order('created_at',{ascending:false}).limit(5);
+  renderRecentCustomer(customers||[]);
+}
+
+function renderRecentCustomer(list) {
+  document.getElementById('recentCustomer').innerHTML = list.length
+    ? list.map(c => {
+        const komisiC = 0; // TODO: hitung dari komisi table
+        return `<div class="tbl-row" style="grid-template-columns:1fr 1fr auto">
+          <div style="font-size:14px;font-weight:600">${c.nama||'—'}</div>
+          <div style="font-size:12px;color:var(--muted)">${c.email}</div>
+          <span class="badge badge-gr">Aktif</span>
+        </div>`;
+      }).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada customer</div>';
+}
+
+// ══ CUSTOMER ══
+async function loadCustomer() {
+  const {data} = await sb.from('profiles').select('*').eq('reseller_id',user.id).order('created_at',{ascending:false});
+  const list = data||[];
+  document.getElementById('customerList').innerHTML = list.length
+    ? list.map(c=>`
+        <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
+          <div style="font-size:14px;font-weight:600">${c.nama||'—'}</div>
+          <div style="font-size:12px;color:var(--muted)">${c.email}</div>
+          <span class="badge badge-gr">Aktif</span>
+          <div style="font-size:12px;color:var(--green)">+Rp —</div>
+        </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada customer. Share link referral kamu!</div>';
+}
+
+// ══ BUAT ORDER ══
+async function loadOrder() {
+  const {data:pList} = await sb.from('paket').select('*').eq('aktif',true).order('harga',{ascending:true});
+  pakets = pList||[];
+  document.getElementById('orderPaketList').innerHTML = pakets.map((p,i)=>`
+    <div style="border:2px solid ${i===1?'var(--gold)':'var(--b)'};border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s" id="op-${p.id}" onclick="pilihOrderPaket('${p.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:14px;font-weight:700">${p.nama}</div>
+          <div style="font-size:11px;color:var(--muted)">Aktif ${p.durasi_hari} hari</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:var(--gold)">Rp ${Math.round(p.harga/1000)}rb</div>
+          <div style="font-size:11px;color:var(--green)">Komisi: Rp ${Math.round(p.harga*0.3/1000)}rb</div>
+        </div>
+      </div>
+    </div>`).join('');
+  if (pakets.length > 1) pilihOrderPaket(pakets[1].id);
+  else if (pakets.length > 0) pilihOrderPaket(pakets[0].id);
+}
+
+function pilihOrderPaket(id) {
+  selOrderPaket = pakets.find(p=>p.id===id||p.id===parseInt(id));
+  document.querySelectorAll('[id^="op-"]').forEach(el=>el.style.borderColor='var(--b)');
+  if (selOrderPaket) {
+    document.getElementById('op-'+selOrderPaket.id).style.borderColor='var(--gold)';
+    const komisi = Math.round(selOrderPaket.harga * 0.3);
+    document.getElementById('komisiPreview').textContent = 'Rp '+komisi.toLocaleString('id-ID');
+  }
+}
+
+async function buatOrder() {
+  const nama  = document.getElementById('oNama').value.trim();
+  const email = document.getElementById('oEmail').value.trim();
+  const wa    = document.getElementById('oWa').value.trim();
+  if (!nama||!email) { alert('Isi nama dan email customer'); return; }
+  if (!selOrderPaket) { alert('Pilih paket dulu'); return; }
+
+  // Cek apakah email sudah ada
+  const {data:exist} = await sb.from('profiles').select('id').eq('email',email).single();
+  if (exist) { alert('Email sudah terdaftar. Customer bisa login langsung dengan email ini.'); return; }
+
+  // Buat profile customer baru
+  const newId = crypto.randomUUID();
+  const {error} = await sb.from('profiles').insert({
+    id: newId, email, nama, no_wa: wa||null,
+    role: 'customer', reseller_id: user.id,
+  });
+  if (error) { alert('Gagal: '+error.message); return; }
+
+  // Buat record pembayaran pending (menunggu customer bayar)
+  await sb.from('pembayaran').insert({
+    user_id: newId, paket_id: selOrderPaket.id,
+    nominal: selOrderPaket.harga, metode: 'reseller_order',
+    status: 'pending', reseller_id: user.id,
+    kode_ref: user.kode_ref||null,
+  });
+
+  toast('✅ Order berhasil dibuat! Customer bisa login dengan email '+email);
+  document.getElementById('oNama').value='';
+  document.getElementById('oEmail').value='';
+  document.getElementById('oWa').value='';
+  await loadHome();
+  nav('customer');
+}
+
+// ══ KOMISI ══
+async function loadKomisi() {
+  const {data} = await sb.from('komisi').select('*, profiles!dari_user_id(nama,email)').eq('reseller_id',user.id).order('created_at',{ascending:false});
+  const list = data||[];
+
+  // Update saldo display
+  const s = list.filter(k=>k.status==='siap_cair').reduce((a,k)=>a+k.nominal,0);
+  document.getElementById('saldoVal').textContent = 'Rp '+s.toLocaleString('id-ID');
+
+  document.getElementById('komisiList').innerHTML = list.length
+    ? list.map(k=>`
+        <div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
+          <div style="font-size:13px;font-weight:600">${k.profiles?.nama||k.profiles?.email||'Customer'}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--green)">+Rp ${k.nominal.toLocaleString('id-ID')}</div>
+          <div style="font-size:12px;color:var(--muted)">${k.persen}%</div>
+          <span class="badge ${k.status==='siap_cair'?'badge-gr':k.status==='cair'?'badge-bl':'badge-gd'}">${k.status==='siap_cair'?'Siap Cair':k.status==='cair'?'Cair':'Pending'}</span>
+        </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada komisi</div>';
+}
+
+// ══ TARIK SALDO ══
+function cekNominalWd(val) {
+  const n = parseInt(val)||0;
+  const info = document.getElementById('wdInfo');
+  if (n > 0) {
+    info.style.display='block';
+    if (n < 50000) info.textContent='⚠️ Minimum penarikan Rp 50.000';
+    else if (n > saldo) info.textContent='⚠️ Saldo tidak cukup (saldo: Rp '+saldo.toLocaleString('id-ID')+')';
+    else info.textContent='✅ Penarikan Rp '+n.toLocaleString('id-ID')+' dapat diproses';
+  } else { info.style.display='none'; }
+}
+
+async function ajukanTarik() {
+  const bank    = document.getElementById('wdBank').value;
+  const norek   = document.getElementById('wdNorek').value.trim();
+  const atas    = document.getElementById('wdAtas').value.trim();
+  const nominal = parseInt(document.getElementById('wdNominal').value)||0;
+  if (!bank||!norek||!atas) { alert('Lengkapi data rekening'); return; }
+  if (nominal < 50000) { alert('Minimum penarikan Rp 50.000'); return; }
+  if (nominal > saldo) { alert('Saldo tidak cukup'); return; }
+
+  const {error} = await sb.from('penarikan').insert({
+    reseller_id: user.id, nominal, bank, no_rek:norek, atas_nama:atas, status:'request'
+  });
+  if (error) { alert('Gagal: '+error.message); return; }
+
+  toast('✅ Permintaan penarikan dikirim! Diproses dalam 1×24 jam.');
+  document.getElementById('wdNominal').value='';
+  document.getElementById('wdInfo').style.display='none';
+  nav('riwayat');
+}
+
+// ══ RIWAYAT ══
+async function loadRiwayat() {
+  const {data} = await sb.from('penarikan').select('*').eq('reseller_id',user.id).order('created_at',{ascending:false});
+  document.getElementById('riwayatList').innerHTML = (data||[]).length
+    ? (data||[]).map(p=>`
+        <div class="tbl-row" style="grid-template-columns:1fr auto auto auto">
+          <div><div style="font-size:13px;font-weight:600">${p.bank} ${p.no_rek}</div><div style="font-size:11px;color:var(--muted)">a.n. ${p.atas_nama}</div></div>
+          <div style="font-size:13px;font-weight:700;color:var(--gold)">Rp ${p.nominal.toLocaleString('id-ID')}</div>
+          <div style="font-size:11px;color:var(--muted)">${new Date(p.created_at).toLocaleDateString('id-ID')}</div>
+          <span class="badge ${p.status==='selesai'?'badge-gr':p.status==='request'?'badge-gd':'badge-bl'}">${p.status==='selesai'?'Selesai':p.status==='request'?'Menunggu':'Proses'}</span>
+        </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada riwayat penarikan</div>';
+}
+
+// ══ PROFIL ══
+async function loadProfil() {
+  document.getElementById('pNama').value  = user.nama||'';
+  document.getElementById('pWa').value   = user.no_wa||'';
+  document.getElementById('pEmail').value = user.email||'';
+  const ref = user.kode_ref||'—';
+  document.getElementById('kodeRef').textContent = ref;
+  const link = `https://devundanganku.vercel.app?ref=${ref}`;
+  document.getElementById('linkRefProfil').textContent = link;
+  // Stats
+  const {count:daftar} = await sb.from('profiles').select('*',{count:'exact',head:true}).eq('reseller_id',user.id);
+  document.getElementById('statDaftar').textContent = daftar||0;
+  const {count:bayar} = await sb.from('komisi').select('*',{count:'exact',head:true}).eq('reseller_id',user.id);
+  document.getElementById('statBayar').textContent = bayar||0;
+}
+
+async function simpanProfil() {
+  const nama = document.getElementById('pNama').value.trim();
+  const wa   = document.getElementById('pWa').value.trim();
+  const {error} = await sb.from('profiles').update({nama,no_wa:wa||null}).eq('id',user.id);
+  if (error) { alert('Gagal: '+error.message); return; }
+  user.nama = nama; user.no_wa = wa;
+  document.getElementById('unEl').textContent = nama;
+  toast('✅ Profil disimpan');
+}
+
+async function generateKode(silent=false) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const kode = Array.from({length:6},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  const {error} = await sb.from('profiles').update({kode_ref:kode}).eq('id',user.id);
+  if (!error) {
+    user.kode_ref = kode;
+    const link = `https://devundanganku.vercel.app?ref=${kode}`;
+    document.getElementById('kodeRef').textContent = kode;
+    document.getElementById('linkRefProfil').textContent = link;
+    document.getElementById('refLinkDisplay').textContent = link;
+    if (!silent) toast('✅ Kode referral baru: '+kode);
+  }
+}
+
+function copyRef() {
+  const link = `https://devundanganku.vercel.app?ref=${user.kode_ref||''}`;
+  navigator.clipboard.writeText(link);
+  toast('🔗 Link referral disalin!');
+}
+
+function shareWa() {
+  const link = `https://devundanganku.vercel.app?ref=${user.kode_ref||''}`;
+  const msg = encodeURIComponent(`Buat undangan digital pernikahan kamu sekarang! 💍\nElegan, mudah, langsung bisa dibagikan via WhatsApp.\nMulai dari Rp 79rb.\n\n🔗 ${link}`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+
+// ══ LOAD SALDO di tarik page ══
+async function loadTarik() {
+  const {data} = await sb.from('komisi').select('nominal,status').eq('reseller_id',user.id);
+  saldo = (data||[]).filter(k=>k.status==='siap_cair').reduce((a,k)=>a+k.nominal,0);
+  document.getElementById('saldoTarik').textContent = 'Rp '+saldo.toLocaleString('id-ID');
+}
+
+// ══ NAVIGATION ══
+function nav(name, el) {
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on','visible');});
+  const pg = document.getElementById('page-'+name);
+  pg.classList.add('on');
+  setTimeout(()=>pg.classList.add('visible'),20);
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
+  if (el) el.classList.add('on');
+  const titles={home:'Dashboard',customer:'Customer Saya',order:'Buat Order',komisi:'Saldo & Komisi',tarik:'Tarik Saldo',riwayat:'Riwayat Penarikan',profil:'Profil & Referral'};
+  document.getElementById('topTitle').textContent = titles[name]||name;
+  if (name==='customer') loadCustomer();
+  if (name==='order')    loadOrder();
+  if (name==='komisi')   loadKomisi();
+  if (name==='tarik')    loadTarik();
+  if (name==='riwayat')  loadRiwayat();
+  if (name==='profil')   loadProfil();
+  if (window.innerWidth<769) closeSb();
+  return false;
+}
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+function toggleSb(){ if(window.innerWidth<769){document.getElementById('sb').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}else{document.getElementById('sb').classList.toggle('off');document.getElementById('main').classList.toggle('full');} }
+function closeSb(){ document.getElementById('sb').classList.remove('on'); document.getElementById('ov').classList.remove('on'); }
+</script>
+</body>
+</html>
