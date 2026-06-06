@@ -759,32 +759,26 @@ function previewFoto(input, previewId, areaId) {
 
 
 // ══ MUSIK TABS ══
-const LAGU_LIST = [
-  // Nasyid
-  {id:1,  nama:'Deen Assalam',          artist:'Sabyan',         dur:'4:12', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', kat:'nasyid'},
-  {id:2,  nama:'Sholawat Badar',        artist:'Hadad Alwi',     dur:'3:45', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', kat:'nasyid'},
-  {id:3,  nama:'Ramadhan Tiba',         artist:'Opick',          dur:'4:02', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', kat:'nasyid'},
-  {id:4,  nama:'Ya Maulana',            artist:'Raihan',         dur:'3:58', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', kat:'nasyid'},
-  {id:5,  nama:'Insya Allah',           artist:'Maher Zain',     dur:'4:30', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', kat:'nasyid'},
-  // Instrumental Romantis
-  {id:6,  nama:'A Thousand Years',      artist:'Instrumental',   dur:'4:46', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', kat:'instrumental'},
-  {id:7,  nama:'Canon in D',            artist:'Pachelbel',      dur:'5:10', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', kat:'instrumental'},
-  {id:8,  nama:'River Flows in You',    artist:'Yiruma',         dur:'3:52', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', kat:'instrumental'},
-  {id:9,  nama:'Kiss the Rain',         artist:'Yiruma',         dur:'4:24', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', kat:'instrumental'},
-  {id:10, nama:'Comptine d Un Autre',  artist:'Yann Tiersen',   dur:'2:38', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', kat:'instrumental'},
-  // Pop Indonesia
-  {id:11, nama:'Restu',                 artist:'Tiara Andini',   dur:'3:55', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', kat:'pop'},
-  {id:12, nama:'Akhirnya Kumenemukanmu',artist:'Naff',           dur:'4:18', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', kat:'pop'},
-  {id:13, nama:'Beri Aku Kesempatan',   artist:'Sherina',        dur:'3:42', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', kat:'pop'},
-  {id:14, nama:'Sempurna',              artist:'Andra & BB',     dur:'4:01', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', kat:'pop'},
-  {id:15, nama:'Separuh Aku',           artist:'Noah',           dur:'4:35', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', kat:'pop'},
-  {id:16, nama:'Tak Ingin Usai',        artist:'Ziva Magnolya',  dur:'3:48', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', kat:'pop'},
-  {id:17, nama:'Meraih Bintang',        artist:'Via Vallen',     dur:'3:30', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', kat:'pop'},
-  // Jazz/Acoustic
-  {id:18, nama:'The Way You Look Tonight', artist:'Jazz Cover', dur:'3:22', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', kat:'jazz'},
-  {id:19, nama:'Fly Me to the Moon',    artist:'Jazz Acoustic',  dur:'3:15', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', kat:'jazz'},
-  {id:20, nama:'La Vie en Rose',        artist:'Acoustic Cover', dur:'3:48', url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', kat:'jazz'},
-];
+let LAGU_LIST = []; // diisi dari Supabase
+
+async function loadLaguList() {
+  if (LAGU_LIST.length > 0) return; // sudah di-load
+  const {data} = await sb.from('lagu').select('*').eq('aktif',true).order('urutan',{ascending:true}).order('id',{ascending:true});
+  LAGU_LIST = (data||[]).map(l => ({
+    id:     l.id,
+    nama:   l.judul,
+    artist: l.artis||'—',
+    url:    l.url,
+    kat:    l.kategori||'lainnya',
+    dur:    '—',
+  }));
+  if (LAGU_LIST.length === 0) {
+    document.getElementById('musikList').innerHTML =
+      '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada lagu. Admin perlu menambahkan lagu terlebih dahulu.</div>';
+  } else {
+    renderLagu(LAGU_LIST);
+  }
+}
 
 let currentAudio = null;
 let playingId = null;
@@ -798,7 +792,7 @@ function switchMusikTab(n) {
     document.getElementById(`mTab${i}`).style.display = i===n ? 'block' : 'none';
     document.getElementById(`mtab${i}`).classList.toggle('on', i===n);
   });
-  if (n === 1 && document.getElementById('musikList').innerHTML === '') renderLagu(LAGU_LIST);
+  if (n === 1) loadLaguList();
 }
 
 function renderLagu(list) {
@@ -817,6 +811,7 @@ function renderLagu(list) {
 }
 
 function cariLagu(q) {
+  if (!LAGU_LIST.length) return;
   const filtered = q ? LAGU_LIST.filter(l => l.nama.toLowerCase().includes(q.toLowerCase()) || l.artist.toLowerCase().includes(q.toLowerCase())) : LAGU_LIST;
   renderLagu(filtered);
 }
@@ -862,12 +857,12 @@ function stopPreview() {
   renderLagu(LAGU_LIST);
 }
 
-// Init tab 1 saat form dibuka
+// Load lagu dari DB saat halaman buat undangan dibuka
 setTimeout(() => {
-  if (document.getElementById('musikList') && document.getElementById('musikList').innerHTML === '') {
-    renderLagu(LAGU_LIST);
+  if (document.getElementById('musikList')) {
+    loadLaguList();
   }
-}, 500);
+}, 800);
 
 document.getElementById && document.addEventListener('DOMContentLoaded', () => {
   const linkInp = document.getElementById('fMusikLink');
