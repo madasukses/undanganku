@@ -509,9 +509,9 @@ const THEMES = {1:'t1',2:'t2',3:'t3',4:'t4',5:'t5',6:'t6'};
 function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
 
 (async()=>{
+  // ── PREVIEW tema dari landing
   if(temaParam){
-    // Preview dari landing page
-    DATA = {...DEMO, tema:temaParam};
+    DATA={...DEMO,tema:temaParam};
     applyTema(temaParam);
     populate(DATA);
     document.getElementById('wm').style.display='none';
@@ -519,6 +519,7 @@ function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
     return;
   }
 
+  // ── UNDANGAN ASLI
   if(slug){
     const {data:und} = await sb.from('undangan').select('*').eq('slug',slug).single();
     if(und){
@@ -526,23 +527,28 @@ function applyTema(n){ document.body.classList.add(THEMES[n]||'t1'); }
       applyTema(und.tema||1);
       populate(und);
       sb.from('undangan').update({views:(und.views||0)+1}).eq('id',und.id);
-      // RSVP
-      const {data:rsvps} = await sb.from('rsvp').select('*').eq('undangan_id',und.id).order('created_at',{ascending:false}).limit(10);
-      if(rsvps?.length) document.getElementById('ucList').innerHTML = rsvps.map(r=>`
-        <div class="uc-item"><div class="uc-name">${r.nama_tamu}</div>${r.ucapan?`<div class="uc-text">${r.ucapan}</div>`:''}<div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div></div>`).join('');
-      // CEK WATERMARK — cek status undangan langsung (paling reliable)
-      if (und.status === 'aktif') {
-        document.getElementById('wm').style.display = 'none';
+
+      // WATERMARK — cek status (paling reliable, tidak perlu login)
+      const wm = document.getElementById('wm');
+      if(und.status==='aktif'){
+        wm.style.display='none';
       } else {
         // Fallback: cek tabel pembayaran
-        try {
-          const {data:bayarList} = await sb.from('pembayaran')
-            .select('status').eq('undangan_id', und.id).eq('status','sukses');
-          if (bayarList && bayarList.length > 0) {
-            document.getElementById('wm').style.display = 'none';
-          }
-        } catch(e) {}
+        const {data:pays} = await sb.from('pembayaran')
+          .select('id').eq('undangan_id',und.id).eq('status','sukses').limit(1);
+        if(pays?.length) wm.style.display='none';
       }
+
+      // RSVP
+      const {data:rsvps} = await sb.from('rsvp').select('*')
+        .eq('undangan_id',und.id).order('created_at',{ascending:false}).limit(10);
+      if(rsvps?.length) document.getElementById('ucList').innerHTML = rsvps.map(r=>`
+        <div class="uc-item">
+          <div class="uc-name">${r.nama_tamu}</div>
+          ${r.ucapan?`<div class="uc-text">${r.ucapan}</div>`:''}
+          <div class="uc-status">${r.status==='hadir'?'✅ Hadir':r.status==='tidak'?'❌ Tidak Hadir':'🤔 Mungkin'}</div>
+        </div>`).join('');
+
       setInterval(tick,1000); tick();
       return;
     }
