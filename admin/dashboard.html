@@ -329,9 +329,24 @@ textarea.inp{resize:vertical;min-height:80px}
         <div id="laguList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
       </div>
 
+      <!-- Import Excel -->
+      <div class="form-card" style="margin-bottom:14px">
+        <div class="form-title">📥 Import dari Excel</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Download template Excel, isi data lagu, lalu upload kembali.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="save-btn" onclick="downloadTemplateLagu()" style="padding:10px 20px;background:var(--blue)">⬇️ Download Template Excel</button>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;border:1px solid var(--b);background:var(--s2);cursor:pointer;font-size:13px;color:var(--muted);font-family:'Jost',sans-serif">
+            <input type="file" accept=".xlsx,.xls,.csv" onchange="importExcelLagu(this)" style="display:none">
+            📤 Upload Excel
+          </label>
+          <div id="importStatus" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Format kolom: <strong>Judul | Artis | Kategori | Durasi | URL</strong></div>
+      </div>
+
       <!-- Form tambah lagu -->
       <div class="form-card">
-        <div class="form-title">➕ Tambah Lagu</div>
+        <div class="form-title">➕ Tambah Lagu Manual</div>
         <div class="form-row">
           <div class="inp-wrap"><label class="inp-lbl">Judul Lagu</label><input class="inp" id="nl_judul" placeholder="A Thousand Years"></div>
           <div class="inp-wrap"><label class="inp-lbl">Artis</label><input class="inp" id="nl_artis" placeholder="Christina Perri (Instrumental)"></div>
@@ -613,39 +628,48 @@ function applyWMFilter(q='') {
 
 async function toggleWM(id, slug, checkbox) {
   const aktifkan = checkbox.checked;
+  const row = checkbox.closest('.tbl-row');
   const lbl = checkbox.closest('.sw-wrap').querySelector('.sw-lbl');
+  const track = checkbox.closest('.sw-wrap').querySelector('.sw-track');
+
+  // Optimistic UI — langsung update tampilan
   if (lbl) lbl.textContent = aktifkan ? 'Aktif' : 'Non-aktif';
 
-  if (aktifkan) {
-    const {error} = await sb.from('undangan').update({
-      status: 'aktif',
-      expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString()
-    }).eq('id', id);
-    if (error) {
-      checkbox.checked = false;
-      if (lbl) lbl.textContent = 'Non-aktif';
-      alert('Gagal: ' + error.message);
-      return;
-    }
-    toast('✅ Aktif — watermark dihapus');
-  } else {
-    const {error} = await sb.from('undangan').update({
-      status: 'draft',
-      expired_at: null
-    }).eq('id', id);
-    if (error) {
-      checkbox.checked = true;
-      if (lbl) lbl.textContent = 'Aktif';
-      alert('Gagal: ' + error.message);
-      return;
-    }
-    toast('🔒 Non-aktif — watermark dipasang kembali');
+  // Update status badge di row yang sama
+  const badgeEl = row?.querySelector('.badge');
+  if (badgeEl) {
+    badgeEl.textContent = aktifkan ? '✅ Aktif' : '🔒 Draft';
+    badgeEl.className = 'badge ' + (aktifkan ? 'badge-gr' : 'badge-gd');
   }
 
-  // Update data lokal agar render benar
+  const payload = aktifkan
+    ? { status: 'aktif', expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString() }
+    : { status: 'draft', expired_at: null };
+
+  const {error} = await sb.from('undangan').update(payload).eq('id', id);
+
+  if (error) {
+    // Rollback UI
+    checkbox.checked = !aktifkan;
+    if (lbl) lbl.textContent = !aktifkan ? 'Aktif' : 'Non-aktif';
+    if (badgeEl) {
+      badgeEl.textContent = !aktifkan ? '✅ Aktif' : '🔒 Draft';
+      badgeEl.className = 'badge ' + (!aktifkan ? 'badge-gr' : 'badge-gd');
+    }
+    alert('Gagal menyimpan: ' + error.message);
+    return;
+  }
+
+  // Update data lokal
   const idx = allUndData.findIndex(u => u.id === id);
   if (idx >= 0) allUndData[idx].status = aktifkan ? 'aktif' : 'draft';
-  await loadHome();
+
+  // Update stat card watermark
+  const wmCount = allUndData.filter(u=>u.status==='draft').length;
+  const wmEl = document.getElementById('sWatermark');
+  if (wmEl) wmEl.textContent = wmCount;
+
+  toast(aktifkan ? '✅ ' + slug + ' — Aktif, watermark hilang' : '🔒 ' + slug + ' — Draft, watermark aktif');
 }
 
 // ══ SEMUA UNDANGAN ══
@@ -1113,6 +1137,65 @@ function simpanEditLagu() {
   tutupEditLagu();
   renderLaguAdmin(allLaguData);
   toast('✅ Lagu diperbarui');
+}
+
+function downloadTemplateLagu() {
+  // Buat CSV template
+  const header = 'Judul,Artis,Kategori,Durasi,URL';
+  const contoh = [
+    'Deen Assalam,Sabyan,nasyid,4:12,https://www.youtube.com/watch?v=xxxxx',
+    'A Thousand Years,Instrumental,instrumental,4:46,https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    'Canon in D,Pachelbel,klasik,5:10,https://www.youtube.com/watch?v=xxxxx',
+  ].join('\n');
+  const csv = header + '\n' + contoh;
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'template_lagu_undanganku.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 Template berhasil didownload');
+}
+
+function importExcelLagu(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('importStatus');
+  statusEl.textContent = 'Membaca file...';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(l=>l.trim());
+      // Skip header baris pertama
+      const dataLines = lines.slice(1);
+      let added = 0;
+      dataLines.forEach(line => {
+        // Handle CSV dengan koma
+        const cols = line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
+        if (cols.length >= 5 && cols[0] && cols[4]) {
+          const newId = allLaguData.length ? Math.max(...allLaguData.map(l=>l.id))+1 : 1;
+          allLaguData.push({
+            id: newId,
+            judul: cols[0],
+            artis: cols[1] || '—',
+            kat:   cols[2] || 'lainnya',
+            dur:   cols[3] || '—',
+            url:   cols[4],
+          });
+          added++;
+        }
+      });
+      renderLaguAdmin(allLaguData);
+      statusEl.textContent = '';
+      toast('✅ ' + added + ' lagu berhasil diimport!');
+    } catch(err) {
+      statusEl.textContent = 'Error: format file tidak sesuai';
+      console.error(err);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 function tambahLagu() {
