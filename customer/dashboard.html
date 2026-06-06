@@ -389,14 +389,41 @@ select.inp{cursor:pointer}
         <div class="form-sec-title">🎵 Musik Latar</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Autoplay saat undangan dibuka. Upload file MP3 atau tempel link YouTube / SoundCloud.</div>
 
-        <!-- Tab switch -->
-        <div style="display:flex;gap:6px;margin-bottom:14px">
-          <button id="tabUpload" onclick="switchMusikTab('upload')" style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--gold);background:var(--gold);color:#fff;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer">Upload File</button>
-          <button id="tabLink"   onclick="switchMusikTab('link')"   style="flex:1;padding:9px;border-radius:9px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer">Link YouTube / SoundCloud</button>
+        <!-- 3 Tabs -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;background:var(--s2);border-radius:10px;padding:4px">
+          <button class="mtab on" id="mtab1" onclick="switchMusikTab(1)">🎵 Pilih Lagu</button>
+          <button class="mtab"    id="mtab2" onclick="switchMusikTab(2)">🔗 Link</button>
+          <button class="mtab"    id="mtab3" onclick="switchMusikTab(3)">⬆️ Upload</button>
         </div>
 
-        <!-- Upload -->
-        <div id="musikTabUpload">
+        <!-- TAB 1: Pilih Lagu dari DB -->
+        <div id="mTab1">
+          <input class="inp" id="musikSearch" placeholder="🔍 Cari judul atau artis..." oninput="cariLagu(this.value)" style="margin-bottom:10px">
+          <div id="musikList" style="max-height:300px;overflow-y:auto;border-radius:10px;border:1px solid var(--b)">
+            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat lagu...</div>
+          </div>
+          <div id="musikPilihan" style="display:none;margin-top:10px;background:var(--s2);border-radius:10px;padding:12px;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:20px">🎵</span>
+            <div style="flex:1;min-width:0">
+              <div id="musikPilihNama" style="font-size:13px;font-weight:600">—</div>
+              <div id="musikPilihArtist" style="font-size:11px;color:var(--muted)">—</div>
+            </div>
+            <button onclick="stopPreview()" style="background:transparent;border:none;font-size:16px;cursor:pointer;color:var(--muted)">⏹</button>
+          </div>
+        </div>
+
+        <!-- TAB 2: Link YouTube/SoundCloud -->
+        <div id="mTab2" style="display:none">
+          <div class="inp-wrap">
+            <label class="inp-lbl">Link YouTube atau SoundCloud</label>
+            <input class="inp" id="fMusikLink" placeholder="https://www.youtube.com/watch?v=...">
+            <div class="inp-hint">Musik diputar via embed. Pastikan link publik.</div>
+          </div>
+          <div id="musikEmbedPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden"></div>
+        </div>
+
+        <!-- TAB 3: Upload MP3 -->
+        <div id="mTab3" style="display:none">
           <div class="upload-area" id="uploadMusik">
             <input type="file" accept="audio/*" onchange="previewMusik(this)">
             <div class="upload-icon">🎵</div>
@@ -410,16 +437,6 @@ select.inp{cursor:pointer}
               <audio id="musikPreview" controls style="width:100%;margin-top:6px;height:32px"></audio>
             </div>
           </div>
-        </div>
-
-        <!-- Link -->
-        <div id="musikTabLink" style="display:none">
-          <div class="inp-wrap">
-            <label class="inp-lbl">Link YouTube atau SoundCloud</label>
-            <input class="inp" id="fMusikLink" placeholder="https://www.youtube.com/watch?v=... atau https://soundcloud.com/...">
-            <div class="inp-hint">Musik akan diputar via embed. Pastikan link publik dan bisa diakses.</div>
-          </div>
-          <div id="musikEmbedPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden"></div>
         </div>
       </div>
 
