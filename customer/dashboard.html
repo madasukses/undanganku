@@ -979,9 +979,14 @@ function previewMusik(input) {
   player.style.display = 'flex';
 }
 
+// Simpan file galeri yang dipilih
+let galeriFileList = [];
+
 function previewGaleri(input) {
   const grid = document.getElementById('galeriGrid');
-  Array.from(input.files).slice(0,10).forEach(file => {
+  const newFiles = Array.from(input.files).slice(0, 10 - galeriFileList.length);
+  newFiles.forEach(file => {
+    galeriFileList.push(file);
     const reader = new FileReader();
     reader.onload = e => {
       const div = document.createElement('div');
@@ -1018,11 +1023,10 @@ async function simpanFoto() {
   await uploadFile('uploadWanita', 'foto_wanita', 'wanita');
 
   // Galeri
-  const galeriInput = document.querySelector('#galeriGrid input[type=file]');
-  if (galeriInput?.files.length > 0) {
+  if (galeriFileList.length > 0) {
     const urls = [];
-    for (let i = 0; i < Math.min(galeriInput.files.length, 10); i++) {
-      const file = galeriInput.files[i];
+    for (let i = 0; i < Math.min(galeriFileList.length, 10); i++) {
+      const file = galeriFileList[i];
       const ext = file.name.split('.').pop();
       const filePath = `${undangan.user_id}/${undangan.slug}/galeri_${i}.${ext}`;
       const { error } = await sb.storage.from('foto-undangan').upload(filePath, file, { upsert: true });
