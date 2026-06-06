@@ -2,6 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Undanganku</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -111,6 +113,14 @@ textarea.inp{resize:vertical;min-height:80px}
 .landing-prev strong{color:var(--text)}
 
 /* TOAST */
+.sw-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.sw-inp{display:none}
+.sw-track{width:44px;height:24px;border-radius:12px;background:var(--red);position:relative;transition:background .25s;flex-shrink:0}
+.sw-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.sw-inp:checked + .sw-track{background:var(--green)}
+.sw-inp:checked + .sw-track::after{transform:translateX(20px)}
+.sw-lbl{font-size:12px;font-weight:600;color:var(--muted);min-width:60px}
+.sw-inp:checked ~ .sw-lbl{color:var(--green)}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--gold);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 
@@ -138,6 +148,7 @@ textarea.inp{resize:vertical;min-height:80px}
     <div class="snav-sec">Konten</div>
     <a class="si" href="#" onclick="nav('landing',this)"><span class="ic">🌐</span>Landing Page</a>
     <a class="si" href="#" onclick="nav('template',this)"><span class="ic">🎨</span>Kelola Template</a>
+    <a class="si" href="#" onclick="nav('lagu',this)"><span class="ic">🎵</span>Daftar Lagu</a>
   </nav>
   <div class="sfooter">
     <div class="user-row">
@@ -209,10 +220,53 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ USER ══ -->
     <div class="page" id="page-user">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:18px">Semua <span style="color:var(--gold)">User</span></div>
+
+      <!-- Tambah user manual -->
+      <div class="form-card" style="margin-bottom:18px">
+        <div class="form-title">➕ Tambah / Undang User</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="newUserNama" placeholder="Nama lengkap"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Email</label><input class="inp" id="newUserEmail" placeholder="email@gmail.com" type="email"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Role</label>
+          <select class="inp" id="newUserRole">
+            <option value="customer">Customer</option>
+            <option value="reseller">Reseller</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">User perlu login dengan Google menggunakan email ini. Role akan otomatis terset saat pertama login.</div>
+        <button class="save-btn" onclick="tambahUserManual()" style="padding:10px 24px">Tambah User →</button>
+      </div>
+
       <input class="search-bar" id="userSearch" placeholder="🔍 Cari nama atau email..." oninput="cariUser(this.value)">
       <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto"><div>Nama</div><div>Email</div><div>Role</div><div>Ubah Role</div></div>
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto"><div>Nama</div><div>Email</div><div>Role</div><div>Ubah Role</div><div>Aksi</div></div>
         <div id="userList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+    </div>
+
+    <!-- Modal Edit User -->
+    <div id="editUserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:440px;padding:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">Edit User</div>
+          <div onclick="tutupEditUser()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="editUserId">
+        <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="editUserNama" placeholder="Nama lengkap"></div>
+        <div class="inp-wrap"><label class="inp-lbl">No WhatsApp</label><input class="inp" id="editUserWa" placeholder="08xx..." type="tel"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Role</label>
+          <select class="inp" id="editUserRole">
+            <option value="customer">Customer</option>
+            <option value="reseller">Reseller</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="save-btn" onclick="simpanEditUser()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditUser()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:1px">Batal</button>
+        </div>
       </div>
     </div>
 
@@ -237,9 +291,121 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ PAKET & HARGA ══ -->
     <div class="page" id="page-paket">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Paket <span style="color:var(--gold)">& Harga</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit harga dan fitur paket. Perubahan langsung tampil di landing page.</div>
-      <div class="paket-grid" id="paketGrid"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
-      <button class="save-btn" onclick="simpanPaket()">Simpan Semua Paket →</button>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Edit, tambah, atau hapus paket. Perubahan langsung tampil di landing page.</div>
+
+      <!-- Paket List -->
+      <div id="paketGrid" style="margin-bottom:16px"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+
+      <!-- Form Tambah Paket -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Paket Baru</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama Paket</label><input class="inp" id="np_nama" placeholder="contoh: Gold"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="np_harga" type="number" placeholder="99000"></div>
+        </div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="np_durasi" type="number" placeholder="120"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="np_foto" type="number" placeholder="20"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="np_tamu" type="number" placeholder="200"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi (tampil di landing page)</label><textarea class="inp" id="np_desc" rows="2" placeholder="Cocok untuk undangan sederhana namun elegan"></textarea></div>
+        <div class="inp-wrap"><label class="inp-lbl">Fitur (pisahkan dengan koma)</label><input class="inp" id="np_fitur" placeholder="RSVP, Countdown, Musik, Galeri"></div>
+        <div class="inp-wrap" style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="np_populer" style="width:16px;height:16px;cursor:pointer">
+          <label for="np_populer" class="inp-lbl" style="margin:0;cursor:pointer">Tandai sebagai "Paling Diminati"</label>
+        </div>
+        <button class="save-btn" onclick="tambahPaket()" style="margin-top:8px">Tambah Paket →</button>
+      </div>
+    </div>
+
+    <!-- ══ LAGU ══ -->
+    <div class="page" id="page-lagu">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Daftar Lagu</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Master list lagu yang tampil di pilihan musik customer. Tambah link streaming YouTube/SoundCloud.</div>
+
+      <!-- List lagu -->
+      <div class="tbl" style="margin-bottom:20px">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto">
+          <div>Judul / URL</div><div>Artis / Durasi</div><div>Kategori</div><div>Preview</div><div>Aksi</div>
+        </div>
+        <div id="laguList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+
+      <!-- Import Excel -->
+      <div class="form-card" style="margin-bottom:14px">
+        <div class="form-title">📥 Import dari Excel</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Download template Excel, isi data lagu, lalu upload kembali.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="save-btn" onclick="downloadTemplateLagu()" style="padding:10px 20px;background:var(--blue)">⬇️ Download Template Excel</button>
+          <label style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;border:1px solid var(--b);background:var(--s2);cursor:pointer;font-size:13px;color:var(--muted);font-family:'Jost',sans-serif">
+            <input type="file" accept=".xlsx,.xls,.csv" onchange="importExcelLagu(this)" style="display:none">
+            📤 Upload Excel
+          </label>
+          <div id="importStatus" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Format kolom: <strong>Nama | Artis | Kategori | Link</strong> (4 kolom, baris pertama = header)</div>
+      </div>
+
+      <!-- Form tambah lagu -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Lagu Manual</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Judul Lagu</label><input class="inp" id="nl_judul" placeholder="A Thousand Years"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Artis</label><input class="inp" id="nl_artis" placeholder="Christina Perri (Instrumental)"></div>
+        </div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="nl_kat">
+              <option value="nasyid">Nasyid</option>
+              <option value="instrumental">Instrumental</option>
+              <option value="pop">Pop Indonesia</option>
+              <option value="jazz">Jazz / Acoustic</option>
+              <option value="klasik">Klasik</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="inp-wrap"><label class="inp-lbl">Durasi (contoh: 4:23)</label><input class="inp" id="nl_dur" placeholder="4:23"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Link Streaming (YouTube / SoundCloud / MP3 URL)</label><input class="inp" id="nl_url" placeholder="https://www.youtube.com/watch?v=... atau https://soundcloud.com/..."></div>
+        <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+          <button class="save-btn" onclick="tambahLagu()" style="padding:10px 24px">Tambah Lagu →</button>
+          <div id="laguPreviewWrap" style="display:none;flex:1">
+            <audio id="laguPreviewAudio" controls style="width:100%;height:32px"></audio>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">Tip: Untuk YouTube, sistem akan embed otomatis. Untuk file MP3 langsung, paste URL file-nya.</div>
+      </div>
+    </div>
+
+    <!-- Modal Edit Lagu -->
+    <div id="editLaguModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:480px;padding:24px;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">✏️ Edit Lagu</div>
+          <div onclick="tutupEditLagu()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="el_id">
+        <div class="inp-wrap"><label class="inp-lbl">Judul Lagu</label><input class="inp" id="el_judul"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Artis</label><input class="inp" id="el_artis"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="el_kat">
+              <option value="nasyid">Nasyid</option>
+              <option value="instrumental">Instrumental</option>
+              <option value="pop">Pop Indonesia</option>
+              <option value="jazz">Jazz / Acoustic</option>
+              <option value="klasik">Klasik</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="inp-wrap"><label class="inp-lbl">Durasi</label><input class="inp" id="el_dur" placeholder="4:23"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">URL Streaming</label><input class="inp" id="el_url" placeholder="https://..."></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="save-btn" onclick="simpanEditLagu()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditLagu()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer">Batal</button>
+        </div>
+      </div>
     </div>
 
     <!-- ══ LANDING PAGE ══ -->
@@ -281,10 +447,97 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ TEMPLATE ══ -->
     <div class="page" id="page-template">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Template</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Lihat semua template yang tersedia. Nanti bisa tambah template baru dari sini.</div>
-      <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:auto 1fr 1fr auto auto"><div>ID</div><div>Nama</div><div>Kategori</div><div>Status</div><div>Aksi</div></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Master data template. Tambah, edit, aktifkan/nonaktifkan template.</div>
+
+      <!-- List template -->
+      <div class="tbl" style="margin-bottom:20px">
+        <div class="tbl-head" style="grid-template-columns:auto 1fr 1fr 1fr auto auto">
+          <div>ID</div><div>Nama</div><div>Kategori</div><div>Deskripsi</div><div>Status</div><div>Aksi</div>
+        </div>
         <div id="tmplList"></div>
+      </div>
+
+      <!-- Form tambah template -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Template Baru</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama Template</label><input class="inp" id="nt_nama" placeholder="contoh: Javanese Gold"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="nt_kat">
+              <option value="modern">Modern</option>
+              <option value="adat">Adat</option>
+              <option value="minimalis">Minimalis</option>
+              <option value="islami">Islami</option>
+              <option value="garden">Garden</option>
+              <option value="rustic">Rustic</option>
+              <option value="mewah">Mewah</option>
+            </select>
+          </div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi</label><input class="inp" id="nt_desc" placeholder="Deskripsi singkat template"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Warna Utama (hex)</label><input class="inp" id="nt_color1" placeholder="#2a1d12" type="text"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Warna Aksen (hex)</label><input class="inp" id="nt_color2" placeholder="#b8935a" type="text"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Font Display</label>
+          <select class="inp" id="nt_font">
+            <option value="Great Vibes">Great Vibes (Script)</option>
+            <option value="Cormorant Garamond">Cormorant Garamond (Serif)</option>
+            <option value="Dancing Script">Dancing Script (Script)</option>
+            <option value="Cinzel">Cinzel (Caps)</option>
+            <option value="Playfair Display">Playfair Display (Serif)</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input type="checkbox" id="nt_aktif" checked style="width:16px;height:16px;cursor:pointer">
+          <label for="nt_aktif" class="inp-lbl" style="margin:0;cursor:pointer">Langsung aktifkan</label>
+        </div>
+        <button class="save-btn" onclick="tambahTemplate()">Tambah Template →</button>
+      </div>
+    </div>
+
+    <!-- Modal Edit Template -->
+    <div id="editTmplModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:480px;padding:24px;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">Edit Template</div>
+          <div onclick="tutupEditTmpl()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="et_id">
+        <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="et_nama"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+          <select class="inp" id="et_kat">
+            <option value="modern">Modern</option>
+            <option value="adat">Adat</option>
+            <option value="minimalis">Minimalis</option>
+            <option value="islami">Islami</option>
+            <option value="garden">Garden</option>
+            <option value="rustic">Rustic</option>
+            <option value="mewah">Mewah</option>
+          </select>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi</label><input class="inp" id="et_desc"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Warna Utama</label><input class="inp" id="et_color1"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Warna Aksen</label><input class="inp" id="et_color2"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Font Display</label>
+          <select class="inp" id="et_font">
+            <option value="Great Vibes">Great Vibes</option>
+            <option value="Cormorant Garamond">Cormorant Garamond</option>
+            <option value="Dancing Script">Dancing Script</option>
+            <option value="Cinzel">Cinzel</option>
+            <option value="Playfair Display">Playfair Display</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <input type="checkbox" id="et_aktif" style="width:16px;height:16px;cursor:pointer">
+          <label for="et_aktif" class="inp-lbl" style="margin:0;cursor:pointer">Aktif (tampil di customer)</label>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="save-btn" onclick="simpanEditTmpl()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditTmpl()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer">Batal</button>
+        </div>
       </div>
     </div>
 
@@ -363,28 +616,62 @@ function applyWMFilter(q='') {
       <div><div style="font-size:14px;font-weight:600">${u.panggilan_pria||'—'} & ${u.panggilan_wanita||'—'}</div><div style="font-size:11px;color:var(--muted)">${u.profiles?.email||'—'}</div></div>
       <div style="font-size:12px;color:var(--blue)">${u.slug}</div>
       <span class="badge ${u.status==='aktif'?'badge-gr':'badge-gd'}">${u.status==='aktif'?'✅ Aktif':'🔒 Draft'}</span>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <a class="act-btn" href="/themes/undangan.html?slug=${u.slug}" target="_blank">👁 Lihat</a>
-        ${u.status==='draft'
-          ? `<button class="act-btn success" onclick="hapusWM('${u.id}','${u.slug}')">🔓 Aktifkan</button>`
-          : `<button class="act-btn danger" onclick="pasangWM('${u.id}','${u.slug}')">🔒 Non-aktifkan</button>`}
+        <label class="sw-wrap" title="${u.status==='aktif'?'Klik untuk non-aktifkan':'Klik untuk aktifkan'}">
+          <input type="checkbox" class="sw-inp" ${u.status==='aktif'?'checked':''} onchange="toggleWM('${u.id}','${u.slug}',this)">
+          <span class="sw-track"></span>
+          <span class="sw-lbl">${u.status==='aktif'?'Aktif':'Non-aktif'}</span>
+        </label>
       </div>
     </div>`).join('')
   : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada data</div>';
 }
 
-async function hapusWM(id,slug) {
-  if (!confirm(`Aktifkan undangan "${slug}"?\nWatermark akan dihapus.`)) return;
-  const {error} = await sb.from('undangan').update({status:'aktif',expired_at:new Date(Date.now()+365*24*60*60*1000).toISOString()}).eq('id',id);
-  if (error){alert('Gagal: '+error.message);return;}
-  toast('✅ Watermark dihapus! Undangan aktif.');
-  await loadWM(); await loadHome();
-}
-async function pasangWM(id,slug) {
-  if (!confirm(`Non-aktifkan undangan "${slug}"?`)) return;
-  await sb.from('undangan').update({status:'draft',expired_at:null}).eq('id',id);
-  toast('🔒 Undangan dikembalikan ke Draft.');
-  await loadWM();
+async function toggleWM(id, slug, checkbox) {
+  const aktifkan = checkbox.checked;
+  const row = checkbox.closest('.tbl-row');
+  const lbl = checkbox.closest('.sw-wrap').querySelector('.sw-lbl');
+  const track = checkbox.closest('.sw-wrap').querySelector('.sw-track');
+
+  // Optimistic UI — langsung update tampilan
+  if (lbl) lbl.textContent = aktifkan ? 'Aktif' : 'Non-aktif';
+
+  // Update status badge di row yang sama
+  const badgeEl = row?.querySelector('.badge');
+  if (badgeEl) {
+    badgeEl.textContent = aktifkan ? '✅ Aktif' : '🔒 Draft';
+    badgeEl.className = 'badge ' + (aktifkan ? 'badge-gr' : 'badge-gd');
+  }
+
+  const payload = aktifkan
+    ? { status: 'aktif', expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString() }
+    : { status: 'draft', expired_at: null };
+
+  const {error} = await sb.from('undangan').update(payload).eq('id', id);
+
+  if (error) {
+    // Rollback UI
+    checkbox.checked = !aktifkan;
+    if (lbl) lbl.textContent = !aktifkan ? 'Aktif' : 'Non-aktif';
+    if (badgeEl) {
+      badgeEl.textContent = !aktifkan ? '✅ Aktif' : '🔒 Draft';
+      badgeEl.className = 'badge ' + (!aktifkan ? 'badge-gr' : 'badge-gd');
+    }
+    alert('Gagal menyimpan: ' + error.message);
+    return;
+  }
+
+  // Update data lokal
+  const idx = allUndData.findIndex(u => u.id === id);
+  if (idx >= 0) allUndData[idx].status = aktifkan ? 'aktif' : 'draft';
+
+  // Update stat card watermark
+  const wmCount = allUndData.filter(u=>u.status==='draft').length;
+  const wmEl = document.getElementById('sWatermark');
+  if (wmEl) wmEl.textContent = wmCount;
+
+  toast(aktifkan ? '✅ ' + slug + ' — Aktif, watermark hilang' : '🔒 ' + slug + ' — Draft, watermark aktif');
 }
 
 // ══ SEMUA UNDANGAN ══
@@ -424,8 +711,11 @@ async function loadUsers() {
 function cariUser(q){ renderUsers(q ? allUserData.filter(u=>(u.nama||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').toLowerCase().includes(q.toLowerCase())) : allUserData); }
 function renderUsers(list) {
   document.getElementById('userList').innerHTML = list.length ? list.map(u=>`
-    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto">
-      <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div>
+        <div style="font-size:14px;font-weight:600">${u.nama||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${u.no_wa||''}</div>
+      </div>
       <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email}</div>
       <span class="badge ${u.role==='admin'?'badge-gd':u.role==='reseller'?'badge-bl':'badge-gr'}">${u.role}</span>
       <select onchange="gantiRole('${u.id}',this.value)" style="padding:5px 8px;border-radius:8px;border:1px solid var(--b);background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;outline:none">
@@ -433,6 +723,7 @@ function renderUsers(list) {
         <option value="reseller" ${u.role==='reseller'?'selected':''}>Reseller</option>
         <option value="admin"    ${u.role==='admin'?'selected':''}>Admin</option>
       </select>
+      <button class="act-btn" onclick="bukaEditUser('${u.id}','${(u.nama||'').replace(/'/g,'').replace(/"/g,'')}','${u.no_wa||''}','${u.role}')">✏️ Edit</button>
     </div>`).join('')
   : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Kosong</div>';
 }
@@ -441,6 +732,55 @@ async function gantiRole(id,role) {
   if (error){alert('Gagal: '+error.message);return;}
   toast('✅ Role diubah ke '+role);
   await loadUsers();
+}
+
+function bukaEditUser(id, nama, wa, role) {
+  document.getElementById('editUserId').value  = id;
+  document.getElementById('editUserNama').value = nama;
+  document.getElementById('editUserWa').value   = wa;
+  document.getElementById('editUserRole').value  = role;
+  document.getElementById('editUserModal').style.display = 'flex';
+}
+function tutupEditUser() { document.getElementById('editUserModal').style.display = 'none'; }
+
+async function simpanEditUser() {
+  const id   = document.getElementById('editUserId').value;
+  const nama = document.getElementById('editUserNama').value.trim();
+  const wa   = document.getElementById('editUserWa').value.trim();
+  const role = document.getElementById('editUserRole').value;
+  const {error} = await sb.from('profiles').update({nama,no_wa:wa||null,role}).eq('id',id);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ User berhasil diupdate');
+  tutupEditUser();
+  await loadUsers();
+}
+
+async function tambahUserManual() {
+  const nama  = document.getElementById('newUserNama').value.trim();
+  const email = document.getElementById('newUserEmail').value.trim();
+  const role  = document.getElementById('newUserRole').value;
+  if (!email) { alert('Isi email dulu'); return; }
+
+  // Cek apakah sudah ada di profiles
+  const {data:exist} = await sb.from('profiles').select('id,role').eq('email',email).single();
+  if (exist) {
+    // Sudah ada — langsung update role saja
+    const {error} = await sb.from('profiles').update({nama:nama||exist.nama, role}).eq('email',email);
+    if (error) { alert('Gagal update: '+error.message); return; }
+    toast('✅ Role user '+email+' diubah ke '+role);
+    document.getElementById('newUserNama').value='';
+    document.getElementById('newUserEmail').value='';
+    await loadUsers();
+    return;
+  }
+
+  // Belum ada — simpan ke invited_users, nanti set role saat login
+  const {error} = await sb.from('invited_users').upsert({email, role},{onConflict:'email'});
+  if (error) { alert('Gagal: '+error.message); return; }
+
+  toast('✅ '+email+' diundang sebagai '+role+'. Minta login dengan Google menggunakan email ini.');
+  document.getElementById('newUserNama').value='';
+  document.getElementById('newUserEmail').value='';
 }
 
 // ══ TRANSAKSI ══
@@ -490,26 +830,66 @@ async function loadPaket() {
   renderPaket(data||[]);
 }
 function renderPaket(list) {
-  document.getElementById('paketGrid').innerHTML = list.length ? list.map(p=>`
-    <div class="paket-card ${p.nama==='Premium'?'featured':''}">
-      <div class="paket-label">${p.nama==='Premium'?'⭐ Paling Diminati':''}</div>
-      <div class="paket-nama">${p.nama}</div>
-      <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="ph_${p.id}" value="${p.harga}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="pd_${p.id}" value="${p.durasi_hari}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="pf_${p.id}" value="${p.max_foto}" type="number"></div>
-      <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="pt_${p.id}" value="${p.max_tamu}" type="number"></div>
-    </div>`).join('')
-  : '<div style="color:var(--muted);font-size:13px">Tidak ada paket</div>';
+  if (!list.length) { document.getElementById('paketGrid').innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px">Tidak ada paket</div>'; return; }
+  document.getElementById('paketGrid').innerHTML = list.map(p=>{
+    const fitur = Array.isArray(p.fitur) ? p.fitur : JSON.parse(p.fitur||'[]');
+    const isPopuler = p.nama==='Premium' || (p.fitur&&p.fitur.includes&&p.fitur.includes('populer'));
+    return `<div class="form-card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div class="form-title" style="margin:0;padding:0;border:none;font-size:14px">${p.nama} ${isPopuler?'⭐':''}</div>
+          <div style="font-size:12px;color:var(--gold);margin-top:2px">Rp ${p.harga.toLocaleString('id-ID')} / ${p.durasi_hari} hari</div>
+        </div>
+        <button class="act-btn danger" onclick="hapusPaket('${p.id}','${p.nama}')">🗑 Hapus</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-wrap"><label class="inp-lbl">Harga (Rp)</label><input class="inp" id="ph_${p.id}" value="${p.harga}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Durasi (hari)</label><input class="inp" id="pd_${p.id}" value="${p.durasi_hari}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Foto</label><input class="inp" id="pf_${p.id}" value="${p.max_foto}" type="number"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Maks Tamu</label><input class="inp" id="pt_${p.id}" value="${p.max_tamu}" type="number"></div>
+      </div>
+      <div class="inp-wrap"><label class="inp-lbl">Deskripsi Landing Page</label><input class="inp" id="pdesc_${p.id}" value="${p.deskripsi||''}" placeholder="Deskripsi tampil di landing page"></div>
+      <div class="inp-wrap"><label class="inp-lbl">Fitur (pisah koma)</label><input class="inp" id="pfitur_${p.id}" value="${fitur.join(', ')}" placeholder="RSVP, Countdown, Musik"></div>
+      <button class="save-btn" onclick="simpanSatuPaket('${p.id}')" style="padding:9px 20px;font-size:11px;letter-spacing:1px">Simpan Paket Ini</button>
+    </div>`;
+  }).join('');
 }
-async function simpanPaket() {
-  for (const p of allPaketData) {
-    const harga   = parseInt(document.getElementById('ph_'+p.id)?.value)||p.harga;
-    const durasi  = parseInt(document.getElementById('pd_'+p.id)?.value)||p.durasi_hari;
-    const maxFoto = parseInt(document.getElementById('pf_'+p.id)?.value)||p.max_foto;
-    const maxTamu = parseInt(document.getElementById('pt_'+p.id)?.value)||p.max_tamu;
-    await sb.from('paket').update({harga,durasi_hari:durasi,max_foto:maxFoto,max_tamu:maxTamu}).eq('id',p.id);
-  }
-  toast('✅ Semua paket berhasil disimpan!');
+
+async function simpanSatuPaket(id) {
+  const harga   = parseInt(document.getElementById('ph_'+id)?.value);
+  const durasi  = parseInt(document.getElementById('pd_'+id)?.value);
+  const maxFoto = parseInt(document.getElementById('pf_'+id)?.value);
+  const maxTamu = parseInt(document.getElementById('pt_'+id)?.value);
+  const desc    = document.getElementById('pdesc_'+id)?.value.trim();
+  const fiturStr= document.getElementById('pfitur_'+id)?.value.trim();
+  const fitur   = fiturStr ? JSON.stringify(fiturStr.split(',').map(s=>s.trim()).filter(Boolean)) : '[]';
+  const {error} = await sb.from('paket').update({harga,durasi_hari:durasi,max_foto:maxFoto,max_tamu:maxTamu,deskripsi:desc,fitur}).eq('id',id);
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Paket disimpan!');
+  await loadPaket();
+}
+
+async function hapusPaket(id, nama) {
+  if (!confirm(`Hapus paket "${nama}" permanen?`)) return;
+  await sb.from('paket').delete().eq('id',id);
+  toast('🗑 Paket dihapus');
+  await loadPaket();
+}
+
+async function tambahPaket() {
+  const nama  = document.getElementById('np_nama').value.trim();
+  const harga = parseInt(document.getElementById('np_harga').value);
+  const durasi= parseInt(document.getElementById('np_durasi').value);
+  const foto  = parseInt(document.getElementById('np_foto').value)||10;
+  const tamu  = parseInt(document.getElementById('np_tamu').value)||100;
+  const desc  = document.getElementById('np_desc').value.trim();
+  const fiturStr = document.getElementById('np_fitur').value.trim();
+  const fitur = fiturStr ? JSON.stringify(fiturStr.split(',').map(s=>s.trim()).filter(Boolean)) : '[]';
+  if (!nama||!harga||!durasi){alert('Isi nama, harga, dan durasi dulu');return;}
+  const {error} = await sb.from('paket').insert({nama,harga,durasi_hari:durasi,max_foto:foto,max_tamu:tamu,deskripsi:desc,fitur,aktif:true});
+  if (error){alert('Gagal: '+error.message);return;}
+  toast('✅ Paket baru ditambahkan!');
+  ['np_nama','np_harga','np_durasi','np_foto','np_tamu','np_desc','np_fitur'].forEach(id=>document.getElementById(id).value='');
   await loadPaket();
 }
 
@@ -569,6 +949,282 @@ function loadTemplate() {
 }
 
 // ══ NAVIGATION ══
+// ══ TEMPLATE FUNCTIONS ══
+let allTmplData = [];
+
+function loadTemplate() {
+  // Gunakan data hardcode dulu (nanti bisa dari DB)
+  allTmplData = [
+    {id:1,nama:'Classic Gold',kat:'modern',desc:'Elegan dengan sentuhan emas',color1:'#2a1d12',color2:'#b8935a',font:'Great Vibes',aktif:true},
+    {id:2,nama:'Rose Garden',kat:'garden',desc:'Romantis dengan nuansa merah muda',color1:'#2d1a1a',color2:'#d48080',font:'Great Vibes',aktif:true},
+    {id:3,nama:'Emerald Forest',kat:'garden',desc:'Segar dengan sentuhan hijau alam',color1:'#111f18',color2:'#64b482',font:'Cormorant Garamond',aktif:true},
+    {id:4,nama:'Midnight Blue',kat:'modern',desc:'Mewah dengan nuansa biru malam',color1:'#0d1421',color2:'#6490d4',font:'Cinzel',aktif:true},
+    {id:5,nama:'Cream Sage',kat:'minimalis',desc:'Bersih dan minimalis dengan warna krem',color1:'#f5f0e8',color2:'#7a8c64',font:'Great Vibes',aktif:true},
+    {id:6,nama:'Dusty Mauve',kat:'modern',desc:'Lembut dengan nuansa ungu keabuan',color1:'#1e1520',color2:'#b48cc0',font:'Dancing Script',aktif:true},
+    {id:7,nama:'Batik Gold',kat:'adat',desc:'Terinspirasi motif batik Jawa',color1:'#1a1208',color2:'#c4922a',font:'Cinzel',aktif:false},
+    {id:8,nama:'Hijau Daun',kat:'islami',desc:'Nuansa islami dengan hijau segar',color1:'#0e1a14',color2:'#4aab6d',font:'Cormorant Garamond',aktif:false},
+    {id:9,nama:'Lavender Dream',kat:'minimalis',desc:'Lembut dan dreamy dengan lavender',color1:'#1a0e1a',color2:'#9b7fc8',font:'Playfair Display',aktif:false},
+  ];
+  renderTemplate();
+}
+
+function renderTemplate() {
+  document.getElementById('tmplList').innerHTML = allTmplData.map(t => `
+    <div class="tbl-row" style="grid-template-columns:auto 1fr 1fr 1fr auto auto">
+      <div style="font-size:12px;color:var(--muted);font-weight:700">#${t.id}</div>
+      <div>
+        <div style="font-size:14px;font-weight:600">${t.nama}</div>
+        <div style="display:flex;gap:4px;margin-top:3px">
+          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${t.color1};border:1px solid var(--b)"></span>
+          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${t.color2};border:1px solid var(--b)"></span>
+          <span style="font-size:10px;color:var(--muted);margin-left:4px">${t.font}</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-transform:capitalize">${t.kat}</div>
+      <div style="font-size:12px;color:var(--muted)">${t.desc||'—'}</div>
+      <div>
+        <label class="sw-wrap">
+          <input type="checkbox" class="sw-inp" ${t.aktif?'checked':''} onchange="toggleTmpl(${t.id},this)">
+          <span class="sw-track"></span>
+          <span class="sw-lbl">${t.aktif?'Aktif':'Off'}</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:5px">
+        <a class="act-btn" href="/themes/undangan.html?tema=${t.id}" target="_blank">👁</a>
+        <button class="act-btn" onclick="bukaEditTmpl(${t.id})">✏️</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleTmpl(id, cb) {
+  const idx = allTmplData.findIndex(t=>t.id===id);
+  if (idx>=0) {
+    allTmplData[idx].aktif = cb.checked;
+    const lbl = cb.closest('.sw-wrap').querySelector('.sw-lbl');
+    if (lbl) lbl.textContent = cb.checked ? 'Aktif' : 'Off';
+    toast(cb.checked ? '✅ Template diaktifkan' : '🔒 Template dinonaktifkan');
+    // TODO: simpan ke DB tabel templates saat sudah ada
+  }
+}
+
+function bukaEditTmpl(id) {
+  const t = allTmplData.find(t=>t.id===id);
+  if (!t) return;
+  document.getElementById('et_id').value    = id;
+  document.getElementById('et_nama').value  = t.nama;
+  document.getElementById('et_kat').value   = t.kat;
+  document.getElementById('et_desc').value  = t.desc||'';
+  document.getElementById('et_color1').value= t.color1;
+  document.getElementById('et_color2').value= t.color2;
+  document.getElementById('et_font').value  = t.font;
+  document.getElementById('et_aktif').checked = t.aktif;
+  document.getElementById('editTmplModal').style.display = 'flex';
+}
+function tutupEditTmpl() { document.getElementById('editTmplModal').style.display='none'; }
+
+function simpanEditTmpl() {
+  const id = parseInt(document.getElementById('et_id').value);
+  const idx = allTmplData.findIndex(t=>t.id===id);
+  if (idx<0) return;
+  allTmplData[idx] = {
+    ...allTmplData[idx],
+    nama:   document.getElementById('et_nama').value.trim(),
+    kat:    document.getElementById('et_kat').value,
+    desc:   document.getElementById('et_desc').value.trim(),
+    color1: document.getElementById('et_color1').value.trim(),
+    color2: document.getElementById('et_color2').value.trim(),
+    font:   document.getElementById('et_font').value,
+    aktif:  document.getElementById('et_aktif').checked,
+  };
+  tutupEditTmpl();
+  renderTemplate();
+  toast('✅ Template disimpan');
+}
+
+function tambahTemplate() {
+  const nama = document.getElementById('nt_nama').value.trim();
+  if (!nama) { alert('Isi nama template'); return; }
+  const newId = Math.max(...allTmplData.map(t=>t.id)) + 1;
+  allTmplData.push({
+    id: newId,
+    nama,
+    kat:    document.getElementById('nt_kat').value,
+    desc:   document.getElementById('nt_desc').value.trim(),
+    color1: document.getElementById('nt_color1').value.trim() || '#2a1d12',
+    color2: document.getElementById('nt_color2').value.trim() || '#b8935a',
+    font:   document.getElementById('nt_font').value,
+    aktif:  document.getElementById('nt_aktif').checked,
+  });
+  ['nt_nama','nt_desc','nt_color1','nt_color2'].forEach(id=>document.getElementById(id).value='');
+  renderTemplate();
+  toast('✅ Template #'+newId+' ditambahkan');
+}
+
+// ══ LAGU FUNCTIONS ══
+let allLaguData = [];
+let previewAudio = null;
+let previewId = null;
+
+async function loadLagu() {
+  const {data, error} = await sb.from('lagu').select('*').order('urutan',{ascending:true}).order('id',{ascending:true});
+  if (error) { document.getElementById('laguList').innerHTML='<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Error: '+error.message+'</div>'; return; }
+  allLaguData = data || [];
+  renderLaguAdmin(allLaguData);
+}
+
+function renderLaguAdmin(list) {
+  document.getElementById('laguList').innerHTML = list.length ? list.map(l=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div>
+        <div style="font-size:14px;font-weight:600">${l.judul}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.url}</div>
+      </div>
+      <div>
+        <div style="font-size:13px">${l.artis||'—'}</div>
+      </div>
+      <span class="badge badge-bl" style="font-size:10px">${l.kategori||l.kat||'—'}</span>
+      <div style="display:flex;gap:5px;align-items:center">
+        <button class="act-btn" onclick="previewLagu(${l.id},'${l.url}')" title="${previewId===l.id?'Pause':'Play'}">${previewId===l.id?'⏸ Pause':'▶ Play'}</button>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="act-btn" onclick="bukaEditLagu(${l.id})">✏️</button>
+        <button class="act-btn danger" onclick="hapusLagu(${l.id})">🗑</button>
+      </div>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada lagu</div>';
+}
+
+function previewLagu(id, url) {
+  if (previewId === id) {
+    previewAudio?.pause();
+    previewId = null;
+    renderLaguAdmin(allLaguData);
+    return;
+  }
+  previewAudio?.pause();
+  previewAudio = new Audio(url);
+  previewAudio.play().catch(()=>{});
+  previewAudio.onended = () => { previewId=null; renderLaguAdmin(allLaguData); };
+  previewId = id;
+  renderLaguAdmin(allLaguData);
+}
+
+async function hapusLagu(id) {
+  if (!confirm('Hapus lagu ini?')) return;
+  const {error} = await sb.from('lagu').delete().eq('id',id);
+  if (error) { alert('Gagal: '+error.message); return; }
+  allLaguData = allLaguData.filter(l=>l.id!==id);
+  renderLaguAdmin(allLaguData);
+  toast('🗑 Lagu dihapus');
+}
+
+function bukaEditLagu(id) {
+  const l = allLaguData.find(l=>l.id===id);
+  if (!l) return;
+  document.getElementById('el_id').value    = id;
+  document.getElementById('el_judul').value = l.judul;
+  document.getElementById('el_artis').value = l.artis;
+  document.getElementById('el_kat').value   = l.kat;
+  document.getElementById('el_dur').value   = l.dur;
+  document.getElementById('el_url').value   = l.url;
+  document.getElementById('editLaguModal').style.display = 'flex';
+}
+function tutupEditLagu() { document.getElementById('editLaguModal').style.display='none'; previewAudio?.pause(); previewId=null; }
+
+async function simpanEditLagu() {
+  const id    = parseInt(document.getElementById('el_id').value);
+  const judul = document.getElementById('el_judul').value.trim();
+  const artis = document.getElementById('el_artis').value.trim();
+  const kat   = document.getElementById('el_kat').value;
+  const url   = document.getElementById('el_url').value.trim();
+  const {error} = await sb.from('lagu').update({judul, artis:artis||null, kategori:kat, url}).eq('id',id);
+  if (error) { alert('Gagal: '+error.message); return; }
+  const idx = allLaguData.findIndex(l=>l.id===id);
+  if (idx>=0) allLaguData[idx] = {...allLaguData[idx], judul, artis, kategori:kat, url};
+  tutupEditLagu();
+  renderLaguAdmin(allLaguData);
+  toast('✅ Lagu diperbarui di database');
+}
+
+function downloadTemplateLagu() {
+  // Buat CSV template
+  const header = 'Nama,Artis,Kategori,Link';
+  const contoh = [
+    'Deen Assalam,Sabyan,nasyid,https://www.youtube.com/watch?v=xxxxx',
+    'A Thousand Years,Instrumental,instrumental,https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    'Canon in D,Pachelbel,klasik,https://www.youtube.com/watch?v=xxxxx',
+  ].join('\n');
+  const csv = header + '\n' + contoh;
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'template_lagu_undanganku.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 Template berhasil didownload');
+}
+
+function importExcelLagu(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('importStatus');
+  statusEl.textContent = 'Membaca file...';
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(l=>l.trim());
+      const dataLines = lines.slice(1); // skip header
+      const rows = [];
+      dataLines.forEach(line => {
+        const cols = line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
+        if (cols.length >= 4 && cols[0] && cols[3]) {
+          rows.push({ judul:cols[0], artis:cols[1]||null, kategori:cols[2]||'lainnya', url:cols[3], aktif:true });
+        }
+      });
+      if (!rows.length) { statusEl.textContent='Tidak ada data valid ditemukan'; return; }
+
+      statusEl.textContent = 'Menyimpan '+rows.length+' lagu...';
+
+      // Replace semua lagu - hapus dulu lalu insert
+      if (confirm('Import akan MENGGANTI semua lagu yang ada dengan data dari Excel. Lanjutkan?')) {
+        await sb.from('lagu').delete().neq('id',0); // hapus semua
+        const {error} = await sb.from('lagu').insert(rows);
+        if (error) { statusEl.textContent='Error: '+error.message; return; }
+        await loadLagu();
+        statusEl.textContent='';
+        toast('✅ '+rows.length+' lagu berhasil diimport & disimpan ke DB!');
+      } else {
+        // Hanya tambah tanpa hapus yang lama
+        const {error} = await sb.from('lagu').insert(rows);
+        if (error) { statusEl.textContent='Error: '+error.message; return; }
+        await loadLagu();
+        statusEl.textContent='';
+        toast('✅ '+rows.length+' lagu ditambahkan ke DB!');
+      }
+    } catch(err) {
+      statusEl.textContent = 'Error: format file tidak sesuai';
+      console.error(err);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+async function tambahLagu() {
+  const judul = document.getElementById('nl_judul').value.trim();
+  const artis = document.getElementById('nl_artis').value.trim();
+  const url   = document.getElementById('nl_url').value.trim();
+  const kat   = document.getElementById('nl_kat').value;
+  if (!judul||!url) { alert('Isi judul dan URL lagu'); return; }
+  const {data, error} = await sb.from('lagu').insert({judul, artis:artis||null, kategori:kat, url, aktif:true}).select().single();
+  if (error) { alert('Gagal: '+error.message); return; }
+  allLaguData.push(data);
+  ['nl_judul','nl_artis','nl_url'].forEach(id=>document.getElementById(id).value='');
+  renderLaguAdmin(allLaguData);
+  toast('✅ Lagu disimpan ke database');
+}
+
 function nav(name, el) {
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on','visible')});
   const pg = document.getElementById('page-'+name);
@@ -576,7 +1232,7 @@ function nav(name, el) {
   setTimeout(()=>pg.classList.add('visible'),20);
   document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
   if (el) el.classList.add('on');
-  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller',paket:'Paket & Harga',landing:'Landing Page',template:'Kelola Template'};
+  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller',paket:'Paket & Harga',landing:'Landing Page',template:'Kelola Template',lagu:'Daftar Lagu'};
   document.getElementById('topTitle').textContent = titles[name]||name;
   if (name==='watermark') loadWM();
   if (name==='undangan')  loadAllUnd();
@@ -586,6 +1242,7 @@ function nav(name, el) {
   if (name==='paket')     loadPaket();
   if (name==='landing')   loadLanding();
   if (name==='template')  loadTemplate();
+  if (name==='lagu')      loadLagu();
   if (window.innerWidth<769) closeSb();
   return false;
 }
