@@ -817,12 +817,11 @@ function renderLagu(list) {
   if (!list.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ditemukan</div>'; return; }
   el.innerHTML = list.map(l => `
     <div class="musik-item${playingId===l.id?' playing':''}" id="mitem-${l.id}">
-      <div class="musik-play-btn" onclick="togglePlay(${l.id},'${l.url}','${l.nama}','${l.artist}')">${playingId===l.id?'⏸':'▶'}</div>
+      <div class="musik-play-btn play-btn" onclick="togglePlay(${l.id},'${l.url}','${l.nama}','${l.artist}')">${playingId===l.id?'⏸':'▶'}</div>
       <div class="musik-info">
         <div class="musik-nama">${l.nama}</div>
         <div class="musik-artist">${l.artist} · ${l.kat}</div>
       </div>
-      <div class="musik-dur">${l.dur}</div>
       <button class="musik-pilih-btn${selectedMusikUrl===l.url?' on':''}" onclick="pilihLagu(${l.id},'${l.url}','${l.nama}','${l.artist}')">${selectedMusikUrl===l.url?'✓ Dipilih':'Pilih'}</button>
     </div>`).join('');
 }
@@ -833,24 +832,35 @@ function cariLagu(q) {
   renderLagu(filtered);
 }
 
+// ── DEEZER PREVIEW ──
+// Cari preview 30 detik dari Deezer berdasarkan judul + artis
+async function getDeezerPreview(judul, artis) {
+  try {
+    const q = encodeURIComponent(`${judul} ${artis}`);
+    const res = await fetch(`https://corsproxy.io/?https://api.deezer.com/search?q=${q}&limit=1`);
+    const data = await res.json();
+    if (data.data && data.data.length > 0 && data.data[0].preview) {
+      return data.data[0].preview; // URL MP3 preview 30 detik
+    }
+  } catch(e) {}
+  return null;
+}
+
 function isYoutube(url) {
   return url && (url.includes('youtube.com') || url.includes('youtu.be'));
 }
-
 function getYoutubeId(url) {
   const m = url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
   return m ? m[1] : null;
 }
 
-function togglePlay(id, url, nama, artist) {
-  // Stop apapun yang sedang main
+async function togglePlay(id, url, nama, artist) {
+  // Stop yang lama
   if (currentAudio) { currentAudio.pause(); currentAudio.src=''; currentAudio=null; }
-  // Hapus iframe lama
-  const oldFrame = document.getElementById('yt-frame-wrap');
+  const oldFrame = document.getElementById('preview-frame-wrap');
   if (oldFrame) oldFrame.remove();
 
   if (playingId === id) {
-    // Klik play lagi = stop
     playingId = null;
     renderLagu(LAGU_LIST);
     return;
@@ -859,27 +869,48 @@ function togglePlay(id, url, nama, artist) {
   playingId = id;
   renderLagu(LAGU_LIST);
 
-  if (isYoutube(url)) {
-    // YouTube — embed iframe kecil di bawah item
-    const ytId = getYoutubeId(url);
-    if (!ytId) { alert('Link YouTube tidak valid'); return; }
-    const wrap = document.createElement('div');
-    wrap.id = 'yt-frame-wrap';
-    wrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;border:1px solid var(--b)';
-    wrap.innerHTML = `<iframe 
-      src="https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0" 
-      width="100%" height="80" frameborder="0" 
-      allow="autoplay; encrypted-media" allowfullscreen
-      style="display:block"></iframe>`;
-    // Sisipkan setelah item yang diklik
+  // Update tombol jadi loading
+  const btn = document.querySelector(`#mitem-${id} .play-btn`);
+  if (btn) btn.textContent = '⏳';
+
+  // Cari Deezer preview dulu
+  const previewUrl = await getDeezerPreview(nama, artist);
+
+  if (previewUrl) {
+    // ✅ Deezer preview tersedia — play MP3 30 detik
+    currentAudio = new Audio(previewUrl);
+    currentAudio.volume = 0.8;
+    currentAudio.play().catch(()=>{});
+    currentAudio.onended = () => { playingId=null; renderLagu(LAGU_LIST); };
+    if (btn) btn.textContent = '⏸';
+    // Tampilkan info preview
     const item = document.getElementById('mitem-'+id);
-    if (item) item.after(wrap);
+    if (item) {
+      const info = document.createElement('div');
+      info.id = 'preview-frame-wrap';
+      info.style.cssText = 'padding:6px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--b)';
+      info.textContent = '🎵 Preview 30 detik via Deezer';
+      item.after(info);
+    }
+  } else if (isYoutube(url)) {
+    // Fallback YouTube embed
+    const ytId = getYoutubeId(url);
+    if (ytId) {
+      const wrap = document.createElement('div');
+      wrap.id = 'preview-frame-wrap';
+      wrap.style.cssText = 'margin:0;border-top:1px solid var(--b);overflow:hidden';
+      wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&modestbranding=1" width="100%" height="72" frameborder="0" allow="autoplay;encrypted-media" style="display:block"></iframe>`;
+      const item = document.getElementById('mitem-'+id);
+      if (item) item.after(wrap);
+      if (btn) btn.textContent = '▶';
+    }
   } else {
     // MP3 langsung
     currentAudio = new Audio(url);
     currentAudio.volume = 0.8;
     currentAudio.play().catch(()=>{});
     currentAudio.onended = () => { playingId=null; renderLagu(LAGU_LIST); };
+    if (btn) btn.textContent = '⏸';
   }
 }
 
