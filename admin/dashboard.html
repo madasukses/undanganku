@@ -450,7 +450,6 @@ function applyWMFilter(q='') {
 
 async function toggleWM(id, slug, checkbox) {
   const aktifkan = checkbox.checked;
-  // Optimistic update label
   const lbl = checkbox.closest('.sw-wrap').querySelector('.sw-lbl');
   if (lbl) lbl.textContent = aktifkan ? 'Aktif' : 'Non-aktif';
 
@@ -459,28 +458,30 @@ async function toggleWM(id, slug, checkbox) {
       status: 'aktif',
       expired_at: new Date(Date.now()+365*24*60*60*1000).toISOString()
     }).eq('id', id);
-    if (error) { checkbox.checked=false; if(lbl)lbl.textContent='Non-aktif'; alert('Gagal: '+error.message); return; }
-    // Insert record pembayaran gratis agar watermark hilang di halaman undangan
-    const und = allUndData.find(u=>u.id===id);
-    if (und?.user_id) {
-      await sb.from('pembayaran').upsert({
-        user_id: und.user_id, undangan_id: id,
-        nominal: 0, metode: 'admin_manual', status: 'sukses', kode_ref: 'ADMIN'
-      }, {onConflict:'undangan_id,metode', ignoreDuplicates:true});
+    if (error) {
+      checkbox.checked = false;
+      if (lbl) lbl.textContent = 'Non-aktif';
+      alert('Gagal: ' + error.message);
+      return;
     }
     toast('✅ Aktif — watermark dihapus');
   } else {
-    await sb.from('undangan').update({status:'draft', expired_at:null}).eq('id',id);
-    // Hapus record pembayaran manual
-    const und = allUndData.find(u=>u.id===id);
-    if (und?.user_id) {
-      await sb.from('pembayaran').delete().eq('undangan_id',id).eq('metode','admin_manual');
+    const {error} = await sb.from('undangan').update({
+      status: 'draft',
+      expired_at: null
+    }).eq('id', id);
+    if (error) {
+      checkbox.checked = true;
+      if (lbl) lbl.textContent = 'Aktif';
+      alert('Gagal: ' + error.message);
+      return;
     }
     toast('🔒 Non-aktif — watermark dipasang kembali');
   }
-  // Update data lokal
-  const idx = allUndData.findIndex(u=>u.id===id);
-  if (idx>=0) allUndData[idx].status = aktifkan ? 'aktif' : 'draft';
+
+  // Update data lokal agar render benar
+  const idx = allUndData.findIndex(u => u.id === id);
+  if (idx >= 0) allUndData[idx].status = aktifkan ? 'aktif' : 'draft';
   await loadHome();
 }
 
