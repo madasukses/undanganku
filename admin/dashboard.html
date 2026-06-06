@@ -146,6 +146,7 @@ textarea.inp{resize:vertical;min-height:80px}
     <div class="snav-sec">Konten</div>
     <a class="si" href="#" onclick="nav('landing',this)"><span class="ic">🌐</span>Landing Page</a>
     <a class="si" href="#" onclick="nav('template',this)"><span class="ic">🎨</span>Kelola Template</a>
+    <a class="si" href="#" onclick="nav('lagu',this)"><span class="ic">🎵</span>Daftar Lagu</a>
   </nav>
   <div class="sfooter">
     <div class="user-row">
@@ -315,6 +316,81 @@ textarea.inp{resize:vertical;min-height:80px}
       </div>
     </div>
 
+    <!-- ══ LAGU ══ -->
+    <div class="page" id="page-lagu">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Daftar Lagu</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Master list lagu yang tampil di pilihan musik customer. Tambah link streaming YouTube/SoundCloud.</div>
+
+      <!-- List lagu -->
+      <div class="tbl" style="margin-bottom:20px">
+        <div class="tbl-head" style="grid-template-columns:1fr 1fr auto auto auto">
+          <div>Judul / URL</div><div>Artis / Durasi</div><div>Kategori</div><div>Preview</div><div>Aksi</div>
+        </div>
+        <div id="laguList"><div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Memuat...</div></div>
+      </div>
+
+      <!-- Form tambah lagu -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Lagu</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Judul Lagu</label><input class="inp" id="nl_judul" placeholder="A Thousand Years"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Artis</label><input class="inp" id="nl_artis" placeholder="Christina Perri (Instrumental)"></div>
+        </div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="nl_kat">
+              <option value="nasyid">Nasyid</option>
+              <option value="instrumental">Instrumental</option>
+              <option value="pop">Pop Indonesia</option>
+              <option value="jazz">Jazz / Acoustic</option>
+              <option value="klasik">Klasik</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="inp-wrap"><label class="inp-lbl">Durasi (contoh: 4:23)</label><input class="inp" id="nl_dur" placeholder="4:23"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Link Streaming (YouTube / SoundCloud / MP3 URL)</label><input class="inp" id="nl_url" placeholder="https://www.youtube.com/watch?v=... atau https://soundcloud.com/..."></div>
+        <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+          <button class="save-btn" onclick="tambahLagu()" style="padding:10px 24px">Tambah Lagu →</button>
+          <div id="laguPreviewWrap" style="display:none;flex:1">
+            <audio id="laguPreviewAudio" controls style="width:100%;height:32px"></audio>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">Tip: Untuk YouTube, sistem akan embed otomatis. Untuk file MP3 langsung, paste URL file-nya.</div>
+      </div>
+    </div>
+
+    <!-- Modal Edit Lagu -->
+    <div id="editLaguModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:480px;padding:24px;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">✏️ Edit Lagu</div>
+          <div onclick="tutupEditLagu()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="el_id">
+        <div class="inp-wrap"><label class="inp-lbl">Judul Lagu</label><input class="inp" id="el_judul"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Artis</label><input class="inp" id="el_artis"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="el_kat">
+              <option value="nasyid">Nasyid</option>
+              <option value="instrumental">Instrumental</option>
+              <option value="pop">Pop Indonesia</option>
+              <option value="jazz">Jazz / Acoustic</option>
+              <option value="klasik">Klasik</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="inp-wrap"><label class="inp-lbl">Durasi</label><input class="inp" id="el_dur" placeholder="4:23"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">URL Streaming</label><input class="inp" id="el_url" placeholder="https://..."></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="save-btn" onclick="simpanEditLagu()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditLagu()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer">Batal</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ LANDING PAGE ══ -->
     <div class="page" id="page-landing">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Landing <span style="color:var(--gold)">Page</span></div>
@@ -354,10 +430,97 @@ textarea.inp{resize:vertical;min-height:80px}
     <!-- ══ TEMPLATE ══ -->
     <div class="page" id="page-template">
       <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(22px,5vw,30px);margin-bottom:6px">Kelola <span style="color:var(--gold)">Template</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Lihat semua template yang tersedia. Nanti bisa tambah template baru dari sini.</div>
-      <div class="tbl">
-        <div class="tbl-head" style="grid-template-columns:auto 1fr 1fr auto auto"><div>ID</div><div>Nama</div><div>Kategori</div><div>Status</div><div>Aksi</div></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Master data template. Tambah, edit, aktifkan/nonaktifkan template.</div>
+
+      <!-- List template -->
+      <div class="tbl" style="margin-bottom:20px">
+        <div class="tbl-head" style="grid-template-columns:auto 1fr 1fr 1fr auto auto">
+          <div>ID</div><div>Nama</div><div>Kategori</div><div>Deskripsi</div><div>Status</div><div>Aksi</div>
+        </div>
         <div id="tmplList"></div>
+      </div>
+
+      <!-- Form tambah template -->
+      <div class="form-card">
+        <div class="form-title">➕ Tambah Template Baru</div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Nama Template</label><input class="inp" id="nt_nama" placeholder="contoh: Javanese Gold"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+            <select class="inp" id="nt_kat">
+              <option value="modern">Modern</option>
+              <option value="adat">Adat</option>
+              <option value="minimalis">Minimalis</option>
+              <option value="islami">Islami</option>
+              <option value="garden">Garden</option>
+              <option value="rustic">Rustic</option>
+              <option value="mewah">Mewah</option>
+            </select>
+          </div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi</label><input class="inp" id="nt_desc" placeholder="Deskripsi singkat template"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Warna Utama (hex)</label><input class="inp" id="nt_color1" placeholder="#2a1d12" type="text"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Warna Aksen (hex)</label><input class="inp" id="nt_color2" placeholder="#b8935a" type="text"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Font Display</label>
+          <select class="inp" id="nt_font">
+            <option value="Great Vibes">Great Vibes (Script)</option>
+            <option value="Cormorant Garamond">Cormorant Garamond (Serif)</option>
+            <option value="Dancing Script">Dancing Script (Script)</option>
+            <option value="Cinzel">Cinzel (Caps)</option>
+            <option value="Playfair Display">Playfair Display (Serif)</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <input type="checkbox" id="nt_aktif" checked style="width:16px;height:16px;cursor:pointer">
+          <label for="nt_aktif" class="inp-lbl" style="margin:0;cursor:pointer">Langsung aktifkan</label>
+        </div>
+        <button class="save-btn" onclick="tambahTemplate()">Tambah Template →</button>
+      </div>
+    </div>
+
+    <!-- Modal Edit Template -->
+    <div id="editTmplModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--s);border:1px solid var(--b);border-radius:18px;width:100%;max-width:480px;padding:24px;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-size:16px;font-weight:700">Edit Template</div>
+          <div onclick="tutupEditTmpl()" style="cursor:pointer;color:var(--muted);font-size:22px">✕</div>
+        </div>
+        <input type="hidden" id="et_id">
+        <div class="inp-wrap"><label class="inp-lbl">Nama</label><input class="inp" id="et_nama"></div>
+        <div class="inp-wrap"><label class="inp-lbl">Kategori</label>
+          <select class="inp" id="et_kat">
+            <option value="modern">Modern</option>
+            <option value="adat">Adat</option>
+            <option value="minimalis">Minimalis</option>
+            <option value="islami">Islami</option>
+            <option value="garden">Garden</option>
+            <option value="rustic">Rustic</option>
+            <option value="mewah">Mewah</option>
+          </select>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Deskripsi</label><input class="inp" id="et_desc"></div>
+        <div class="form-row">
+          <div class="inp-wrap"><label class="inp-lbl">Warna Utama</label><input class="inp" id="et_color1"></div>
+          <div class="inp-wrap"><label class="inp-lbl">Warna Aksen</label><input class="inp" id="et_color2"></div>
+        </div>
+        <div class="inp-wrap"><label class="inp-lbl">Font Display</label>
+          <select class="inp" id="et_font">
+            <option value="Great Vibes">Great Vibes</option>
+            <option value="Cormorant Garamond">Cormorant Garamond</option>
+            <option value="Dancing Script">Dancing Script</option>
+            <option value="Cinzel">Cinzel</option>
+            <option value="Playfair Display">Playfair Display</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <input type="checkbox" id="et_aktif" style="width:16px;height:16px;cursor:pointer">
+          <label for="et_aktif" class="inp-lbl" style="margin:0;cursor:pointer">Aktif (tampil di customer)</label>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="save-btn" onclick="simpanEditTmpl()" style="flex:1;padding:12px">Simpan →</button>
+          <button onclick="tutupEditTmpl()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer">Batal</button>
+        </div>
       </div>
     </div>
 
@@ -748,6 +911,228 @@ function loadTemplate() {
 }
 
 // ══ NAVIGATION ══
+// ══ TEMPLATE FUNCTIONS ══
+let allTmplData = [];
+
+function loadTemplate() {
+  // Gunakan data hardcode dulu (nanti bisa dari DB)
+  allTmplData = [
+    {id:1,nama:'Classic Gold',kat:'modern',desc:'Elegan dengan sentuhan emas',color1:'#2a1d12',color2:'#b8935a',font:'Great Vibes',aktif:true},
+    {id:2,nama:'Rose Garden',kat:'garden',desc:'Romantis dengan nuansa merah muda',color1:'#2d1a1a',color2:'#d48080',font:'Great Vibes',aktif:true},
+    {id:3,nama:'Emerald Forest',kat:'garden',desc:'Segar dengan sentuhan hijau alam',color1:'#111f18',color2:'#64b482',font:'Cormorant Garamond',aktif:true},
+    {id:4,nama:'Midnight Blue',kat:'modern',desc:'Mewah dengan nuansa biru malam',color1:'#0d1421',color2:'#6490d4',font:'Cinzel',aktif:true},
+    {id:5,nama:'Cream Sage',kat:'minimalis',desc:'Bersih dan minimalis dengan warna krem',color1:'#f5f0e8',color2:'#7a8c64',font:'Great Vibes',aktif:true},
+    {id:6,nama:'Dusty Mauve',kat:'modern',desc:'Lembut dengan nuansa ungu keabuan',color1:'#1e1520',color2:'#b48cc0',font:'Dancing Script',aktif:true},
+    {id:7,nama:'Batik Gold',kat:'adat',desc:'Terinspirasi motif batik Jawa',color1:'#1a1208',color2:'#c4922a',font:'Cinzel',aktif:false},
+    {id:8,nama:'Hijau Daun',kat:'islami',desc:'Nuansa islami dengan hijau segar',color1:'#0e1a14',color2:'#4aab6d',font:'Cormorant Garamond',aktif:false},
+    {id:9,nama:'Lavender Dream',kat:'minimalis',desc:'Lembut dan dreamy dengan lavender',color1:'#1a0e1a',color2:'#9b7fc8',font:'Playfair Display',aktif:false},
+  ];
+  renderTemplate();
+}
+
+function renderTemplate() {
+  document.getElementById('tmplList').innerHTML = allTmplData.map(t => `
+    <div class="tbl-row" style="grid-template-columns:auto 1fr 1fr 1fr auto auto">
+      <div style="font-size:12px;color:var(--muted);font-weight:700">#${t.id}</div>
+      <div>
+        <div style="font-size:14px;font-weight:600">${t.nama}</div>
+        <div style="display:flex;gap:4px;margin-top:3px">
+          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${t.color1};border:1px solid var(--b)"></span>
+          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${t.color2};border:1px solid var(--b)"></span>
+          <span style="font-size:10px;color:var(--muted);margin-left:4px">${t.font}</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-transform:capitalize">${t.kat}</div>
+      <div style="font-size:12px;color:var(--muted)">${t.desc||'—'}</div>
+      <div>
+        <label class="sw-wrap">
+          <input type="checkbox" class="sw-inp" ${t.aktif?'checked':''} onchange="toggleTmpl(${t.id},this)">
+          <span class="sw-track"></span>
+          <span class="sw-lbl">${t.aktif?'Aktif':'Off'}</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:5px">
+        <a class="act-btn" href="/themes/undangan.html?tema=${t.id}" target="_blank">👁</a>
+        <button class="act-btn" onclick="bukaEditTmpl(${t.id})">✏️</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleTmpl(id, cb) {
+  const idx = allTmplData.findIndex(t=>t.id===id);
+  if (idx>=0) {
+    allTmplData[idx].aktif = cb.checked;
+    const lbl = cb.closest('.sw-wrap').querySelector('.sw-lbl');
+    if (lbl) lbl.textContent = cb.checked ? 'Aktif' : 'Off';
+    toast(cb.checked ? '✅ Template diaktifkan' : '🔒 Template dinonaktifkan');
+    // TODO: simpan ke DB tabel templates saat sudah ada
+  }
+}
+
+function bukaEditTmpl(id) {
+  const t = allTmplData.find(t=>t.id===id);
+  if (!t) return;
+  document.getElementById('et_id').value    = id;
+  document.getElementById('et_nama').value  = t.nama;
+  document.getElementById('et_kat').value   = t.kat;
+  document.getElementById('et_desc').value  = t.desc||'';
+  document.getElementById('et_color1').value= t.color1;
+  document.getElementById('et_color2').value= t.color2;
+  document.getElementById('et_font').value  = t.font;
+  document.getElementById('et_aktif').checked = t.aktif;
+  document.getElementById('editTmplModal').style.display = 'flex';
+}
+function tutupEditTmpl() { document.getElementById('editTmplModal').style.display='none'; }
+
+function simpanEditTmpl() {
+  const id = parseInt(document.getElementById('et_id').value);
+  const idx = allTmplData.findIndex(t=>t.id===id);
+  if (idx<0) return;
+  allTmplData[idx] = {
+    ...allTmplData[idx],
+    nama:   document.getElementById('et_nama').value.trim(),
+    kat:    document.getElementById('et_kat').value,
+    desc:   document.getElementById('et_desc').value.trim(),
+    color1: document.getElementById('et_color1').value.trim(),
+    color2: document.getElementById('et_color2').value.trim(),
+    font:   document.getElementById('et_font').value,
+    aktif:  document.getElementById('et_aktif').checked,
+  };
+  tutupEditTmpl();
+  renderTemplate();
+  toast('✅ Template disimpan');
+}
+
+function tambahTemplate() {
+  const nama = document.getElementById('nt_nama').value.trim();
+  if (!nama) { alert('Isi nama template'); return; }
+  const newId = Math.max(...allTmplData.map(t=>t.id)) + 1;
+  allTmplData.push({
+    id: newId,
+    nama,
+    kat:    document.getElementById('nt_kat').value,
+    desc:   document.getElementById('nt_desc').value.trim(),
+    color1: document.getElementById('nt_color1').value.trim() || '#2a1d12',
+    color2: document.getElementById('nt_color2').value.trim() || '#b8935a',
+    font:   document.getElementById('nt_font').value,
+    aktif:  document.getElementById('nt_aktif').checked,
+  });
+  ['nt_nama','nt_desc','nt_color1','nt_color2'].forEach(id=>document.getElementById(id).value='');
+  renderTemplate();
+  toast('✅ Template #'+newId+' ditambahkan');
+}
+
+// ══ LAGU FUNCTIONS ══
+let allLaguData = [
+  {id:1,judul:'Deen Assalam',artis:'Sabyan',kat:'nasyid',dur:'4:12',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
+  {id:2,judul:'Ya Maulana',artis:'Raihan',kat:'nasyid',dur:'3:58',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'},
+  {id:3,judul:'Insya Allah',artis:'Maher Zain',kat:'nasyid',dur:'4:30',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'},
+  {id:4,judul:'A Thousand Years',artis:'Instrumental',kat:'instrumental',dur:'4:46',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'},
+  {id:5,judul:'Canon in D',artis:'Pachelbel',kat:'instrumental',dur:'5:10',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'},
+  {id:6,judul:'River Flows in You',artis:'Yiruma',kat:'instrumental',dur:'3:52',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'},
+  {id:7,judul:'Kiss the Rain',artis:'Yiruma',kat:'instrumental',dur:'4:24',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'},
+  {id:8,judul:'Sempurna',artis:'Andra & The Backbone',kat:'pop',dur:'4:01',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'},
+  {id:9,judul:'Restu',artis:'Tiara Andini',kat:'pop',dur:'3:55',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'},
+  {id:10,judul:'La Vie en Rose',artis:'Acoustic Cover',kat:'jazz',dur:'3:48',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'},
+];
+let previewAudio = null;
+let previewId = null;
+
+function loadLagu() { renderLaguAdmin(allLaguData); }
+
+function renderLaguAdmin(list) {
+  document.getElementById('laguList').innerHTML = list.length ? list.map(l=>`
+    <div class="tbl-row" style="grid-template-columns:1fr 1fr auto auto auto">
+      <div>
+        <div style="font-size:14px;font-weight:600">${l.judul}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.url}</div>
+      </div>
+      <div>
+        <div style="font-size:13px">${l.artis}</div>
+        <div style="font-size:11px;color:var(--muted)">${l.dur}</div>
+      </div>
+      <span class="badge badge-bl" style="font-size:10px">${l.kat}</span>
+      <div style="display:flex;gap:5px;align-items:center">
+        <button class="act-btn" onclick="previewLagu(${l.id},'${l.url}')" title="${previewId===l.id?'Pause':'Play'}">${previewId===l.id?'⏸ Pause':'▶ Play'}</button>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="act-btn" onclick="bukaEditLagu(${l.id})">✏️</button>
+        <button class="act-btn danger" onclick="hapusLagu(${l.id})">🗑</button>
+      </div>
+    </div>`).join('')
+  : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Belum ada lagu</div>';
+}
+
+function previewLagu(id, url) {
+  if (previewId === id) {
+    previewAudio?.pause();
+    previewId = null;
+    renderLaguAdmin(allLaguData);
+    return;
+  }
+  previewAudio?.pause();
+  previewAudio = new Audio(url);
+  previewAudio.play().catch(()=>{});
+  previewAudio.onended = () => { previewId=null; renderLaguAdmin(allLaguData); };
+  previewId = id;
+  renderLaguAdmin(allLaguData);
+}
+
+function hapusLagu(id) {
+  if (!confirm('Hapus lagu ini?')) return;
+  allLaguData = allLaguData.filter(l=>l.id!==id);
+  renderLaguAdmin(allLaguData);
+  toast('🗑 Lagu dihapus');
+}
+
+function bukaEditLagu(id) {
+  const l = allLaguData.find(l=>l.id===id);
+  if (!l) return;
+  document.getElementById('el_id').value    = id;
+  document.getElementById('el_judul').value = l.judul;
+  document.getElementById('el_artis').value = l.artis;
+  document.getElementById('el_kat').value   = l.kat;
+  document.getElementById('el_dur').value   = l.dur;
+  document.getElementById('el_url').value   = l.url;
+  document.getElementById('editLaguModal').style.display = 'flex';
+}
+function tutupEditLagu() { document.getElementById('editLaguModal').style.display='none'; previewAudio?.pause(); previewId=null; }
+
+function simpanEditLagu() {
+  const id  = parseInt(document.getElementById('el_id').value);
+  const idx = allLaguData.findIndex(l=>l.id===id);
+  if (idx<0) return;
+  allLaguData[idx] = {
+    ...allLaguData[idx],
+    judul: document.getElementById('el_judul').value.trim(),
+    artis: document.getElementById('el_artis').value.trim(),
+    kat:   document.getElementById('el_kat').value,
+    dur:   document.getElementById('el_dur').value.trim(),
+    url:   document.getElementById('el_url').value.trim(),
+  };
+  tutupEditLagu();
+  renderLaguAdmin(allLaguData);
+  toast('✅ Lagu diperbarui');
+}
+
+function tambahLagu() {
+  const judul = document.getElementById('nl_judul').value.trim();
+  const artis = document.getElementById('nl_artis').value.trim();
+  const url   = document.getElementById('nl_url').value.trim();
+  if (!judul||!url) { alert('Isi judul dan URL lagu'); return; }
+  const newId = allLaguData.length ? Math.max(...allLaguData.map(l=>l.id))+1 : 1;
+  allLaguData.push({
+    id: newId,
+    judul, artis,
+    kat:  document.getElementById('nl_kat').value,
+    dur:  document.getElementById('nl_dur').value.trim() || '—',
+    url,
+  });
+  ['nl_judul','nl_artis','nl_dur','nl_url'].forEach(id=>document.getElementById(id).value='');
+  renderLaguAdmin(allLaguData);
+  toast('✅ Lagu ditambahkan');
+}
+
 function nav(name, el) {
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on','visible')});
   const pg = document.getElementById('page-'+name);
@@ -755,7 +1140,7 @@ function nav(name, el) {
   setTimeout(()=>pg.classList.add('visible'),20);
   document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
   if (el) el.classList.add('on');
-  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller',paket:'Paket & Harga',landing:'Landing Page',template:'Kelola Template'};
+  const titles={home:'Dashboard',undangan:'Semua Undangan',user:'Semua User',watermark:'Kelola Watermark',transaksi:'Transaksi',komisi:'Komisi Reseller',paket:'Paket & Harga',landing:'Landing Page',template:'Kelola Template',lagu:'Daftar Lagu'};
   document.getElementById('topTitle').textContent = titles[name]||name;
   if (name==='watermark') loadWM();
   if (name==='undangan')  loadAllUnd();
@@ -765,6 +1150,7 @@ function nav(name, el) {
   if (name==='paket')     loadPaket();
   if (name==='landing')   loadLanding();
   if (name==='template')  loadTemplate();
+  if (name==='lagu')      loadLagu();
   if (window.innerWidth<769) closeSb();
   return false;
 }
