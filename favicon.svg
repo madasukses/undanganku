@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c9a96e"/>
+      <stop offset="100%" style="stop-color:#8b5e2e"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#1a1917"/>
+  <!-- Ring shape -->
+  <circle cx="50" cy="50" r="28" fill="none" stroke="url(#g)" stroke-width="10"/>
+  <!-- Diamond on top -->
+  <polygon points="50,14 57,22 50,30 43,22" fill="url(#g)"/>
+  <!-- Small sparkles -->
+  <circle cx="78" cy="30" r="3" fill="#c9a96e" opacity="0.8"/>
+  <circle cx="22" cy="68" r="2" fill="#c9a96e" opacity="0.6"/>
+</svg>
