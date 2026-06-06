@@ -2,9 +2,11 @@
   "rewrites": [
     { "source": "/login",              "destination": "/login.html" },
     { "source": "/auth-callback",      "destination": "/auth-callback.html" },
+    { "source": "/bayar",              "destination": "/bayar.html" },
     { "source": "/admin/dashboard",    "destination": "/admin/dashboard.html" },
     { "source": "/reseller/dashboard", "destination": "/reseller/dashboard.html" },
     { "source": "/customer/dashboard", "destination": "/customer/dashboard.html" },
+    { "source": "/customer/template",  "destination": "/customer/template.html" },
     { "source": "/:slug",              "destination": "/themes/undangan.html" }
   ]
 }
