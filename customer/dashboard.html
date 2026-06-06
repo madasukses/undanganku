@@ -200,6 +200,7 @@ select.inp{cursor:pointer}
     <div class="snav-sec">Menu</div>
     <a class="si on"  href="#" onclick="showPage('home',this)"><span class="ic">📊</span>Dashboard</a>
     <a class="si"     href="#" onclick="showPage('buat',this)"><span class="ic">➕</span>Buat Undangan</a>
+    <a class="si" href="#" onclick="bukaEditUndangan(this)"><span class="ic">✏️</span>Edit Undangan</a>
     <a class="si"     href="/customer/template.html"><span class="ic">🎨</span>Template</a>
     <a class="si"     href="#" onclick="showPage('daftar',this)"><span class="ic">📋</span>Daftar Undangan</a>
     <a class="si"     href="#" onclick="showPage('rsvp',this)"><span class="ic">✅</span>RSVP Masuk</a>
@@ -833,16 +834,19 @@ function cariLagu(q) {
 }
 
 // ── DEEZER PREVIEW ──
-// Cari preview 30 detik dari Deezer berdasarkan judul + artis
 async function getDeezerPreview(judul, artis) {
-  try {
-    const q = encodeURIComponent(`${judul} ${artis}`);
-    const res = await fetch(`https://corsproxy.io/?https://api.deezer.com/search?q=${q}&limit=1`);
-    const data = await res.json();
-    if (data.data && data.data.length > 0 && data.data[0].preview) {
-      return data.data[0].preview; // URL MP3 preview 30 detik
-    }
-  } catch(e) {}
+  const proxies = [
+    `https://api.allorigins.win/get?url=${encodeURIComponent(`https://api.deezer.com/search?q=${encodeURIComponent(judul+' '+artis)}&limit=1`)}`,
+    `https://corsproxy.io/?https://api.deezer.com/search?q=${encodeURIComponent(judul+' '+artis)}&limit=1`,
+  ];
+  for (const url of proxies) {
+    try {
+      const res = await fetch(url, {signal: AbortSignal.timeout(4000)});
+      const raw = await res.json();
+      const data = raw.contents ? JSON.parse(raw.contents) : raw;
+      if (data.data && data.data[0]?.preview) return data.data[0].preview;
+    } catch(e) {}
+  }
   return null;
 }
 
@@ -1149,9 +1153,11 @@ async function loadUcapan() {
 
 // ══ EDIT UNDANGAN ══
 async function bukaEditUndangan(el) {
+  // Load undangan fresh dari DB kalau belum ada
   if (!undangan) {
-    alert('Belum ada undangan. Buat undangan dulu.');
-    return;
+    const {data:und} = await sb.from('undangan').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1).single();
+    if (!und) { alert('Belum ada undangan. Buat undangan dulu.'); return; }
+    undangan = und;
   }
   // Set semua field form dengan data existing
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||''; };
