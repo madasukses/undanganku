@@ -1012,8 +1012,9 @@ function previewGaleri(input) {
 async function simpanFoto() {
   if (!undangan) { alert('Buat undangan dulu'); return; }
 
-  const btn = document.querySelector('#page-foto .submit-btn');
-  btn.disabled = true; btn.textContent = 'Mengupload...';
+  // Cari button - bisa dari halaman foto atau halaman buat
+  const btn = document.querySelector('#page-foto .submit-btn') || document.getElementById('btnBuat');
+  if (btn) { btn.disabled = true; btn.textContent = 'Mengupload foto...'; }
 
   const updates = {};
 
@@ -1062,19 +1063,14 @@ async function simpanFoto() {
     }
   }
 
-  btn.disabled = false; btn.textContent = 'Simpan Semua →';
+  if (btn) { btn.disabled = false; btn.textContent = btn.id === 'btnBuat' ? 'Simpan Undangan →' : 'Simpan Semua →'; }
 
-  if (Object.keys(updates).length === 0) {
-    alert('Upload gagal. Pastikan:\n1. Bucket "foto-undangan" dan "musik" sudah dibuat di Supabase Storage\n2. Bucket diset Public\n3. File yang dipilih tidak kosong');
-    btn.disabled = false; btn.textContent = 'Simpan Semua →';
-    return;
-  }
+  if (Object.keys(updates).length === 0) return;
 
   const { error } = await sb.from('undangan').update(updates).eq('id', undangan.id);
-  if (error) { alert('Gagal menyimpan: ' + error.message); return; }
+  if (error) { console.error('Gagal simpan foto:', error.message); return; }
 
   Object.assign(undangan, updates);
-  alert('Berhasil disimpan! 🎉');
 }
 
 // Tamu
