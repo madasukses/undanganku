@@ -592,9 +592,23 @@ function goTo(n){
 
 // Music
 function toggleMusic(){
-  const audio=document.getElementById('audio'), btn=document.getElementById('mBtn');
-  if(playing){audio.pause();playing=false;btn.classList.remove('spin');btn.textContent='🔇';}
-  else{audio.play().then(()=>{playing=true;btn.classList.add('spin');btn.textContent='🎵';}).catch(()=>{});}
+  const btn   = document.getElementById('mBtn');
+  const audio = document.getElementById('audio');
+  const ytFrame = document.querySelector('iframe[src*="youtube"]');
+  const scFrame = document.querySelector('iframe[src*="soundcloud"]');
+
+  if(playing){
+    if(audio && audio.src){ audio.pause(); }
+    if(ytFrame){ ytFrame._ps = ytFrame.src; ytFrame.src=''; }
+    if(scFrame){ scFrame._ps = scFrame.src; scFrame.src=''; }
+    playing=false;
+    btn.classList.remove('spin');
+    btn.textContent='🔇';
+  } else {
+    if(ytFrame && ytFrame._ps){ ytFrame.src=ytFrame._ps; playing=true; btn.textContent='🎵'; btn.classList.add('spin'); }
+    else if(scFrame && scFrame._ps){ scFrame.src=scFrame._ps; playing=true; btn.textContent='🎵'; btn.classList.add('spin'); }
+    else if(audio && audio.src){ audio.play().then(()=>{ playing=true; btn.classList.add('spin'); btn.textContent='🎵'; }).catch(()=>{}); }
+  }
 }
 
 // RSVP
