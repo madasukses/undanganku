@@ -1147,6 +1147,111 @@ async function loadUcapan() {
     </div>`).join('');
 }
 
+// ══ EDIT UNDANGAN ══
+async function bukaEditUndangan(el) {
+  if (!undangan) {
+    alert('Belum ada undangan. Buat undangan dulu.');
+    return;
+  }
+  // Set semua field form dengan data existing
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||''; };
+  set('fSlug', undangan.slug);
+  set('fNamaPria',        undangan.nama_pria);
+  set('fPangPria',        undangan.panggilan_pria);
+  set('fAyahPria',        undangan.ayah_pria);
+  set('fIbuPria',         undangan.ibu_pria);
+  set('fIgPria',          undangan.ig_pria);
+  set('fTtPria',          undangan.tiktok_pria);
+  set('fNamaWanita',      undangan.nama_wanita);
+  set('fPangWanita',      undangan.panggilan_wanita);
+  set('fAyahWanita',      undangan.ayah_wanita);
+  set('fIbuWanita',       undangan.ibu_wanita);
+  set('fIgWanita',        undangan.ig_wanita);
+  set('fTtWanita',        undangan.tiktok_wanita);
+  if (undangan.tanggal_akad)    set('fTglAkad',    undangan.tanggal_akad.split('T')[0]);
+  if (undangan.tanggal_akad)    set('fJamAkad',    undangan.tanggal_akad.split('T')[1]?.slice(0,5)||'08:00');
+  set('fLokasiAkad',      undangan.lokasi_akad);
+  set('fMapsAkad',        undangan.maps_akad);
+  if (undangan.tanggal_resepsi) set('fTglResepsi', undangan.tanggal_resepsi.split('T')[0]);
+  set('fJamMulai',        undangan.jam_resepsi_mulai);
+  set('fJamSelesai',      undangan.jam_resepsi_selesai);
+  set('fLokasiResepsi',   undangan.lokasi_resepsi);
+  set('fMapsResepsi',     undangan.maps_resepsi);
+  if (undangan.musik_url) set('fMusikLink', undangan.musik_url);
+
+  // Tema
+  selectedTema = undangan.tema || 1;
+  document.querySelectorAll('.tema-opt').forEach(o => o.classList.remove('sel'));
+  const temaEl = document.querySelector('.topt'+selectedTema);
+  if (temaEl) temaEl.classList.add('sel');
+
+  // Slug readonly saat edit
+  const slugEl = document.getElementById('fSlug');
+  if (slugEl) { slugEl.readOnly=true; slugEl.style.opacity='.5'; }
+
+  // Ganti tombol & judul
+  const btn = document.getElementById('btnBuat');
+  if (btn) {
+    btn.textContent = 'Simpan Perubahan →';
+    btn.onclick = () => submitEdit(undangan.id);
+  }
+
+  // Ganti judul halaman
+  document.getElementById('topTitle').textContent = 'Edit Undangan';
+
+  showPage('buat', el);
+}
+
+async function submitEdit(id) {
+  const btn = document.getElementById('btnBuat');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  const musikUrl = (() => {
+    if (aktivTab===1 && selectedMusikUrl) return selectedMusikUrl;
+    if (aktivTab===2 && document.getElementById('fMusikLink')?.value.trim()) return document.getElementById('fMusikLink').value.trim();
+    return undangan.musik_url || null;
+  })();
+
+  const payload = {
+    tema:              selectedTema,
+    nama_pria:         document.getElementById('fNamaPria').value.trim(),
+    panggilan_pria:    document.getElementById('fPangPria').value.trim(),
+    ayah_pria:         document.getElementById('fAyahPria').value.trim(),
+    ibu_pria:          document.getElementById('fIbuPria').value.trim(),
+    ig_pria:           document.getElementById('fIgPria').value.trim(),
+    tiktok_pria:       document.getElementById('fTtPria').value.trim(),
+    nama_wanita:       document.getElementById('fNamaWanita').value.trim(),
+    panggilan_wanita:  document.getElementById('fPangWanita').value.trim(),
+    ayah_wanita:       document.getElementById('fAyahWanita').value.trim(),
+    ibu_wanita:        document.getElementById('fIbuWanita').value.trim(),
+    ig_wanita:         document.getElementById('fIgWanita').value.trim(),
+    tiktok_wanita:     document.getElementById('fTtWanita').value.trim(),
+    tanggal_akad: (() => { const d=document.getElementById('fTglAkad').value, t=document.getElementById('fJamAkad')?.value||'08:00'; return d?`${d}T${t}:00`:null; })(),
+    tanggal_resepsi: (() => { const d=document.getElementById('fTglResepsi').value, t=(document.getElementById('fJamMulai').value||'10:00').replace('.',':'); return d?`${d}T${t}:00`:null; })(),
+    jam_resepsi_mulai:   document.getElementById('fJamMulai').value.trim(),
+    jam_resepsi_selesai: document.getElementById('fJamSelesai').value.trim(),
+    lokasi_akad:     document.getElementById('fLokasiAkad').value.trim(),
+    maps_akad:       document.getElementById('fMapsAkad').value.trim(),
+    lokasi_resepsi:  document.getElementById('fLokasiResepsi').value.trim(),
+    maps_resepsi:    document.getElementById('fMapsResepsi').value.trim(),
+    musik_url:       musikUrl,
+  };
+
+  const {error} = await sb.from('undangan').update(payload).eq('id', id);
+  btn.disabled = false;
+
+  if (error) { alert('Gagal: '+error.message); btn.textContent='Simpan Perubahan →'; return; }
+
+  // Reset form ke mode buat baru
+  const slugEl = document.getElementById('fSlug');
+  if (slugEl) { slugEl.readOnly=false; slugEl.style.opacity='1'; }
+  btn.textContent='Simpan Undangan →'; btn.onclick=submitBuat;
+
+  await loadDashboard();
+  showPage('home');
+  alert('✅ Undangan berhasil diperbarui!');
+}
+
 // ══ UPGRADE PAKET ══
 async function loadUpgrade() {
   // Cek status pembayaran terakhir
