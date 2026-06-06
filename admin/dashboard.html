@@ -758,15 +758,27 @@ async function tambahUserManual() {
   const email = document.getElementById('newUserEmail').value.trim();
   const role  = document.getElementById('newUserRole').value;
   if (!email) { alert('Isi email dulu'); return; }
-  // Insert ke profiles dengan UUID baru (user belum terdaftar)
-  // Saat user login nanti, trigger akan update profilenya
-  const id = crypto.randomUUID();
-  const {error} = await sb.from('profiles').insert({id, email, nama:nama||email.split('@')[0], role});
+
+  // Cek apakah sudah ada di profiles
+  const {data:exist} = await sb.from('profiles').select('id,role').eq('email',email).single();
+  if (exist) {
+    // Sudah ada — langsung update role saja
+    const {error} = await sb.from('profiles').update({nama:nama||exist.nama, role}).eq('email',email);
+    if (error) { alert('Gagal update: '+error.message); return; }
+    toast('✅ Role user '+email+' diubah ke '+role);
+    document.getElementById('newUserNama').value='';
+    document.getElementById('newUserEmail').value='';
+    await loadUsers();
+    return;
+  }
+
+  // Belum ada — simpan ke invited_users, nanti set role saat login
+  const {error} = await sb.from('invited_users').upsert({email, role},{onConflict:'email'});
   if (error) { alert('Gagal: '+error.message); return; }
-  toast('✅ User ditambahkan. Minta user login dengan email ini.');
-  document.getElementById('newUserNama').value = '';
-  document.getElementById('newUserEmail').value = '';
-  await loadUsers();
+
+  toast('✅ '+email+' diundang sebagai '+role+'. Minta login dengan Google menggunakan email ini.');
+  document.getElementById('newUserNama').value='';
+  document.getElementById('newUserEmail').value='';
 }
 
 // ══ TRANSAKSI ══
@@ -1047,22 +1059,16 @@ function tambahTemplate() {
 }
 
 // ══ LAGU FUNCTIONS ══
-let allLaguData = [
-  {id:1,judul:'Deen Assalam',artis:'Sabyan',kat:'nasyid',dur:'4:12',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
-  {id:2,judul:'Ya Maulana',artis:'Raihan',kat:'nasyid',dur:'3:58',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3'},
-  {id:3,judul:'Insya Allah',artis:'Maher Zain',kat:'nasyid',dur:'4:30',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'},
-  {id:4,judul:'A Thousand Years',artis:'Instrumental',kat:'instrumental',dur:'4:46',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3'},
-  {id:5,judul:'Canon in D',artis:'Pachelbel',kat:'instrumental',dur:'5:10',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'},
-  {id:6,judul:'River Flows in You',artis:'Yiruma',kat:'instrumental',dur:'3:52',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3'},
-  {id:7,judul:'Kiss the Rain',artis:'Yiruma',kat:'instrumental',dur:'4:24',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3'},
-  {id:8,judul:'Sempurna',artis:'Andra & The Backbone',kat:'pop',dur:'4:01',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3'},
-  {id:9,judul:'Restu',artis:'Tiara Andini',kat:'pop',dur:'3:55',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'},
-  {id:10,judul:'La Vie en Rose',artis:'Acoustic Cover',kat:'jazz',dur:'3:48',url:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3'},
-];
+let allLaguData = [];
 let previewAudio = null;
 let previewId = null;
 
-function loadLagu() { renderLaguAdmin(allLaguData); }
+async function loadLagu() {
+  const {data, error} = await sb.from('lagu').select('*').order('urutan',{ascending:true}).order('id',{ascending:true});
+  if (error) { document.getElementById('laguList').innerHTML='<div style="padding:20px;text-align:center;color:var(--red);font-size:13px">Error: '+error.message+'</div>'; return; }
+  allLaguData = data || [];
+  renderLaguAdmin(allLaguData);
+}
 
 function renderLaguAdmin(list) {
   document.getElementById('laguList').innerHTML = list.length ? list.map(l=>`
@@ -1072,10 +1078,9 @@ function renderLaguAdmin(list) {
         <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.url}</div>
       </div>
       <div>
-        <div style="font-size:13px">${l.artis}</div>
-        <div style="font-size:11px;color:var(--muted)">${l.dur}</div>
+        <div style="font-size:13px">${l.artis||'—'}</div>
       </div>
-      <span class="badge badge-bl" style="font-size:10px">${l.kat}</span>
+      <span class="badge badge-bl" style="font-size:10px">${l.kategori||l.kat||'—'}</span>
       <div style="display:flex;gap:5px;align-items:center">
         <button class="act-btn" onclick="previewLagu(${l.id},'${l.url}')" title="${previewId===l.id?'Pause':'Play'}">${previewId===l.id?'⏸ Pause':'▶ Play'}</button>
       </div>
@@ -1102,8 +1107,10 @@ function previewLagu(id, url) {
   renderLaguAdmin(allLaguData);
 }
 
-function hapusLagu(id) {
+async function hapusLagu(id) {
   if (!confirm('Hapus lagu ini?')) return;
+  const {error} = await sb.from('lagu').delete().eq('id',id);
+  if (error) { alert('Gagal: '+error.message); return; }
   allLaguData = allLaguData.filter(l=>l.id!==id);
   renderLaguAdmin(allLaguData);
   toast('🗑 Lagu dihapus');
@@ -1122,21 +1129,19 @@ function bukaEditLagu(id) {
 }
 function tutupEditLagu() { document.getElementById('editLaguModal').style.display='none'; previewAudio?.pause(); previewId=null; }
 
-function simpanEditLagu() {
-  const id  = parseInt(document.getElementById('el_id').value);
+async function simpanEditLagu() {
+  const id    = parseInt(document.getElementById('el_id').value);
+  const judul = document.getElementById('el_judul').value.trim();
+  const artis = document.getElementById('el_artis').value.trim();
+  const kat   = document.getElementById('el_kat').value;
+  const url   = document.getElementById('el_url').value.trim();
+  const {error} = await sb.from('lagu').update({judul, artis:artis||null, kategori:kat, url}).eq('id',id);
+  if (error) { alert('Gagal: '+error.message); return; }
   const idx = allLaguData.findIndex(l=>l.id===id);
-  if (idx<0) return;
-  allLaguData[idx] = {
-    ...allLaguData[idx],
-    judul: document.getElementById('el_judul').value.trim(),
-    artis: document.getElementById('el_artis').value.trim(),
-    kat:   document.getElementById('el_kat').value,
-    dur:   document.getElementById('el_dur').value.trim(),
-    url:   document.getElementById('el_url').value.trim(),
-  };
+  if (idx>=0) allLaguData[idx] = {...allLaguData[idx], judul, artis, kategori:kat, url};
   tutupEditLagu();
   renderLaguAdmin(allLaguData);
-  toast('✅ Lagu diperbarui');
+  toast('✅ Lagu diperbarui di database');
 }
 
 function downloadTemplateLagu() {
@@ -1163,32 +1168,38 @@ function importExcelLagu(input) {
   statusEl.textContent = 'Membaca file...';
 
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const text = e.target.result;
       const lines = text.split('\n').filter(l=>l.trim());
-      // Skip header baris pertama
-      const dataLines = lines.slice(1);
-      let added = 0;
+      const dataLines = lines.slice(1); // skip header
+      const rows = [];
       dataLines.forEach(line => {
-        // Handle CSV dengan koma
         const cols = line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
         if (cols.length >= 4 && cols[0] && cols[3]) {
-          const newId = allLaguData.length ? Math.max(...allLaguData.map(l=>l.id))+1 : 1;
-          allLaguData.push({
-            id: newId,
-            judul: cols[0],
-            artis: cols[1] || '—',
-            kat:   cols[2] || 'lainnya',
-            dur:   '—',
-            url:   cols[3],
-          });
-          added++;
+          rows.push({ judul:cols[0], artis:cols[1]||null, kategori:cols[2]||'lainnya', url:cols[3], aktif:true });
         }
       });
-      renderLaguAdmin(allLaguData);
-      statusEl.textContent = '';
-      toast('✅ ' + added + ' lagu berhasil diimport!');
+      if (!rows.length) { statusEl.textContent='Tidak ada data valid ditemukan'; return; }
+
+      statusEl.textContent = 'Menyimpan '+rows.length+' lagu...';
+
+      // Replace semua lagu - hapus dulu lalu insert
+      if (confirm('Import akan MENGGANTI semua lagu yang ada dengan data dari Excel. Lanjutkan?')) {
+        await sb.from('lagu').delete().neq('id',0); // hapus semua
+        const {error} = await sb.from('lagu').insert(rows);
+        if (error) { statusEl.textContent='Error: '+error.message; return; }
+        await loadLagu();
+        statusEl.textContent='';
+        toast('✅ '+rows.length+' lagu berhasil diimport & disimpan ke DB!');
+      } else {
+        // Hanya tambah tanpa hapus yang lama
+        const {error} = await sb.from('lagu').insert(rows);
+        if (error) { statusEl.textContent='Error: '+error.message; return; }
+        await loadLagu();
+        statusEl.textContent='';
+        toast('✅ '+rows.length+' lagu ditambahkan ke DB!');
+      }
     } catch(err) {
       statusEl.textContent = 'Error: format file tidak sesuai';
       console.error(err);
@@ -1198,22 +1209,18 @@ function importExcelLagu(input) {
   reader.readAsText(file, 'UTF-8');
 }
 
-function tambahLagu() {
+async function tambahLagu() {
   const judul = document.getElementById('nl_judul').value.trim();
   const artis = document.getElementById('nl_artis').value.trim();
   const url   = document.getElementById('nl_url').value.trim();
+  const kat   = document.getElementById('nl_kat').value;
   if (!judul||!url) { alert('Isi judul dan URL lagu'); return; }
-  const newId = allLaguData.length ? Math.max(...allLaguData.map(l=>l.id))+1 : 1;
-  allLaguData.push({
-    id: newId,
-    judul, artis,
-    kat:  document.getElementById('nl_kat').value,
-    dur:  document.getElementById('nl_dur').value.trim() || '—',
-    url,
-  });
-  ['nl_judul','nl_artis','nl_dur','nl_url'].forEach(id=>document.getElementById(id).value='');
+  const {data, error} = await sb.from('lagu').insert({judul, artis:artis||null, kategori:kat, url, aktif:true}).select().single();
+  if (error) { alert('Gagal: '+error.message); return; }
+  allLaguData.push(data);
+  ['nl_judul','nl_artis','nl_url'].forEach(id=>document.getElementById(id).value='');
   renderLaguAdmin(allLaguData);
-  toast('✅ Lagu ditambahkan');
+  toast('✅ Lagu disimpan ke database');
 }
 
 function nav(name, el) {
