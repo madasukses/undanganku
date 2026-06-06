@@ -646,6 +646,25 @@ async function submitRsvp(){
   document.querySelectorAll('.ro').forEach(o=>o.classList.remove('on')); rsvpVal='';
 }
 
+// ── PAGE VISIBILITY — pause saat tab disembunyikan
+document.addEventListener('visibilitychange', () => {
+  if (!playing) return;
+  const audio = document.getElementById('audio');
+  const ytFrame = document.getElementById('yt-player');
+  const scFrame = document.querySelector('iframe[src*="soundcloud"]');
+  if (document.hidden) {
+    // Tab disembunyikan — pause
+    if (audio && audio.src) audio.pause();
+    if (ytFrame) sendYT('pauseVideo');
+    if (scFrame) { scFrame._ps = scFrame.src; scFrame.src = ''; }
+  } else {
+    // Tab aktif lagi — resume
+    if (audio && audio.src) audio.play().catch(()=>{});
+    if (ytFrame) sendYT('playVideo');
+    if (scFrame && scFrame._ps) scFrame.src = scFrame._ps;
+  }
+});
+
 // Countdown
 function tick(){
   if(!DATA) return;
