@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembayaran — Undanganku</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s:#1a1917;--s2:#222120;--b:#2e2c2a;--gold:#c9a96e;--gs:#e8d5b0;--text:#f0ece4;--muted:#8a8278;--green:#5cb87a;--red:#e05c5c;--blue:#5b9bd5;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:20px;width:100%;max-width:480px;overflow:hidden}
+.card-head{background:linear-gradient(135deg,#2a1d12,#3d2b1f);padding:28px 28px 24px;text-align:center;border-bottom:1px solid var(--b)}
+.card-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--gold);margin-bottom:4px}
+.card-title{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.card-body{padding:28px}
+/* Steps */
+.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px}
+.step{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;top:16px;left:60%;width:80%;height:1px;background:var(--b)}
+.step.done::after{background:var(--gold)}
+.step-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--b);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);z-index:1}
+.step.active .step-dot{border-color:var(--gold);background:var(--gold);color:var(--bg)}
+.step.done .step-dot{border-color:var(--green);background:var(--green);color:#fff}
+.step-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.step.active .step-lbl{color:var(--gold)}
+/* Sections */
+.section{display:none}.section.on{display:block}
+/* Paket cards */
+.paket-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.paket-opt{border:2px solid var(--b);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;position:relative}
+.paket-opt:hover{border-color:var(--gold)}
+.paket-opt.sel{border-color:var(--gold);background:rgba(201,169,110,.06)}
+.paket-opt-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.paket-nama{font-size:16px;font-weight:700}
+.paket-harga{font-size:18px;font-weight:700;color:var(--gold)}
+.paket-dur{font-size:11px;color:var(--muted);margin-bottom:8px}
+.paket-feats{display:flex;flex-wrap:wrap;gap:5px}
+.feat-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--s2);border:1px solid var(--b);color:var(--muted)}
+.paket-badge{position:absolute;top:-1px;right:16px;background:var(--gold);color:var(--bg);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:0 0 8px 8px}
+.radio-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--b);flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.paket-opt.sel .radio-dot{border-color:var(--gold);background:var(--gold)}
+.paket-opt.sel .radio-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+/* Transfer info */
+.transfer-box{background:var(--s2);border:1px solid var(--b);border-radius:14px;padding:20px;margin-bottom:18px}
+.transfer-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.transfer-val{font-size:22px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.transfer-sub{font-size:11px;color:var(--muted)}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{border-color:var(--gold);color:var(--gold)}
+.rekening-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.rek-item{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s}
+.rek-item.sel{border-color:var(--gold)}
+.rek-item:hover{border-color:var(--gold)}
+.rek-bank{font-size:14px;font-weight:700;margin-bottom:2px}
+.rek-no{font-size:16px;font-weight:700;color:var(--gold);letter-spacing:2px}
+.rek-name{font-size:12px;color:var(--muted);margin-top:2px}
+/* Upload */
+.upload-area{border:2px dashed var(--b);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-area:hover{border-color:var(--gold)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;margin-bottom:8px}
+.upload-lbl{font-size:13px;font-weight:600;margin-bottom:4px}
+.upload-hint{font-size:11px;color:var(--muted)}
+.upload-preview{width:100%;border-radius:10px;margin-top:12px;display:none;max-height:200px;object-fit:contain}
+/* Btn */
+.btn-main{width:100%;padding:15px;border-radius:12px;background:var(--gold);color:var(--bg);border:none;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:opacity .2s;margin-top:8px}
+.btn-main:hover{opacity:.85}.btn-main:disabled{opacity:.4;cursor:not-allowed}
+.btn-sec{width:100%;padding:12px;border-radius:12px;border:1px solid var(--b);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;margin-top:8px;transition:all .2s}
+.btn-sec:hover{border-color:var(--gold);color:var(--gold)}
+/* Status */
+.status-icon{font-size:56px;text-align:center;margin-bottom:16px}
+.status-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;text-align:center;margin-bottom:8px}
+.status-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px}
+.inp-lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.inp{width:100%;padding:12px 14px;border:1px solid var(--b);border-radius:10px;background:var(--s2);color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;margin-bottom:12px;-webkit-appearance:none;transition:border-color .2s}
+.inp:focus{border-color:var(--gold)}.inp::placeholder{color:var(--muted)}
+.note{font-size:12px;color:var(--muted);line-height:1.6;padding:12px;background:var(--s2);border-radius:10px;margin-bottom:14px}
+.note strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-head">
+    <div class="card-logo">Undanganku</div>
+    <div class="card-title">Pembayaran Undangan</div>
+  </div>
+  <div class="card-body">
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step active" id="s1"><div class="step-dot">1</div><div class="step-lbl">Pilih Paket</div></div>
+      <div class="step" id="s2"><div class="step-dot">2</div><div class="step-lbl">Transfer</div></div>
+      <div class="step" id="s3"><div class="step-dot">3</div><div class="step-lbl">Upload Bukti</div></div>
+      <div class="step" id="s4"><div class="step-dot">✓</div><div class="step-lbl">Selesai</div></div>
+    </div>
+
+    <!-- STEP 1: Pilih Paket -->
+    <div class="section on" id="sec1">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">Pilih Paket</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px">untuk undangan <span id="undSlug" style="color:var(--gold);font-weight:600">—</span></div>
+      <div class="paket-list" id="paketList">
+        <div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Memuat...</div>
+      </div>
+      <button class="btn-main" id="btnPilihPaket" onclick="nextStep(2)">Lanjut →</button>
+      <a href="/customer/dashboard.html" class="btn-sec" style="display:block;text-align:center;text-decoration:none">Kembali</a>
+    </div>
+
+    <!-- STEP 2: Transfer -->
+    <div class="section" id="sec2">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">Transfer ke Rekening</div>
+      <div class="note">
+        Transfer <strong>tepat</strong> sesuai nominal di bawah (termasuk 3 digit unik di akhir). Nominal unik membantu kami memverifikasi pembayaran Anda lebih cepat.
+      </div>
+
+      <!-- Nominal unik -->
+      <div class="transfer-box">
+        <div class="transfer-label">Nominal Transfer</div>
+        <div class="transfer-val" id="nominalDisplay">Rp —</div>
+        <div class="transfer-sub" id="nominalSub">Sudah termasuk kode unik 3 digit</div>
+        <button class="copy-btn" onclick="copyNominal()">📋 Salin Nominal</button>
+      </div>
+
+      <!-- Pilih rekening -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">Pilih Rekening Tujuan</div>
+      <div class="rekening-list" id="rekeningList">
+        <!-- Diisi dari settings -->
+      </div>
+
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Catatan (opsional)</div>
+      <input class="inp" id="catatanTransfer" placeholder="Nama pengantin / no. WA">
+
+      <button class="btn-main" onclick="nextStep(3)">Sudah Transfer →</button>
+      <button class="btn-sec" onclick="nextStep(1)">← Kembali</button>
+    </div>
+
+    <!-- STEP 3: Upload Bukti -->
+    <div class="section" id="sec3">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">Upload Bukti Transfer</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Screenshot atau foto struk transfer bank/e-wallet</div>
+
+      <div class="transfer-box" style="margin-bottom:18px">
+        <div class="transfer-label">Ringkasan</div>
+        <div style="font-size:14px;font-weight:600" id="summaryPaket">—</div>
+        <div style="font-size:13px;color:var(--gold);margin-top:4px" id="summaryNominal">—</div>
+      </div>
+
+      <div class="upload-area" id="uploadBukti">
+        <input type="file" accept="image/*" onchange="previewBukti(this)">
+        <div class="upload-icon">📸</div>
+        <div class="upload-lbl">Klik untuk upload bukti transfer</div>
+        <div class="upload-hint">JPG / PNG / Screenshot · Maks 5MB</div>
+        <img class="upload-preview" id="buktiPreview">
+      </div>
+
+      <button class="btn-main" id="btnSubmit" onclick="submitPembayaran()" disabled>Kirim Bukti →</button>
+      <button class="btn-sec" onclick="nextStep(2)">← Kembali</button>
+    </div>
+
+    <!-- STEP 4: Selesai -->
+    <div class="section" id="sec4">
+      <div class="status-icon">⏳</div>
+      <div class="status-title">Menunggu Verifikasi</div>
+      <div class="status-sub">
+        Bukti transfer Anda sudah kami terima.<br>
+        Admin akan memverifikasi dalam <strong>1×24 jam</strong>.<br>
+        Setelah dikonfirmasi, watermark akan otomatis hilang.
+      </div>
+      <div class="transfer-box">
+        <div class="transfer-label">Nomor Order</div>
+        <div class="transfer-val" id="orderNo" style="font-size:16px;letter-spacing:3px">—</div>
+        <div class="transfer-sub">Simpan nomor ini untuk konfirmasi via WA</div>
+      </div>
+      <a id="waKonfirmasi" href="#" target="_blank" class="btn-main" style="display:block;text-align:center;text-decoration:none;padding:14px">📱 Konfirmasi via WhatsApp</a>
+      <a href="/customer/dashboard.html" class="btn-sec" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Kembali ke Dashboard</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const params     = new URLSearchParams(window.location.search);
+const slugParam  = params.get('slug') || '';
+const refParam   = params.get('ref')  || '';
+
+let user       = null;
+let undangan   = null;
+let pakets     = [];
+let selPaket   = null;
+let nominalFix = 0;
+let selRek     = null;
+let buktiFile  = null;
+let orderId    = null;
+
+// Rekening admin — nanti bisa dari tabel settings
+const REKENING = [
+  {bank:'BCA',      no:'1234567890', nama:'Ahmad Muhajir'},
+  {bank:'BRI',      no:'0987654321', nama:'Ahmad Muhajir'},
+  {bank:'GoPay',    no:'081234567890',nama:'Ahmad Muhajir'},
+  {bank:'Dana',     no:'081234567890',nama:'Ahmad Muhajir'},
+];
+
+(async () => {
+  user = await AUTH.requireAuth(['customer','reseller']);
+  if (!user) return;
+
+  // Tampilkan slug
+  document.getElementById('undSlug').textContent = slugParam || 'undangan';
+
+  // Load undangan
+  if (slugParam) {
+    const {data:und} = await sb.from('undangan').select('*').eq('slug',slugParam).eq('user_id',user.id).single();
+    undangan = und;
+  }
+
+  // Load paket
+  const {data:pList} = await sb.from('paket').select('*').eq('aktif',true).order('harga',{ascending:true});
+  pakets = pList || [];
+  renderPakets();
+
+  // Render rekening
+  renderRekening();
+})();
+
+function renderPakets() {
+  document.getElementById('paketList').innerHTML = pakets.map((p,i) => {
+    const fitur = Array.isArray(p.fitur) ? p.fitur : JSON.parse(p.fitur||'[]');
+    const isPopuler = pakets.length > 1 && i === 1;
+    return `<div class="paket-opt${isPopuler?' ':''}" id="popt-${p.id}" onclick="pilihPaket('${p.id}')">
+      ${isPopuler?'<div class="paket-badge">⭐ Populer</div>':''}
+      <div class="paket-opt-head">
+        <div>
+          <div class="paket-nama">${p.nama}</div>
+          <div class="paket-dur">Aktif ${p.durasi_hari} hari · Maks ${p.max_tamu} tamu</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="paket-harga">Rp ${Math.round(p.harga/1000)}rb</div>
+          <div class="radio-dot" id="rd-${p.id}"></div>
+        </div>
+      </div>
+      ${p.deskripsi?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-style:italic">${p.deskripsi}</div>`:''}
+      <div class="paket-feats">${fitur.map(f=>`<span class="feat-tag">✓ ${f}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  // Auto-pilih paket tengah
+  if (pakets.length > 1) pilihPaket(pakets[1].id);
+  else if (pakets.length > 0) pilihPaket(pakets[0].id);
+}
+
+function pilihPaket(id) {
+  selPaket = pakets.find(p=>p.id===id || p.id===parseInt(id));
+  document.querySelectorAll('.paket-opt').forEach(el=>el.classList.remove('sel'));
+  document.querySelectorAll('.radio-dot').forEach(el=>{el.style.borderColor='';el.innerHTML='';});
+  if (selPaket) {
+    document.getElementById('popt-'+selPaket.id)?.classList.add('sel');
+    const rd = document.getElementById('rd-'+selPaket.id);
+    if (rd) rd.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:white;margin:auto"></div>';
+    // Generate nominal unik
+    const unik = Math.floor(Math.random() * 900) + 100; // 100–999
+    nominalFix = selPaket.harga + unik;
+  }
+}
+
+function renderRekening() {
+  document.getElementById('rekeningList').innerHTML = REKENING.map((r,i)=>`
+    <div class="rek-item${i===0?' sel':''}" id="rek-${i}" onclick="pilihRek(${i})">
+      <div class="rek-bank">${r.bank}</div>
+      <div class="rek-no">${r.no}</div>
+      <div class="rek-name">a.n. ${r.nama}</div>
+    </div>`).join('');
+  selRek = REKENING[0];
+}
+
+function pilihRek(i) {
+  document.querySelectorAll('.rek-item').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('rek-'+i)?.classList.add('sel');
+  selRek = REKENING[i];
+}
+
+function copyNominal() {
+  navigator.clipboard.writeText(nominalFix.toString());
+  const btn = event.target;
+  btn.textContent = '✅ Disalin!';
+  setTimeout(()=>btn.textContent='📋 Salin Nominal', 2000);
+}
+
+function previewBukti(input) {
+  buktiFile = input.files[0];
+  if (!buktiFile) return;
+  const img = document.getElementById('buktiPreview');
+  img.src = URL.createObjectURL(buktiFile);
+  img.style.display = 'block';
+  document.getElementById('btnSubmit').disabled = false;
+}
+
+function nextStep(n) {
+  if (n===2) {
+    if (!selPaket) { alert('Pilih paket dulu'); return; }
+    document.getElementById('nominalDisplay').textContent = 'Rp ' + nominalFix.toLocaleString('id-ID');
+  }
+  if (n===3) {
+    document.getElementById('summaryPaket').textContent  = selPaket.nama + ' · ' + selPaket.durasi_hari + ' hari';
+    document.getElementById('summaryNominal').textContent = 'Rp ' + nominalFix.toLocaleString('id-ID');
+  }
+  // Update steps UI
+  [1,2,3,4].forEach(i=>{
+    const s = document.getElementById('s'+i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+    document.getElementById('sec'+i).classList.remove('on');
+  });
+  document.getElementById('sec'+n).classList.add('on');
+}
+
+async function submitPembayaran() {
+  if (!buktiFile || !selPaket || !user) return;
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Mengirim...';
+
+  try {
+    // Upload bukti ke Supabase Storage
+    let buktiUrl = null;
+    const ext = buktiFile.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const {error:upErr} = await sb.storage.from('bukti-bayar').upload(path, buktiFile, {upsert:true});
+    if (!upErr) {
+      const {data:urlData} = sb.storage.from('bukti-bayar').getPublicUrl(path);
+      buktiUrl = urlData.publicUrl;
+    }
+
+    // Generate order ID
+    const orderNo = 'UDG-' + Date.now().toString().slice(-8);
+    orderId = orderNo;
+
+    // Insert pembayaran
+    const {data:bayar, error:bayarErr} = await sb.from('pembayaran').insert({
+      user_id:     user.id,
+      undangan_id: undangan?.id || null,
+      paket_id:    selPaket.id,
+      nominal:     nominalFix,
+      metode:      'transfer_manual',
+      status:      'pending',
+      bukti_url:   buktiUrl,
+      midtrans_order_id: orderNo,
+      kode_ref:    refParam || null,
+    }).select().single();
+
+    if (bayarErr) throw bayarErr;
+
+    // Tampilkan step selesai
+    document.getElementById('orderNo').textContent = orderNo;
+
+    // Link WA konfirmasi
+    const waMsg = encodeURIComponent(
+      `Halo Admin Undanganku 👋\n\nSaya sudah transfer pembayaran:\n` +
+      `📦 Paket: ${selPaket.nama}\n` +
+      `💰 Nominal: Rp ${nominalFix.toLocaleString('id-ID')}\n` +
+      `🏦 Bank: ${selRek?.bank||'—'}\n` +
+      `📋 No. Order: ${orderNo}\n` +
+      `🔗 Undangan: ${slugParam}\n\n` +
+      `Mohon diverifikasi. Terima kasih 🙏`
+    );
+    document.getElementById('waKonfirmasi').href = `https://wa.me/628123456789?text=${waMsg}`;
+
+    nextStep(4);
+  } catch(err) {
+    alert('Gagal mengirim: ' + err.message);
+    btn.disabled = false; btn.textContent = 'Kirim Bukti →';
+  }
+}
+</script>
+</body>
+</html>
