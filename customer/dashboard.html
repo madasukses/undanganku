@@ -756,8 +756,19 @@ async function submitBuat() {
     maps_resepsi:      document.getElementById('fMapsResepsi').value.trim(),
   });
 
-  btn.disabled = false; btn.textContent = 'Simpan Undangan →';
-  if (error) { alert('Gagal: ' + error.message); return; }
+  btn.disabled = false;
+  if (error) { alert('Gagal: ' + error.message); btn.textContent = 'Simpan Undangan →'; return; }
+
+  // Load undangan yang baru dibuat, lalu upload foto
+  const {data:newUnd} = await sb.from('undangan').select('*').eq('slug',slug).eq('user_id',user.id).single();
+  if (newUnd) {
+    undangan = newUnd;
+    btn.textContent = 'Upload foto...';
+    btn.disabled = true;
+    await simpanFoto();
+    btn.disabled = false;
+  }
+  btn.textContent = 'Simpan Undangan →';
 
   await loadDashboard();
   showPage('home');
