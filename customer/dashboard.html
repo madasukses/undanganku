@@ -463,6 +463,22 @@ select.inp{cursor:pointer}
       <div style="height:32px"></div>
     </div>
 
+    <!-- ══ UPGRADE PAKET ══ -->
+    <div class="page" id="page-upgrade">
+      <div class="greet-main" style="margin-bottom:6px">Upgrade <span>Paket</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Pilih paket untuk mengaktifkan undangan dan menghapus watermark.</div>
+
+      <!-- Status pembayaran -->
+      <div id="statusBayar" style="display:none;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="statusBayarLabel">—</div>
+        <div style="font-size:12px;color:var(--muted)" id="statusBayarSub">—</div>
+      </div>
+
+      <div id="upgradeList" style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+        <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">Memuat paket...</div>
+      </div>
+    </div>
+
     <!-- ══ RSVP ══ -->
     <div class="page" id="page-rsvp">
       <div class="greet-main" style="margin-bottom:20px">RSVP <span>Masuk</span></div>
@@ -509,10 +525,11 @@ function showPage(name, el) {
   setTimeout(() => pg.classList.add('visible'), 20);
   document.querySelectorAll('.si').forEach(s => s.classList.remove('on'));
   if (el) el.classList.add('on');
-  const titles = {home:'Dashboard',buat:'Buat Undangan',daftar:'Daftar Undangan',rsvp:'RSVP Masuk',ucapan:'Ucapan & Doa'};
+  const titles = {home:'Dashboard',buat:'Buat Undangan',daftar:'Daftar Undangan',rsvp:'RSVP Masuk',ucapan:'Ucapan & Doa',upgrade:'Upgrade Paket'};
   document.getElementById('topTitle').textContent = titles[name] || name;
   if (name === 'daftar') renderTamuList();
   if (name === 'rsvp') loadRsvp();
+  if (name === 'upgrade') loadUpgrade();
   if (name === 'ucapan') loadUcapan();
   if (window.innerWidth < 769) closeSb();
 }
@@ -1060,6 +1077,62 @@ async function loadUcapan() {
       <div style="font-size:13px;font-weight:600;margin-bottom:4px">${r.nama_tamu} <span style="font-size:11px;color:var(--muted);font-weight:400">· ${r.status==='hadir'?'✅':r.status==='tidak'?'❌':'🤔'}</span></div>
       <div style="font-size:14px;color:var(--muted);line-height:1.5">${r.ucapan}</div>
     </div>`).join('');
+}
+
+// ══ UPGRADE PAKET ══
+async function loadUpgrade() {
+  // Cek status pembayaran terakhir
+  if (undangan) {
+    const {data:bayar} = await sb.from('pembayaran')
+      .select('*, paket(nama)')
+      .eq('user_id', user.id)
+      .order('created_at', {ascending:false})
+      .limit(1);
+
+    const last = bayar?.[0];
+    const statusEl = document.getElementById('statusBayar');
+    if (last) {
+      statusEl.style.display = 'block';
+      const statusMap = {
+        pending: {icon:'⏳', label:'Menunggu Verifikasi', sub:'Bukti transfer sudah diterima. Admin akan verifikasi dalam 1×24 jam.', color:'var(--gold)'},
+        sukses:  {icon:'✅', label:'Pembayaran Sukses', sub:'Undangan Anda sudah aktif. Watermark telah dihapus.', color:'var(--green)'},
+        gagal:   {icon:'❌', label:'Pembayaran Gagal', sub:'Ada masalah dengan pembayaran. Silakan coba lagi.', color:'var(--red)'},
+      };
+      const s = statusMap[last.status] || statusMap.pending;
+      document.getElementById('statusBayarLabel').innerHTML = `<span style="color:${s.color}">${s.icon} ${s.label}</span> — ${last.paket?.nama||'—'}`;
+      document.getElementById('statusBayarSub').textContent = s.sub;
+    }
+  }
+
+  // Load paket
+  const {data:pList} = await sb.from('paket').select('*').eq('aktif',true).order('harga',{ascending:true});
+  if (!pList?.length) {
+    document.getElementById('upgradeList').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">Paket tidak tersedia</div>';
+    return;
+  }
+
+  document.getElementById('upgradeList').innerHTML = pList.map((p,i) => {
+    const fitur = Array.isArray(p.fitur) ? p.fitur : JSON.parse(p.fitur||'[]');
+    const isPopuler = pList.length > 1 && i === 1;
+    const slug = undangan?.slug || '';
+    return `<div style="background:var(--s);border:${isPopuler?'2px solid var(--gold)':'1px solid var(--b)'};border-radius:var(--r);padding:20px;position:relative">
+      ${isPopuler?'<div style="position:absolute;top:-1px;right:16px;background:var(--gold);color:var(--bg);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:0 0 8px 8px">⭐ Populer</div>':''}
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:17px;font-weight:700">${p.nama}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Aktif ${p.durasi_hari} hari · Maks ${p.max_tamu} tamu</div>
+        </div>
+        <div style="font-size:22px;font-weight:700;color:var(--gold)">Rp ${Math.round(p.harga/1000)}rb</div>
+      </div>
+      ${p.deskripsi?`<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-style:italic">${p.deskripsi}</div>`:''}
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${fitur.map(f=>`<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--s2);border:1px solid var(--b);color:var(--muted)">✓ ${f}</span>`).join('')}
+      </div>
+      <a href="/bayar.html?slug=${slug}&ref=" style="display:block;width:100%;padding:13px;border-radius:10px;background:${isPopuler?'var(--gold)':'transparent'};border:1px solid ${isPopuler?'var(--gold)':'var(--b)'};color:${isPopuler?'var(--bg)':'var(--muted)'};font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-align:center;text-decoration:none;transition:all .2s">
+        Pilih ${p.nama} →
+      </a>
+    </div>`;
+  }).join('');
 }
 
 // Sidebar
